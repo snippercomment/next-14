@@ -1,13 +1,39 @@
 import { Button } from "@nextui-org/react";
-import { useState } from "react";
-import { createNewCategory } from "@/lib/firestore/categories/write";
+import { useEffect, useState } from "react";
+import { createNewCategory, updateCategory } from "@/lib/firestore/categories/write";
 import { toast } from "react-hot-toast";
-
+import { useSearchParams, useRouter } from "next/navigation";
+import { getCategory } from "@/lib/firestore/categories/read_server";
 
 export default function Form() {
     const [data, setData] = useState(null);
     const [image, setImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+    // lấy id từ url
+    const searchParams = useSearchParams();
+    const id = searchParams.get("id");
+    // nếu có id thì lấy dữ liệu danh mục
+    const fetchData = async () => {
+        try {
+            const res = await getCategory({ id: id });
+            if (!res) {
+                toast.error("Danh mục không tồn tại");
+
+            }
+            else {
+                setData(res);
+            }
+        } catch (error) {
+            toast.error(error?.message);
+        }
+    };
+    useEffect(() => {
+        if (id) {
+            fetchData();
+        }
+    }, [id]);
+    // xử lý dữ liệu
     const handleData = (key, value) => {
         setData((preData) => {
             return {
@@ -16,6 +42,7 @@ export default function Form() {
             }
         })
     }
+    // tạo danh mục
     const handleCreate = async () => {
         setIsLoading(true);
         try {
@@ -28,13 +55,32 @@ export default function Form() {
         }
         setIsLoading(false);
     }
+    // cập nhật danh mục
+    const handleUpdate = async () => {
+        setIsLoading(true);
+        try {
+            await updateCategory({ id: id, data: data, image: image });
+            toast.success("Cập nhật danh mục thành công");
+            setData(null);
+            setImage(null);
+            router.push("/admin/categories");
+        } catch (error) {
+            toast.error(error?.message);
+        }
+        setIsLoading(false);
+    }
     return (
         <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full md:w-[400px]">
-            <h1 className="font-semibold">Tạo danh mục</h1>
+            <h1 className="font-semibold">{id ? "Cập nhật" : "Tạo"} danh mục</h1>
             {/* tạo  */}
             <form onSubmit={(e) => {
                 e.preventDefault();
-                handleCreate();
+                if (id) {
+                    handleUpdate();
+                }
+                else {
+                    handleCreate();
+                }
             }} className='flex flex-col gap-2'>
 
                 {/* ảnh */}
@@ -98,7 +144,7 @@ export default function Form() {
                     />
 
                 </div>
-                <Button isLoading={isLoading} isDisabled={isLoading} type="submit">Tạo danh mục</Button>
+                <Button isLoading={isLoading} isDisabled={isLoading} type="submit">{id ? "Cập nhật" : "Tạo"} danh mục</Button>
             </form>
         </div>
 
