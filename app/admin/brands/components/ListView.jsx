@@ -69,7 +69,7 @@ function Row({ item, index }) {
             <td className="border-y bg-white px-3 py-2 border-l rounded-l-xl text-center" style={{ verticalAlign: 'middle' }}>{index + 1}</td>
             <td className="border-y bg-white px-3 py-2 text-center" style={{ verticalAlign: 'middle' }}>
                 <div className="flex justify-center">
-                    <img src={item?.imageURL} alt={item?.name} className="w-10 h-10 object-cover" />
+                    <img src={item?.imageURL} alt={item?.name} className="h-7 object-covert-cover" />
                 </div>
             </td>
             <td className="border-y bg-white px-3 py-2" style={{ verticalAlign: 'middle' }}>{item?.name}</td>
