@@ -179,7 +179,7 @@ function Row({ item, index }) {
                     </span>
                 )}
             </td>
-            <td className="border-y bg-white px-3 py-2  whitespace-nowrap">
+            <td className="border-y bg-white px-3 py-2 whitespace-nowrap">
                 {item?.salePrice < item?.price && (
                     <span className="text-xs text-gray-500 line-through">
                         {/* Gọi hàm formatCurrencyVND để định dạng giá gốc */}
