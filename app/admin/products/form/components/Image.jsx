@@ -37,6 +37,7 @@ export default function Images({
                     type="file"
                     id="product-feature-image"
                     name="product-feature-image"
+
                     onChange={(e) => {
                         if (e.target.files.length > 0) {
                             setFeatureImage(e.target.files[0]);
@@ -48,12 +49,13 @@ export default function Images({
             <div className="flex flex-col gap-1">
                 {imageList?.length === 0 && data?.imageList?.length != 0 && (
                     <div className="flex flex-wrap gap-3">
-                        {data?.imageList?.map((item) => {
+                        {data?.imageList?.map((item, index) => {
                             return (
                                 <img
+                                    key={index}
                                     className="w-20 object-cover rounded-lg"
                                     src={item}
-                                    alt=""
+                                    alt={`Hình ảnh đã chọn ${index + 1}`}
                                 />
                             );
                         })}

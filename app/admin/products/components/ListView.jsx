@@ -29,12 +29,13 @@ export default function ListView() {
                 : lastSnapDocList[lastSnapDocList?.length - 1],
     });
 
+    // trang tiếp
     const handleNextPage = () => {
         let newStack = [...lastSnapDocList];
         newStack.push(lastSnapDoc);
         setLastSnapDocList(newStack);
     };
-
+    // trang trước
     const handlePrePage = () => {
         let newStack = [...lastSnapDocList];
         newStack.pop();
@@ -159,9 +160,11 @@ function Row({ item, index }) {
 
     return (
         <tr>
+            {/* stt */}
             <td className="border-y bg-white px-3 py-2 border-l rounded-l-lg text-center">
                 {index + 1}
             </td>
+            {/* ảnh sản phẩm */}
             <td className="border-y bg-white px-3 py-2 text-center">
                 <div className="flex justify-center">
                     <img
@@ -171,14 +174,17 @@ function Row({ item, index }) {
                     />
                 </div>
             </td>
+            {/* tên sản phẩm */}
             <td className="border-y bg-white px-3 py-2 whitespace-nowrap">
                 {item?.title}{" "}
+                {/* sản phẩm nổi bật */}
                 {item?.isFeatured === true && (
                     <span className="ml-2 bg-gradient-to-tr from-blue-500 to-indigo-400 text-white text-[10px] rounded-full px-3 py-1">
                         Nổi bật
                     </span>
                 )}
             </td>
+            {/* giá sản phẩm */}
             <td className="border-y bg-white px-3 py-2 whitespace-nowrap">
                 {item?.salePrice < item?.price && (
                     <span className="text-xs text-gray-500 line-through">
@@ -189,15 +195,20 @@ function Row({ item, index }) {
                 {/* Gọi hàm formatCurrencyVND để định dạng giá giảm */}
                 {formatCurrencyVND(item?.salePrice)}
             </td>
+            {/* số lượng sản phẩm */}
             <td className="border-y bg-white px-3 py-2">{item?.stock}</td>
+            {/* số lượng đơn hàng */}
             <td className="border-y bg-white px-3 py-2">{item?.orders ?? 0}</td>
+            {/* trạng thái sản phẩm */}
             <td className="border-y bg-white px-3 py-2">
                 <div className="flex">
+                    {/* sản phẩm còn hàng */}
                     {item?.stock - (item?.orders ?? 0) > 0 && (
                         <div className="px-2 py-1 text-xs text-green-500 bg-green-100 font-bold rounded-md">
                             Còn hàng
                         </div>
                     )}
+                    {/* sản phẩm hết hàng */}
                     {item?.stock - (item?.orders ?? 0) <= 0 && (
                         <div className="px-2 py-1 text-xs text-red-500 bg-red-100 rounded-md">
                             Hết hàng
