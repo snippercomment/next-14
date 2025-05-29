@@ -1,48 +1,57 @@
-"use client"
+"use client";
 
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 
-export default function BasicDetail({ data, handleData }) {
+export default function BasicDetails({ data, handleData }) {
     const { data: brands } = useBrands();
     const { data: categories } = useCategories();
     return (
         <section className="flex-1 flex flex-col gap-3 bg-white rounded-xl p-4 border">
-            <h1 className="font-bold">Thông tin sản phẩm</h1>
-            {/* Title */}
-            <div className="flex flex-col gap-2">
-                <label htmlFor="product-title" className="text-gray-500 text-xs">
-                    Tên sản phẩm <span className="text-red-500">*</span>
+            <h1 className="font-semibold">Thông tin cơ bản</h1>
+            {/* tên sản phẩm */}
+            <div className="flex flex-col gap-1">
+                <label className="text-gray-500 text-xs" htmlFor="product-title">
+                    Tên sản phẩm <span className="text-red-500">*</span>{" "}
                 </label>
-                <input type="text"
-                    placeholder="Tên sản phẩm"
+                <input
+                    type="text"
+                    placeholder="Nhập tên sản phẩm"
                     id="product-title"
                     name="product-title"
                     value={data?.title ?? ""}
-                    onChange={(e) => handleData("title", e.target.value)}
+                    onChange={(e) => {
+                        handleData("title", e.target.value);
+                    }}
                     className="border px-4 py-2 rounded-lg w-full outline-none"
                     required
                 />
             </div>
-            {/* Description */}
-            <div className="flex flex-col gap-2">
-                <label htmlFor="product-short-decription" className="text-gray-500 text-xs">
-                    Mô tả ngắn gọn <span className="text-red-500">*</span>
+            {/* mô tả ngắn */}
+            <div className="flex flex-col gap-1">
+                <label
+                    className="text-gray-500 text-xs"
+                    htmlFor="product-short-decription"
+                >
+                    Mô tả ngắn <span className="text-red-500">*</span>{" "}
                 </label>
-                <input type="text"
-                    placeholder="Mô tả ngắn gọn"
+                <input
+                    type="text"
+                    placeholder="Nhập mô tả ngắn"
                     id="product-short-decription"
                     name="product-short-decription"
                     value={data?.shortDescription ?? ""}
-                    onChange={(e) => handleData("shortDescription", e.target.value)}
+                    onChange={(e) => {
+                        handleData("shortDescription", e.target.value);
+                    }}
                     className="border px-4 py-2 rounded-lg w-full outline-none"
                     required
                 />
             </div>
-            {/* Brand */}
-            <div className="flex flex-col gap-2">
+            {/* thương hiệu */}
+            <div className="flex flex-col gap-1">
                 <label className="text-gray-500 text-xs" htmlFor="product-brand">
-                    Thương hiệu <span className="text-red-500">*</span>
+                    Thương hiệu <span className="text-red-500">*</span>{" "}
                 </label>
                 <select
                     type="text"
@@ -65,11 +74,10 @@ export default function BasicDetail({ data, handleData }) {
                     })}
                 </select>
             </div>
-
-            {/* Category */}
-            <div className="flex flex-col gap-2">
+            {/* danh mục */}
+            <div className="flex flex-col gap-1">
                 <label className="text-gray-500 text-xs" htmlFor="product-category">
-                    Danh mục <span className="text-red-500">*</span>
+                    Danh mục <span className="text-red-500">*</span>{" "}
                 </label>
                 <select
                     type="text"
@@ -92,14 +100,14 @@ export default function BasicDetail({ data, handleData }) {
                     })}
                 </select>
             </div>
-            {/* Stock */}
+            {/* kho hàng */}
             <div className="flex flex-col gap-1">
                 <label className="text-gray-500 text-xs" htmlFor="product-stock">
-                    Số lượng <span className="text-red-500">*</span>
+                    Kho hàng <span className="text-red-500">*</span>{" "}
                 </label>
                 <input
                     type="number"
-                    placeholder="Nhập số lượng"
+                    placeholder="Nhập kho hàng"
                     id="product-stock"
                     name="product-stock"
                     value={data?.stock ?? ""}
@@ -110,14 +118,14 @@ export default function BasicDetail({ data, handleData }) {
                     required
                 />
             </div>
-            {/* giá */}
+            {/* giá sản phẩm */}
             <div className="flex flex-col gap-1">
                 <label className="text-gray-500 text-xs" htmlFor="product-price">
-                    Giá <span className="text-red-500">*</span>
+                    Giá sản phẩm <span className="text-red-500">*</span>{" "}
                 </label>
                 <input
                     type="number"
-                    placeholder="Nhập giá"
+                    placeholder="Nhập giá sản phẩm"
                     id="product-price"
                     name="product-price"
                     value={data?.price ?? ""}
@@ -128,10 +136,10 @@ export default function BasicDetail({ data, handleData }) {
                     required
                 />
             </div>
-            {/* Sale Price */}
+            {/* giá khuyến mãi */}
             <div className="flex flex-col gap-1">
                 <label className="text-gray-500 text-xs" htmlFor="product-sale-price">
-                    Giá khuyến mãi <span className="text-red-500">*</span>
+                    Giá khuyến mãi <span className="text-red-500">*</span>{" "}
                 </label>
                 <input
                     type="number"
@@ -146,7 +154,30 @@ export default function BasicDetail({ data, handleData }) {
                     required
                 />
             </div>
-
+            {/* sản phẩm nổi bật */}
+            <div className="flex flex-col gap-1">
+                <label
+                    className="text-gray-500 text-xs"
+                    htmlFor="product-is-featured-product"
+                >
+                    Sản phẩm nổi bật <span className="text-red-500">*</span>{" "}
+                </label>
+                <select
+                    type="number"
+                    placeholder="Nhập sản phẩm nổi bật"
+                    id="product-is-featured-product"
+                    name="product-is-featured-product"
+                    value={data?.isFeatured ? "yes" : "no"}
+                    onChange={(e) => {
+                        handleData("isFeatured", e.target.value === "yes" ? true : false);
+                    }}
+                    className="border px-4 py-2 rounded-lg w-full outline-none"
+                    required
+                >
+                    <option value={"no"}>Không</option>
+                    <option value={"yes"}>Có</option>
+                </select>
+            </div>
         </section>
-    )
+    );
 }
