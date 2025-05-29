@@ -9,3 +9,7 @@ export const getCollection = async ({ collectionName }) => {
         return null;
     }
 };
+export const getCollections = async () => {
+    const list = await getDocs(collection(db, "collections"));
+    return list.docs.map((snap) => snap.data());
+};

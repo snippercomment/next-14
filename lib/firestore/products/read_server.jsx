@@ -34,7 +34,7 @@ export const getProducts = async () => {
     );
     return list.docs.map((snap) => snap.data());
 };
-
+// lấy danh sách sản phẩm theo danh mục
 export const getProductsByCategory = async ({ categoryId }) => {
     const list = await getDocs(
         query(
