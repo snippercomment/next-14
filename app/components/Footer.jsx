@@ -5,9 +5,9 @@ export default function Footer() {
         <footer className="bg-gray-900 text-white px-6 py-8">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Kết nối với FPT Shop */}
+
                     <div>
-                        <h3 className="font-semibold text-lg mb-4">KẾT NỐI VỚI FPT SHOP</h3>
+                        <h3 className="font-semibold text-lg mb-4">KẾT NỐI VỚI MT SHOP</h3>
                         <div className="flex gap-3 mb-6">
                             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                                 <Facebook size={16} className="text-white" />
@@ -51,17 +51,18 @@ export default function Footer() {
                             <li><a href="#" className="hover:text-white">Chính sách bảo hành</a></li>
                             <li><a href="#" className="hover:text-white">Chính sách đổi trả</a></li>
                             <li><a href="#" className="hover:text-white">Chính sách bảo mật</a></li>
-                            <li><a href="#" className="hover:text-white">Chính sách trả góp</a></li>
+                            <li><a href="#" className="hover:text-white">Chính sách mua hàng</a></li>
                         </ul>
                     </div>
 
-                    {/* Hệ thống cửa hàng */}
+                    {/* sản phẩm */}
                     <div>
-                        <h3 className="font-semibold text-lg mb-4">HỆ THỐNG CỬA HÀNG</h3>
+                        <h3 className="font-semibold text-lg mb-4">SẢN PHẨM</h3>
                         <ul className="space-y-2 text-sm text-gray-300">
-                            <li><a href="#" className="hover:text-white">TP. Hồ Chí Minh</a></li>
-                            <li><a href="#" className="hover:text-white">Vũng Tàu</a></li>
-                            <li><a href="#" className="hover:text-white">Đồng Nai</a></li>
+                            <li><a href="#" className="hover:text-white">Điện thoại</a></li>
+                            <li><a href="#" className="hover:text-white">Laptop</a></li>
+                            <li><a href="#" className="hover:text-white">Tai nghe</a></li>
+                            <li><a href="#" className="hover:text-white">Chuột</a></li>
                         </ul>
                     </div>
                 </div>

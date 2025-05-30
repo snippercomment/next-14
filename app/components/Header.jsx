@@ -8,20 +8,21 @@ export default function Header() {
     },
     {
       name: "Điện thoại",
-      link: "/phone",
+      link: "/iphone",
     },
     {
-      name: "LapTop",
+      name: "Laptop",
       link: "/laptop",
     },
     {
-      name: "Phụ kiện",
-      link: "/accessory",
+      name: "Chuột",
+      link: "/mouse",
     },
     {
-      name: "Quần áo",
-      link: "/cloes",
+      name: "Tai nghe",
+      link: "/headphone",
     },
+
   ];
   return (
     <nav className="sticky top-0 z-50 bg-white bg-opacity-65 backdrop-blur-2xl py-3 px-4 md:py-4 md:px-16 border-b flex items-center justify-between">

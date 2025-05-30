@@ -513,9 +513,8 @@ export const laptopSpecOptions = [
     "AMD Ryzen 9 5900HX RTX 3070 32GB - 1TB SSD"
 ];
 
-// Accessory specifications
-export const accessorySpecOptions = [
-    // Headphone specs
+// Headphone specifications
+export const headphoneSpecOptions = [
     "Bluetooth 5.0 - 20Hz-20kHz",
     "Bluetooth 5.1 - 20Hz-40kHz",
     "Bluetooth 5.2 - 10Hz-22kHz",
@@ -523,9 +522,11 @@ export const accessorySpecOptions = [
     "USB-C - 20Hz-40kHz",
     "Wireless 2.4GHz - 20Hz-20kHz",
     "Noise Canceling - 20Hz-20kHz",
-    "Hi-Res Audio - 40kHz",
+    "Hi-Res Audio - 40kHz"
+];
 
-    // Mouse specs  
+// Mouse specifications  
+export const mouseSpecOptions = [
     "Wireless 2.4GHz - 1000 DPI",
     "Wireless 2.4GHz - 1600 DPI",
     "Bluetooth - 1200 DPI",
@@ -537,7 +538,7 @@ export const accessorySpecOptions = [
     "Gaming RGB - 25600 DPI"
 ];
 
-// Product categories mapping
+// Product categories mapping - TÁCH RIÊNG TAI NGHE VÀ CHUỘT
 export const productCategories = {
     phone: {
         name: "Điện thoại",
@@ -551,10 +552,16 @@ export const productCategories = {
         storageOptions: laptopSpecOptions,
         storageLabel: "Cấu hình"
     },
-    accessory: {
-        name: "Phụ kiện",
+    headphone: {
+        name: "Tai nghe",
         storageField: "specifications",
-        storageOptions: accessorySpecOptions,
+        storageOptions: headphoneSpecOptions,
+        storageLabel: "Thông số kỹ thuật"
+    },
+    mouse: {
+        name: "Chuột",
+        storageField: "specifications",
+        storageOptions: mouseSpecOptions,
         storageLabel: "Thông số kỹ thuật"
     }
 };
@@ -567,15 +574,18 @@ export const getColorsByCategory = (category) => {
 export const getColorsByProductType = (productType) => {
     const phoneCategories = ["iphone", "iphone-pro", "samsung", "xiaomi", "oppo", "vivo"];
     const laptopCategories = ["macbook", "asus", "dell", "hp"];
-    const accessoryCategories = ["headphone", "mouse"];
+    const headphoneCategories = ["headphone"];
+    const mouseCategories = ["mouse"];
 
     switch (productType) {
         case "phone":
             return phoneColors.filter(color => phoneCategories.includes(color.category));
         case "laptop":
             return phoneColors.filter(color => laptopCategories.includes(color.category));
-        case "accessory":
-            return phoneColors.filter(color => accessoryCategories.includes(color.category));
+        case "headphone":
+            return phoneColors.filter(color => headphoneCategories.includes(color.category));
+        case "mouse":
+            return phoneColors.filter(color => mouseCategories.includes(color.category));
         default:
             return phoneColors;
     }
@@ -597,11 +607,12 @@ export const getColorById = (id) => {
     return phoneColors.find(color => color.id === id);
 };
 
-// Detect product type from brand/category
+// Detect product type from brand/category - TÁCH RIÊNG TAI NGHE VÀ CHUỘT
 export const detectProductType = (brandName, categoryName) => {
     const phoneKeywords = ["iphone", "samsung", "xiaomi", "oppo", "vivo", "phone", "điện thoại"];
     const laptopKeywords = ["macbook", "asus", "dell", "hp", "laptop", "máy tính"];
-    const accessoryKeywords = ["headphone", "mouse", "tai nghe", "chuột", "phụ kiện"];
+    const headphoneKeywords = ["headphone", "tai nghe", "airpods", "earbuds"];
+    const mouseKeywords = ["mouse", "chuột"];
 
     const searchText = `${brandName || ""} ${categoryName || ""}`.toLowerCase();
 
@@ -611,8 +622,11 @@ export const detectProductType = (brandName, categoryName) => {
     if (laptopKeywords.some(keyword => searchText.includes(keyword))) {
         return "laptop";
     }
-    if (accessoryKeywords.some(keyword => searchText.includes(keyword))) {
-        return "accessory";
+    if (headphoneKeywords.some(keyword => searchText.includes(keyword))) {
+        return "headphone";
+    }
+    if (mouseKeywords.some(keyword => searchText.includes(keyword))) {
+        return "mouse";
     }
 
     return "phone"; // default

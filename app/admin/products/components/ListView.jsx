@@ -61,35 +61,35 @@ export default function ListView() {
     }
     return (
         <div className="flex-1 flex flex-col gap-3 md:pr-5 md:px-0 px-5 rounded-xl w-full overflow-x-auto">
-            <table className="border-separate border-spacing-y-3">
+            <table className="border-separate border-spacing-y-3 min-w-full">
                 <thead>
                     <tr>
-                        <th className="font-semibold border-y bg-white px-3 py-2 border-l rounded-l-lg">
+                        <th className="font-semibold border-y bg-white px-3 py-2 border-l rounded-l-lg w-16">
                             STT
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2">Ảnh</th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left">
+                        <th className="font-semibold border-y bg-white px-3 py-2 w-20">Ảnh</th>
+                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-64">
                             Tên sản phẩm
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left">
+                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-32">
                             Giá
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left">
+                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-36">
                             Dung lượng
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left">
+                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-40">
                             Màu sắc
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left">
+                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-24">
                             Số lượng
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left">
+                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-24">
                             Đơn hàng
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left">
+                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-28">
                             Trạng thái
                         </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 border-r rounded-r-lg text-center">
+                        <th className="font-semibold border-y bg-white px-3 py-2 border-r rounded-r-lg text-center w-32">
                             Hành động
                         </th>
                     </tr>
@@ -147,7 +147,7 @@ function Row({ item, index, brands, categories }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 
-    // Xác định loại sản phẩm - ĐÂY LÀ PHẦN QUAN TRỌNG ĐÃ SỬA
+    // Xác định loại sản phẩm
     const selectedBrand = brands?.find(brand => brand.id === item?.brandId);
     const selectedCategory = categories?.find(category => category.id === item?.categoryId);
     const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
@@ -179,132 +179,70 @@ function Row({ item, index, brands, categories }) {
         }).format(amount);
     };
 
-    // Hàm hiển thị dung lượng - ĐÃ SỬA LẠI
+    // Hàm hiển thị dung lượng - ĐÃ CẬP NHẬT
     const renderStorages = () => {
-        // Lấy field phù hợp theo loại sản phẩm
-        const storageField = categoryInfo.storageField; // 'storages' hoặc 'specifications'
+        const storageField = categoryInfo.storageField;
         const storageData = item?.[storageField];
+        const displayLimit = 3; // Number of items to display before truncating
 
-        // Kiểm tra nếu có dữ liệu storage theo cấu trúc mới
+        let dataToDisplay = [];
+
+        // Prioritize new structure based on productType
         if (Array.isArray(storageData) && storageData.length > 0) {
-            if (storageData.length === 1) {
-                return storageData[0];
-            } else if (storageData.length <= 3) {
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        {storageData.map((storage, idx) => (
-                            <span
-                                key={idx}
-                                className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                            >
-                                {storage}
-                            </span>
-                        ))}
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        {storageData.slice(0, 2).map((storage, idx) => (
-                            <span
-                                key={idx}
-                                className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                            >
-                                {storage}
-                            </span>
-                        ))}
-                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
-                            +{storageData.length - 2}
-                        </span>
-                    </div>
-                );
-            }
+            dataToDisplay = storageData;
         }
-        // Fallback cho data cũ - kiểm tra cả storages và specifications
-        else if (item?.storages && Array.isArray(item.storages) && item.storages.length > 0) {
-            const storageData = item.storages;
-            if (storageData.length === 1) {
-                return storageData[0];
-            } else if (storageData.length <= 3) {
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        {storageData.map((storage, idx) => (
-                            <span
-                                key={idx}
-                                className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                            >
-                                {storage}
-                            </span>
-                        ))}
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        {storageData.slice(0, 2).map((storage, idx) => (
-                            <span
-                                key={idx}
-                                className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                            >
-                                {storage}
-                            </span>
-                        ))}
-                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
-                            +{storageData.length - 2}
-                        </span>
-                    </div>
-                );
-            }
+        // Fallback for old 'storages' field
+        else if (Array.isArray(item?.storages) && item.storages.length > 0) {
+            dataToDisplay = item.storages;
         }
-        // Kiểm tra specifications cho laptop
-        else if (item?.specifications && Array.isArray(item.specifications) && item.specifications.length > 0) {
-            const specData = item.specifications;
-            if (specData.length === 1) {
-                return specData[0];
-            } else if (specData.length <= 3) {
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        {specData.map((spec, idx) => (
-                            <span
-                                key={idx}
-                                className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
-                            >
-                                {spec}
-                            </span>
-                        ))}
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="flex flex-wrap gap-1">
-                        {specData.slice(0, 2).map((spec, idx) => (
-                            <span
-                                key={idx}
-                                className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
-                            >
-                                {spec}
-                            </span>
-                        ))}
-                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
-                            +{specData.length - 2}
-                        </span>
-                    </div>
-                );
-            }
+        // Fallback for old 'specifications' field (e.g., for laptops with old data)
+        else if (Array.isArray(item?.specifications) && item.specifications.length > 0) {
+            dataToDisplay = item.specifications;
         }
-        // Fallback cho single storage (data cũ)
+        // Fallback for single 'storage' field
         else if (item?.storage) {
-            return item.storage;
+            dataToDisplay = [item.storage];
         }
-        // Không có dung lượng
-        else {
+
+        if (dataToDisplay.length === 0) {
             return <span className="text-gray-400 text-xs">Chưa có</span>;
+        }
+
+        if (dataToDisplay.length <= displayLimit) {
+            return (
+                <div className="flex flex-wrap gap-1">
+                    {dataToDisplay.map((storage, idx) => (
+                        <span
+                            key={idx}
+                            className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded" // Unified styling
+                        >
+                            {storage}
+                        </span>
+                    ))}
+                </div>
+            );
+        } else {
+            return (
+                <div className="flex flex-wrap gap-1">
+                    {dataToDisplay.slice(0, displayLimit - 1).map((storage, idx) => ( // Show displayLimit - 1 items
+                        <span
+                            key={idx}
+                            className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded" // Unified styling
+                        >
+                            {storage}
+                        </span>
+                    ))}
+                    <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                        +{dataToDisplay.length - (displayLimit - 1)}
+                    </span>
+                </div>
+            );
         }
     };
 
-    // Hàm hiển thị màu sắc 
+    // Hàm hiển thị màu sắc
     const renderColors = () => {
-        // Kiểm tra nếu có colorIds 
+        // Kiểm tra nếu có colorIds
         if (Array.isArray(item?.colorIds) && item.colorIds.length > 0) {
             const colors = item.colorIds.map(colorId => getColorById(colorId)).filter(Boolean);
 
@@ -365,7 +303,7 @@ function Row({ item, index, brands, categories }) {
                 );
             }
         }
-        // Kiểm tra nếu có colors array trực tiếp 
+        // Kiểm tra nếu có colors array trực tiếp
         else if (Array.isArray(item?.colors) && item.colors.length > 0) {
             const colors = item.colors;
             if (colors.length === 1) {
@@ -455,26 +393,30 @@ function Row({ item, index, brands, categories }) {
                     />
                 </div>
             </td>
-            {/* tên sản phẩm */}
-            <td className="border-y bg-white px-3 py-2 whitespace-nowrap">
-                {item?.title}{" "}
+            {/* tên sản phẩm - Fixed width with ellipsis */}
+            <td className="border-y bg-white px-3 py-2 max-w-64">
+                <div className="truncate" title={item?.title}>
+                    {item?.title}
+                </div>
                 {/* sản phẩm nổi bật */}
                 {item?.isFeatured === true && (
-                    <span className="ml-2 bg-gradient-to-tr from-blue-500 to-indigo-400 text-white text-[10px] rounded-full px-3 py-1">
+                    <span className="mt-1 inline-block bg-gradient-to-tr from-blue-500 to-indigo-400 text-white text-[10px] rounded-full px-3 py-1">
                         Nổi bật
                     </span>
                 )}
             </td>
             {/* giá sản phẩm */}
-            <td className="border-y bg-white px-3 py-2 whitespace-nowrap">
-                {item?.salePrice < item?.price && (
-                    <span className="text-xs text-gray-500 line-through">
-                        {/* Gọi hàm formatCurrencyVND để định dạng giá gốc */}
-                        {formatCurrencyVND(item?.price)}
-                    </span>
-                )}{" "}
-                {/* Gọi hàm formatCurrencyVND để định dạng giá giảm */}
-                {formatCurrencyVND(item?.salePrice)}
+            <td className="border-y bg-white px-3 py-2">
+                <div className="whitespace-nowrap">
+                    {item?.salePrice < item?.price && (
+                        <div className="text-xs text-gray-500 line-through">
+                            {formatCurrencyVND(item?.price)}
+                        </div>
+                    )}
+                    <div className="font-medium">
+                        {formatCurrencyVND(item?.salePrice)}
+                    </div>
+                </div>
             </td>
             {/* dung lượng - hiển thị nhiều dung lượng */}
             <td className="border-y bg-white px-3 py-2">
@@ -489,21 +431,21 @@ function Row({ item, index, brands, categories }) {
                 </div>
             </td>
             {/* số lượng sản phẩm */}
-            <td className="border-y bg-white px-3 py-2">{item?.stock}</td>
+            <td className="border-y bg-white px-3 py-2 text-center">{item?.stock}</td>
             {/* số lượng đơn hàng */}
-            <td className="border-y bg-white px-3 py-2">{item?.orders ?? 0}</td>
+            <td className="border-y bg-white px-3 py-2 text-center">{item?.orders ?? 0}</td>
             {/* trạng thái sản phẩm */}
             <td className="border-y bg-white px-3 py-2">
-                <div className="flex">
+                <div className="flex justify-center">
                     {/* sản phẩm còn hàng */}
                     {item?.stock - (item?.orders ?? 0) > 0 && (
-                        <div className="px-2 py-1 text-xs text-green-600 bg-green-100 rounded-md">
+                        <div className="px-2 py-1 text-xs text-green-600 bg-green-100 rounded-md whitespace-nowrap">
                             Còn hàng
                         </div>
                     )}
                     {/* sản phẩm hết hàng */}
                     {item?.stock - (item?.orders ?? 0) <= 0 && (
-                        <div className="px-2 py-1 text-xs text-red-500 bg-red-100 rounded-md">
+                        <div className="px-2 py-1 text-xs text-red-500 bg-red-100 rounded-md whitespace-nowrap">
                             Hết hàng
                         </div>
                     )}
