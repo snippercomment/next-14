@@ -18,6 +18,7 @@ export default function ListView() {
     // lấy danh sách brand và category
     const { data: brands } = useBrands();
     const { data: categories } = useCategories();
+
     useEffect(() => {
         setLastSnapDocList([]);
     }, [pageLimit]);
@@ -100,6 +101,8 @@ export default function ListView() {
                                 index={index + lastSnapDocList?.length * pageLimit}
                                 item={item}
                                 key={item?.id}
+                                brands={brands}
+                                categories={categories}
                             />
                         );
                     })}
@@ -144,11 +147,12 @@ function Row({ item, index, brands, categories }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 
-    // Xác định loại sản phẩm
+    // Xác định loại sản phẩm - ĐÂY LÀ PHẦN QUAN TRỌNG ĐÃ SỬA
     const selectedBrand = brands?.find(brand => brand.id === item?.brandId);
     const selectedCategory = categories?.find(category => category.id === item?.categoryId);
     const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
     const categoryInfo = getProductCategoryInfo(productType);
+
     const handleDelete = async () => {
         if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
 
@@ -175,7 +179,7 @@ function Row({ item, index, brands, categories }) {
         }).format(amount);
     };
 
-    // Hàm hiển thị dung lượng 
+    // Hàm hiển thị dung lượng - ĐÃ SỬA LẠI
     const renderStorages = () => {
         // Lấy field phù hợp theo loại sản phẩm
         const storageField = categoryInfo.storageField; // 'storages' hoặc 'specifications'
@@ -216,7 +220,79 @@ function Row({ item, index, brands, categories }) {
                 );
             }
         }
-        // Fallback cho data cũ
+        // Fallback cho data cũ - kiểm tra cả storages và specifications
+        else if (item?.storages && Array.isArray(item.storages) && item.storages.length > 0) {
+            const storageData = item.storages;
+            if (storageData.length === 1) {
+                return storageData[0];
+            } else if (storageData.length <= 3) {
+                return (
+                    <div className="flex flex-wrap gap-1">
+                        {storageData.map((storage, idx) => (
+                            <span
+                                key={idx}
+                                className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                            >
+                                {storage}
+                            </span>
+                        ))}
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="flex flex-wrap gap-1">
+                        {storageData.slice(0, 2).map((storage, idx) => (
+                            <span
+                                key={idx}
+                                className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                            >
+                                {storage}
+                            </span>
+                        ))}
+                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                            +{storageData.length - 2}
+                        </span>
+                    </div>
+                );
+            }
+        }
+        // Kiểm tra specifications cho laptop
+        else if (item?.specifications && Array.isArray(item.specifications) && item.specifications.length > 0) {
+            const specData = item.specifications;
+            if (specData.length === 1) {
+                return specData[0];
+            } else if (specData.length <= 3) {
+                return (
+                    <div className="flex flex-wrap gap-1">
+                        {specData.map((spec, idx) => (
+                            <span
+                                key={idx}
+                                className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
+                            >
+                                {spec}
+                            </span>
+                        ))}
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="flex flex-wrap gap-1">
+                        {specData.slice(0, 2).map((spec, idx) => (
+                            <span
+                                key={idx}
+                                className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
+                            >
+                                {spec}
+                            </span>
+                        ))}
+                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                            +{specData.length - 2}
+                        </span>
+                    </div>
+                );
+            }
+        }
+        // Fallback cho single storage (data cũ)
         else if (item?.storage) {
             return item.storage;
         }
@@ -225,7 +301,6 @@ function Row({ item, index, brands, categories }) {
             return <span className="text-gray-400 text-xs">Chưa có</span>;
         }
     };
-
 
     // Hàm hiển thị màu sắc 
     const renderColors = () => {
@@ -364,7 +439,6 @@ function Row({ item, index, brands, categories }) {
         }
     };
 
-
     return (
         <tr>
             {/* stt */}
@@ -405,13 +479,13 @@ function Row({ item, index, brands, categories }) {
             {/* dung lượng - hiển thị nhiều dung lượng */}
             <td className="border-y bg-white px-3 py-2">
                 <div className="min-w-[120px]">
-                    {renderStorages(item?.storages)}
+                    {renderStorages()}
                 </div>
             </td>
             {/* màu sắc - hiển thị nhiều màu */}
             <td className="border-y bg-white px-3 py-2">
                 <div className="min-w-[140px]">
-                    {renderColors(item?.colors)}
+                    {renderColors()}
                 </div>
             </td>
             {/* số lượng sản phẩm */}

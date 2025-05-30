@@ -9,3 +9,7 @@ export const getCategory = async ({ id }) => {
         return null;
     }
 };
+export const getCategories = async () => {
+    const list = await getDocs(collection(db, "categories"));
+    return list.docs.map((snap) => snap.data());
+};
