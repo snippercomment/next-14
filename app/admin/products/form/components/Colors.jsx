@@ -235,7 +235,7 @@ export const phoneColors = [
         category: "vivo"
     },
 
-    // MacBook Colors
+    // MacBook Colors laptop
     {
         id: "macbook-space-gray",
         name: "Xám Không Gian",
@@ -375,6 +375,59 @@ export const phoneColors = [
         hexColor: "#355E3B",
         category: "hp"
     },
+    // lenovo
+    {
+        id: "lenovo-gray",
+        name: "Xám",
+        title: "Lenovo Xám",
+        hexColor: "#808080",
+        category: "lenovo"
+    },
+    {
+        id: "lenovo-silver",
+        name: "Bạc",
+        title: "Lenovo Bạc",
+        hexColor: "#C0C0C0",
+        category: "lenovo"
+    },
+    // acer
+    {
+        id: "acer-gray",
+        name: "Xám",
+        title: "Acer Xám",
+        hexColor: "#808080",
+        category: "acer"
+    },
+    {
+        id: "acer-silver",
+        name: "Bạc",
+        title: "Acer Bạc",
+        hexColor: "#C0C0C0",
+        category: "acer"
+    },
+    {
+        id: "acer-black",
+        name: "Đen",
+        title: "Acer Đen",
+        hexColor: "#000000",
+        category: "acer"
+    },
+    // MSI
+    {
+        id: "msi-black",
+        name: "Đen",
+        title: "MSI Đen",
+        hexColor: "#000000",
+        category: "msi"
+    },
+    {
+        id: "msi-silver",
+        name: "Xám",
+        title: "MSI Xám",
+        hexColor: "#808080",
+        category: "msi"
+    },
+
 
     // Headphone Colors
     {
@@ -398,13 +451,7 @@ export const phoneColors = [
         hexColor: "#C0C0C0",
         category: "headphone"
     },
-    {
-        id: "headphone-red",
-        name: "Đỏ",
-        title: "Tai Nghe Đỏ",
-        hexColor: "#FF0000",
-        category: "headphone"
-    },
+
     {
         id: "headphone-blue",
         name: "Xanh Dương",
@@ -412,56 +459,86 @@ export const phoneColors = [
         hexColor: "#0000FF",
         category: "headphone"
     },
-    {
-        id: "headphone-pink",
-        name: "Hồng",
-        title: "Tai Nghe Hồng",
-        hexColor: "#FFC0CB",
-        category: "headphone"
-    },
 
-    // Mouse Colors
+    // Logitech
     {
-        id: "mouse-black",
+        id: "logitech-black",
         name: "Đen",
-        title: "Chuột Đen",
+        title: "Logitech Đen",
         hexColor: "#000000",
-        category: "mouse"
+        category: "logitech"
     },
     {
-        id: "mouse-white",
+        id: "logitech-white",
         name: "Trắng",
-        title: "Chuột Trắng",
+        title: "Logitech Trắng",
         hexColor: "#FFFFFF",
-        category: "mouse"
+        category: "logitech"
     },
     {
-        id: "mouse-silver",
+        id: "logitech-silver",
         name: "Bạc",
-        title: "Chuột Bạc",
+        title: "Logitech Bạc",
         hexColor: "#C0C0C0",
-        category: "mouse"
+        category: "logitech"
     },
     {
-        id: "mouse-red",
-        name: "Đỏ",
-        title: "Chuột Đỏ",
-        hexColor: "#FF0000",
-        category: "mouse"
-    },
-    {
-        id: "mouse-blue",
+        id: "logitech-blue",
         name: "Xanh Dương",
-        title: "Chuột Xanh Dương",
+        title: "Logitech Xanh Dương",
         hexColor: "#0000FF",
-        category: "mouse"
+        category: "logitech"
+    },
+    // Hyper
+    {
+        id: "hyper-black",
+        name: "Đen",
+        title: "Hyper Đen",
+        hexColor: "#000000",
+        category: "hyper"
     },
     {
-        id: "mouse-rgb",
-        name: "RGB",
-        title: "Chuột RGB",
-        hexColor: "#FF1493",
-        category: "mouse"
+        id: "hyper-white",
+        name: "Trắng",
+        title: "Hyper Trắng",
+        hexColor: "#FFFFFF",
+        category: "hyper"
+    },
+    {
+        id: "hyper-blue",
+        name: "Xanh Dương",
+        title: "Hyper Xanh Dương",
+        hexColor: "#0000FF",
+        category: "hyper"
+    },
+    // Razer
+    {
+        id: "razer-black",
+        name: "Đen",
+        title: "Razer Đen",
+        hexColor: "#000000",
+        category: "razer"
+    },
+    {
+        id: "razer-white",
+        name: "Trắng",
+        title: "Razer Trắng",
+        hexColor: "#FFFFFF",
+        category: "razer"
+    },
+    {
+        id: "razer-blue",
+        name: "Xanh Dương",
+        title: "Razer Xanh Dương",
+        hexColor: "#0000FF",
+    },
+    // Corsair
+    {
+        id: "corsair-black",
+        name: "Đen",
+        title: "Corsair Đen",
+        hexColor: "#000000",
+        category: "corsair"
     }
 ];
 
@@ -572,10 +649,10 @@ export const getColorsByCategory = (category) => {
 };
 
 export const getColorsByProductType = (productType) => {
-    const phoneCategories = ["iphone", "iphone-pro", "samsung", "xiaomi", "oppo", "vivo"];
-    const laptopCategories = ["macbook", "asus", "dell", "hp"];
+    const phoneCategories = ["iphone", "iphone-pro", "samsung", "xiaomi", "oppo", "vivo", "acer", "msi", "lenovo"];
+    const laptopCategories = ["macbook", "asus", "dell", "hp", "acer", "msi", "lenovo"];
     const headphoneCategories = ["headphone"];
-    const mouseCategories = ["mouse"];
+    const mouseCategories = ["logitech", "hyper", "razer", "corsair"];
 
     switch (productType) {
         case "phone":
@@ -609,10 +686,10 @@ export const getColorById = (id) => {
 
 // Detect product type from brand/category - TÁCH RIÊNG TAI NGHE VÀ CHUỘT
 export const detectProductType = (brandName, categoryName) => {
-    const phoneKeywords = ["iphone", "samsung", "xiaomi", "oppo", "vivo", "phone", "điện thoại"];
-    const laptopKeywords = ["macbook", "asus", "dell", "hp", "laptop", "máy tính"];
+    const phoneKeywords = ["iphone", "samsung", "xiaomi", "oppo", "vivo", "phone", "điện thoại", "acer", "msi", "lenovo"];
+    const laptopKeywords = ["macbook", "asus", "dell", "hp", "laptop", "máy tính", "acer", "msi", "lenovo"];
     const headphoneKeywords = ["headphone", "tai nghe", "airpods", "earbuds"];
-    const mouseKeywords = ["mouse", "chuột"];
+    const mouseKeywords = ["mouse", "chuột", "logitech", "hyper", "razer", "corsair"];
 
     const searchText = `${brandName || ""} ${categoryName || ""}`.toLowerCase();
 
