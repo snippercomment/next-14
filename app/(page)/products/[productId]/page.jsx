@@ -1,6 +1,8 @@
 import { getProduct } from "@/lib/firestore/products/read_server";
 import Photo from "./Components/Photo";
 import Detail from "./Components/Detail";
+import Review from "./Components/Review";
+import RelatedProducts from "./Components/RalatedProduct";
 export default async function Page({ params }) {
     const { productId } = params;
     const product = await getProduct({ id: productId });
@@ -12,13 +14,9 @@ export default async function Page({ params }) {
                 <Detail product={product} />
             </section>
             {/* thông tin sản phẩm */}
-            <section>
+            <Review productId={productId} />
+            <RelatedProducts categoryId={product?.categoryId} />
 
-            </section>
-            {/* mô tả sản phẩm */}
-            <section>
-
-            </section>
         </main>
 
 
