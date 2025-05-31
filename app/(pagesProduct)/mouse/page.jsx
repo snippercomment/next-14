@@ -5,7 +5,7 @@ import { useProducts } from "@/lib/firestore/products/read";
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 import BrandProduct from '../form/BrandProduct';
-import SearchBar from '../form/SearchBar';
+
 import Sort from '../form/Sort';
 import Paginate from '../form/Panigation';
 import ProductCard from '../form/ProductCard';
@@ -41,12 +41,6 @@ export default function Page() {
                     onSortChange={setSortBy}
                     itemsPerPage={pageLimit}
                     onItemsPerPageChange={setPageLimit}
-                />
-                <SearchBar
-                    searchQuery={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    data={products}
-                // onFilteredData={setFilteredProducts}
                 />
             </div>
 

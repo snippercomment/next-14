@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { useProducts } from "@/lib/firestore/products/read";
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
-import BrandProduct from '../form/BrandProduct';
-import Search from '../form/SearchBar';
+
+
 import Sort from '../form/Sort';
 import Paginate from '../form/Panigation';
 import ProductCard from '../form/ProductCard';
+import BrandProduct from '../form/BrandProduct';
 export default function Page() {
     const [selectedBrand, setSelectedBrand] = useState('');
-    const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState("newest");
     const [currentPage, setCurrentPage] = useState(1);
     const [pageLimit, setPageLimit] = useState(15);
@@ -40,7 +40,7 @@ export default function Page() {
                     itemsPerPage={pageLimit}
                     onItemsPerPageChange={setPageLimit}
                 />
-                <Search searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
             </div>
 
 
