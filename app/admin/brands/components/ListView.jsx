@@ -2,9 +2,9 @@
 
 import { Button, CircularProgress, Select, SelectItem } from "@nextui-org/react";
 import { useBrands } from "@/lib/firestore/brands/read";
-import { Edit2, Trash, Plus } from "lucide-react";
+import { Edit2, Trash, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { deleteBrand } from "@/lib/firestore/brands/write";
 import { useRouter } from "next/navigation";
 
@@ -32,18 +32,45 @@ const BRAND_CATEGORIES = {
     }
 };
 
+const ITEMS_PER_PAGE = 10;
+
 export default function ListView() {
     const { data: brands, error, isLoading } = useBrands();
     const [filterCategory, setFilterCategory] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
     const router = useRouter();
 
     // Lọc dữ liệu thương hiệu
-    const filteredBrands = brands?.filter(brand => {
-        const matchCategory = !filterCategory || brand.category === filterCategory;
-        const matchStatus = !filterStatus || brand.status === filterStatus;
-        return matchCategory && matchStatus;
-    });
+    const filteredBrands = useMemo(() => {
+        return brands?.filter(brand => {
+            const matchCategory = !filterCategory || brand.category === filterCategory;
+            const matchStatus = !filterStatus || brand.status === filterStatus;
+            return matchCategory && matchStatus;
+        }) || [];
+    }, [brands, filterCategory, filterStatus]);
+
+    // Tính toán pagination
+    const totalPages = Math.ceil(filteredBrands.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const currentBrands = filteredBrands.slice(startIndex, endIndex);
+
+    // Reset về trang 1 khi filter thay đổi
+    const handleFilterChange = (type, value) => {
+        setCurrentPage(1);
+        if (type === 'category') {
+            setFilterCategory(value);
+        } else if (type === 'status') {
+            setFilterStatus(value);
+        }
+    };
+
+    // Xử lý chuyển trang
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     if (isLoading) {
         return (
@@ -69,7 +96,12 @@ export default function ListView() {
         <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <h1 className="font-semibold text-xl">Quản lý thương hiệu</h1>
+                <div>
+                    <h1 className="font-semibold text-xl">Quản lý thương hiệu</h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Tổng cộng: {filteredBrands.length} thương hiệu
+                    </p>
+                </div>
                 <Button
                     startContent={<Plus size={16} />}
                     className="bg-blue-600 text-white hover:bg-blue-700"
@@ -90,7 +122,7 @@ export default function ListView() {
                         selectedKeys={filterCategory ? [filterCategory] : []}
                         onSelectionChange={(keys) => {
                             const selected = Array.from(keys)[0];
-                            setFilterCategory(selected === "all" ? "" : selected || "");
+                            handleFilterChange('category', selected === "all" ? "" : selected || "");
                         }}
                         className="w-full"
                     >
@@ -117,7 +149,7 @@ export default function ListView() {
                         selectedKeys={filterStatus ? [filterStatus] : []}
                         onSelectionChange={(keys) => {
                             const selected = Array.from(keys)[0];
-                            setFilterStatus(selected === "all" ? "" : selected || "");
+                            handleFilterChange('status', selected === "all" ? "" : selected || "");
                         }}
                         className="w-full"
                     >
@@ -160,24 +192,151 @@ export default function ListView() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredBrands?.length > 0 ? (
-                            filteredBrands.map((item, index) => (
+                        {currentBrands.length > 0 ? (
+                            currentBrands.map((item, index) => (
                                 <Row
                                     key={item.id}
                                     item={item}
-                                    index={index}
+                                    index={startIndex + index}
                                 />
                             ))
                         ) : (
                             <tr>
                                 <td colSpan="6" className="text-center py-10 text-gray-500">
-                                    Không có dữ liệu thương hiệu
+                                    {filteredBrands.length === 0 ?
+                                        "Không có dữ liệu thương hiệu" :
+                                        "Không có dữ liệu cho trang này"
+                                    }
                                 </td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                    <div className="text-sm text-gray-500">
+                        Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBrands.length)} của {filteredBrands.length} kết quả
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Previous Button */}
+                        <Button
+                            isIconOnly
+                            variant="flat"
+                            size="sm"
+                            onPress={() => handlePageChange(currentPage - 1)}
+                            isDisabled={currentPage === 1}
+                            className="min-w-8 h-8"
+                        >
+                            <ChevronLeft size={16} />
+                        </Button>
+
+                        {/* Page Numbers */}
+                        <div className="flex items-center gap-1">
+                            {(() => {
+                                const pageNumbers = [];
+                                const maxVisiblePages = 5;
+                                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                                // Điều chỉnh startPage nếu endPage đã tới maximum
+                                if (endPage === totalPages) {
+                                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                                }
+
+                                // Hiển thị trang đầu và dấu ...
+                                if (startPage > 1) {
+                                    pageNumbers.push(
+                                        <Button
+                                            key={1}
+                                            variant={currentPage === 1 ? "solid" : "flat"}
+                                            size="sm"
+                                            onPress={() => handlePageChange(1)}
+                                            className={`min-w-8 h-8 ${currentPage === 1
+                                                    ? "bg-blue-600 text-white"
+                                                    : "hover:bg-gray-100"
+                                                }`}
+                                        >
+                                            1
+                                        </Button>
+                                    );
+
+                                    if (startPage > 2) {
+                                        pageNumbers.push(
+                                            <span key="start-ellipsis" className="px-2 text-gray-400">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+                                }
+
+                                // Hiển thị các trang ở giữa
+                                for (let i = startPage; i <= endPage; i++) {
+                                    if (i !== 1 && i !== totalPages) {
+                                        pageNumbers.push(
+                                            <Button
+                                                key={i}
+                                                variant={currentPage === i ? "solid" : "flat"}
+                                                size="sm"
+                                                onPress={() => handlePageChange(i)}
+                                                className={`min-w-8 h-8 ${currentPage === i
+                                                        ? "bg-blue-600 text-white"
+                                                        : "hover:bg-gray-100"
+                                                    }`}
+                                            >
+                                                {i}
+                                            </Button>
+                                        );
+                                    }
+                                }
+
+                                // Hiển thị dấu ... và trang cuối
+                                if (endPage < totalPages) {
+                                    if (endPage < totalPages - 1) {
+                                        pageNumbers.push(
+                                            <span key="end-ellipsis" className="px-2 text-gray-400">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+
+                                    pageNumbers.push(
+                                        <Button
+                                            key={totalPages}
+                                            variant={currentPage === totalPages ? "solid" : "flat"}
+                                            size="sm"
+                                            onPress={() => handlePageChange(totalPages)}
+                                            className={`min-w-8 h-8 ${currentPage === totalPages
+                                                    ? "bg-blue-600 text-white"
+                                                    : "hover:bg-gray-100"
+                                                }`}
+                                        >
+                                            {totalPages}
+                                        </Button>
+                                    );
+                                }
+
+                                return pageNumbers;
+                            })()}
+                        </div>
+
+                        {/* Next Button */}
+                        <Button
+                            isIconOnly
+                            variant="flat"
+                            size="sm"
+                            onPress={() => handlePageChange(currentPage + 1)}
+                            isDisabled={currentPage === totalPages}
+                            className="min-w-8 h-8"
+                        >
+                            <ChevronRight size={16} />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -238,8 +397,8 @@ function Row({ item, index }) {
             </td>
             <td className="py-3 px-4">
                 <span className={`px-2 py-1 text-xs rounded-full ${item?.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
                     }`}>
                     {item?.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}
                 </span>
