@@ -1,36 +1,15 @@
-import { Facebook, Youtube, MessageCircle } from "lucide-react";
 
+import Link from "next/link";
 export default function Footer() {
     return (
         <footer className="bg-gray-900 text-white px-6 py-8">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
 
-                    <div>
-                        <h3 className="font-semibold text-lg mb-4">KẾT NỐI VỚI MT SHOP</h3>
-                        <div className="flex gap-3 mb-6">
-                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                <Facebook size={16} className="text-white" />
-                            </div>
-                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                <MessageCircle size={16} className="text-white" />
-                            </div>
-                            <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
-                                <Youtube size={16} className="text-white" />
-                            </div>
-                            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white font-bold text-xs">
-                                TT
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <h4 className="font-medium text-base">TỔNG ĐÀI MIỄN PHÍ</h4>
-                            <div>
-                                <p className="text-sm text-gray-300">Tư vấn mua hàng (Miễn phí)</p>
-                                <p className="font-semibold">1800.6601 <span className="text-gray-400">(Nhánh 1)</span></p>
-                            </div>
-
-                        </div>
+                    <div className="flex flex-col gap-4 justify-center items-center">
+                        <Link href="/">
+                            <img src="/logo.png" alt="logo" className="h-8 " />
+                        </Link>
                     </div>
 
                     {/* Về chúng tôi */}

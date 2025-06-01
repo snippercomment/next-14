@@ -1,13 +1,14 @@
 "use client";
 import { useBrands } from "@/lib/firestore/brands/read";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function BrandProduct({ selectedBrand, onBrandChange }) {
     // Lấy dữ liệu brands từ Firestore như trong admin
     const { data: brands } = useBrands();
 
-    // Lấy pathname để xác định trang hiện tại
+    // Lấy pathname và router để navigation
     const pathname = usePathname();
+    const router = useRouter();
 
     // DEBUG: Log để kiểm tra
     console.log('Current pathname:', pathname);
@@ -61,6 +62,31 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
         'Baseus': '⚡'
     };
 
+    // Handle brand click - navigate đến trang brand
+    const handleBrandClick = (brandId, brandName) => {
+        // Navigate đến trang brand với URL parameter
+        const basePath = pathname.split('?')[0]; // Remove query params
+        const brandQuery = `?brand=${brandId}&name=${encodeURIComponent(brandName)}`;
+        router.push(`${basePath}${brandQuery}`);
+
+        // Cũng update state nếu có onBrandChange
+        if (onBrandChange) {
+            onBrandChange(brandId);
+        }
+    };
+
+    // Handle "Tất cả" click
+    const handleAllBrandsClick = () => {
+        // Remove brand query param
+        const basePath = pathname.split('?')[0];
+        router.push(basePath);
+
+        // Reset filter
+        if (onBrandChange) {
+            onBrandChange('');
+        }
+    };
+
     // Nếu không có category phù hợp, không hiển thị gì
     if (!currentCategory) {
         return null;
@@ -70,10 +96,10 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
         <div className="flex gap-2 overflow-x-auto pb-2">
             {/* Nút Tất cả */}
             <button
-                onClick={() => onBrandChange('')}
+                onClick={handleAllBrandsClick}
                 className={`px-6 py-3 rounded-full whitespace-nowrap font-medium border-2 transition-colors ${selectedBrand === ''
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
                     }`}
             >
                 Tất cả
@@ -83,10 +109,10 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
             {filteredBrands.map((brand) => (
                 <button
                     key={brand.id}
-                    onClick={() => onBrandChange(brand.id)}
+                    onClick={() => handleBrandClick(brand.id, brand.name)}
                     className={`px-6 py-3 rounded-full whitespace-nowrap font-medium border-2 transition-colors flex items-center gap-2 ${selectedBrand === brand.id
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
                         }`}
                 >
                     {/* Logo thương hiệu - ưu tiên ảnh từ database */}
@@ -94,7 +120,7 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
                         <img
                             src={brand.imageURL}
                             alt={brand.name}
-                            className="w-6 h-6 object-contain rounded"
+                            className="w-8 h-8 object-contain rounded"
                         />
                     ) : (
                         <span className="text-lg">

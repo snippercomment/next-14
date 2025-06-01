@@ -15,7 +15,7 @@ export default function Page() {
     const router = useRouter();
     useEffect(() => {
         if (user) {
-            router.push("/dashboard");
+            router.push("/account");
         }
     }, [user]);
     return <main className="w-full flex justify-center items-center bg-gray-300 md:p-24 p-10 min-h-screen">
