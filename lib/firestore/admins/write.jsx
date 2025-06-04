@@ -1,12 +1,13 @@
-import { db } from "@/lib/firebase"; // No longer need `storage` if only storing Base64
+import { db } from "@/lib/firebase";
 import {
     collection,
     deleteDoc,
     doc,
     setDoc,
-    Timestamp,
     updateDoc,
+    Timestamp,
 } from "firebase/firestore";
+import { uploadImageToCloudinary } from "@/lib/uploadToCloudinary";
 
 export const createNewAdmin = async ({ data, image }) => {
     if (!image) {
@@ -16,30 +17,27 @@ export const createNewAdmin = async ({ data, image }) => {
         throw new Error("Tên tài khoản không được để trống");
     }
     if (!data?.email) {
-        throw new Error("Email is required");
+        throw new Error("Email là bắt buộc");
     }
 
-    const newId = data?.email;
-    let imageURL = ""; // Initialize to an empty string
+    try {
+        // Upload ảnh lên Cloudinary
+        const imageURL = await uploadImageToCloudinary(image, 'admins');
+        
+        const newId = data?.email;
 
-    // Convert image to Base64 string
-    const reader = new FileReader();
-    reader.readAsDataURL(image);
+        await setDoc(doc(db, `admins/${newId}`), {
+            ...data,
+            id: newId,
+            imageURL: imageURL,
+            timestampCreate: Timestamp.now(),
+        });
 
-    await new Promise((resolve, reject) => {
-        reader.onload = () => {
-            imageURL = reader.result; // Store the Base64 string
-            resolve();
-        };
-        reader.onerror = (error) => reject(error);
-    });
-
-    await setDoc(doc(db, `admins/${newId}`), {
-        ...data,
-        id: newId,
-        imageURL: imageURL, // Store the Base64 string
-        timestampCreate: Timestamp.now(),
-    });
+        return { success: true, id: newId, imageURL };
+    } catch (error) {
+        console.error("Error creating admin:", error);
+        throw new Error(`Lỗi khi tạo admin: ${error.message}`);
+    }
 };
 
 export const updateAdmin = async ({ data, image }) => {
@@ -53,48 +51,48 @@ export const updateAdmin = async ({ data, image }) => {
         throw new Error("Email không được để trống");
     }
 
-    const id = data?.id;
-    let imageURL = data?.imageURL; // Assume data.imageURL already contains the Base64 string if no new image is provided
+    try {
+        const id = data?.id;
+        let updateData = { ...data, timestampUpdate: Timestamp.now() };
 
-    if (image) {
-        // If a new image is provided, convert it to Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(image);
+        // Nếu có ảnh mới, upload lên Cloudinary
+        if (image) {
+            const imageURL = await uploadImageToCloudinary(image, 'admins');
+            updateData.imageURL = imageURL;
+        }
 
-        await new Promise((resolve, reject) => {
-            reader.onload = () => {
-                imageURL = reader.result; // Update with new Base64 string
-                resolve();
-            };
-            reader.onerror = (error) => reject(error);
-        });
-    }
+        if (id === data?.email) {
+            // Nếu ID không thay đổi, chỉ cập nhật document
+            await updateDoc(doc(db, `admins/${id}`), updateData);
+        } else {
+            // Nếu email (và ID) đã thay đổi, xóa document cũ và tạo mới
+            const newId = data?.email;
 
-    if (id === data?.email) {
-        // If the ID hasn't changed, just update the document
-        await updateDoc(doc(db, `admins/${id}`), {
-            ...data,
-            imageURL: imageURL, // Update with the new or existing Base64 string
-            timestampUpdate: Timestamp.now(),
-        });
-    } else {
-        // If the email (and thus ID) has changed, delete the old document and create a new one
-        const newId = data?.email;
+            await deleteDoc(doc(db, `admins/${id}`));
 
-        await deleteDoc(doc(db, `admins/${id}`));
+            await setDoc(doc(db, `admins/${newId}`), {
+                ...updateData,
+                id: newId,
+            });
+        }
 
-        await setDoc(doc(db, `admins/${newId}`), {
-            ...data,
-            id: newId,
-            imageURL: imageURL, // Store the Base64 string
-            timestampUpdate: Timestamp.now(),
-        });
+        return { success: true, imageURL: updateData.imageURL };
+    } catch (error) {
+        console.error("Error updating admin:", error);
+        throw new Error(`Lỗi khi cập nhật admin: ${error.message}`);
     }
 };
 
 export const deleteAdmin = async ({ id }) => {
     if (!id) {
-        throw new Error("ID is required");
+        throw new Error("ID là bắt buộc");
     }
-    await deleteDoc(doc(db, `admins/${id}`));
+
+    try {
+        await deleteDoc(doc(db, `admins/${id}`));
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting admin:", error);
+        throw new Error(`Lỗi khi xóa admin: ${error.message}`);
+    }
 };

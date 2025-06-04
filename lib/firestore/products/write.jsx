@@ -4,18 +4,10 @@ import {
     deleteDoc,
     doc,
     setDoc,
+    updateDoc,
     Timestamp,
 } from "firebase/firestore";
-
-// Hàm trợ giúp để chuyển đổi File sang Base64
-const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-    });
-};
+import { uploadImageToCloudinary } from "@/lib/uploadToCloudinary";
 
 export const createNewProduct = async ({ data, featureImage, imageList }) => {
     if (!data?.title) {
@@ -25,27 +17,34 @@ export const createNewProduct = async ({ data, featureImage, imageList }) => {
         throw new Error("Ảnh đại diện là bắt buộc");
     }
 
-    // Chuyển đổi hình ảnh đại diện sang Base64
-    const featureImageBase64 = await fileToBase64(featureImage);
+    try {
+        // Upload ảnh đại diện lên Cloudinary
+        const featureImageURL = await uploadImageToCloudinary(featureImage, 'products');
+        
+        // Upload danh sách ảnh lên Cloudinary (nếu có)
+        let imageURLs = [];
+        if (imageList && imageList.length > 0) {
+            for (const image of imageList) {
+                const imageURL = await uploadImageToCloudinary(image, 'products');
+                imageURLs.push(imageURL);
+            }
+        }
+        
+        const newId = doc(collection(db, `ids`)).id;
 
-    let imageListBase64 = [];
+        await setDoc(doc(db, `products/${newId}`), {
+            ...data,
+            id: newId,
+            featureImageURL: featureImageURL,
+            imageList: imageURLs,
+            timestampCreate: Timestamp.now(),
+        });
 
-    // Chuyển đổi mỗi hình ảnh trong imageList sang Base64
-    for (let i = 0; i < imageList?.length; i++) {
-        const image = imageList[i];
-        const base64String = await fileToBase64(image);
-        imageListBase64.push(base64String);
+        return { success: true, id: newId, featureImageURL, imageList: imageURLs };
+    } catch (error) {
+        console.error("Error creating product:", error);
+        throw new Error(`Lỗi khi tạo sản phẩm: ${error.message}`);
     }
-
-    const newId = doc(collection(db, `ids`)).id;
-
-    await setDoc(doc(db, `products/${newId}`), {
-        ...data,
-        featureImageURL: featureImageBase64, // Lưu chuỗi Base64 ở đây
-        imageList: imageListBase64, // Lưu danh sách Base64 ở đây
-        id: newId,
-        timestampCreate: Timestamp.now(),
-    });
 };
 
 export const updateProduct = async ({ data, featureImage, imageList }) => {
@@ -56,35 +55,49 @@ export const updateProduct = async ({ data, featureImage, imageList }) => {
         throw new Error("ID là bắt buộc");
     }
 
-    // Sử dụng chuỗi Base64 hiện có nếu không có hình ảnh đại diện mới được cung cấp
-    let featureImageBase64 = data?.featureImageURL ?? "";
+    try {
+        let updateData = { ...data, timestampUpdate: Timestamp.now() };
 
-    // Chuyển đổi hình ảnh đại diện mới sang Base64 nếu được cung cấp
-    if (featureImage) {
-        featureImageBase64 = await fileToBase64(featureImage);
+        // Nếu có ảnh đại diện mới, upload lên Cloudinary
+        if (featureImage) {
+            const featureImageURL = await uploadImageToCloudinary(featureImage, 'products');
+            updateData.featureImageURL = featureImageURL;
+        }
+
+        // Nếu có danh sách ảnh mới, upload lên Cloudinary
+        if (imageList && imageList.length > 0) {
+            let imageURLs = [];
+            for (const image of imageList) {
+                const imageURL = await uploadImageToCloudinary(image, 'products');
+                imageURLs.push(imageURL);
+            }
+            updateData.imageList = imageURLs;
+        }
+
+        const productRef = doc(db, `products/${data.id}`);
+        await updateDoc(productRef, updateData);
+
+        return { 
+            success: true, 
+            featureImageURL: updateData.featureImageURL,
+            imageList: updateData.imageList 
+        };
+    } catch (error) {
+        console.error("Error updating product:", error);
+        throw new Error(`Lỗi khi cập nhật sản phẩm: ${error.message}`);
     }
-
-    // Nếu imageList rỗng, giữ danh sách hiện tại; nếu không, chuẩn bị danh sách mới Base64
-    let imageListBase64 = imageList?.length === 0 ? data?.imageList : [];
-
-    // Chuyển đổi mỗi hình ảnh mới trong imageList sang Base64
-    for (let i = 0; i < imageList?.length; i++) {
-        const image = imageList[i];
-        const base64String = await fileToBase64(image);
-        imageListBase64.push(base64String);
-    }
-
-    await setDoc(doc(db, `products/${data?.id}`), {
-        ...data,
-        featureImageURL: featureImageBase64, // Lưu chuỗi Base64 ở đây
-        imageList: imageListBase64, // Lưu danh sách Base64 ở đây
-        timestampUpdate: Timestamp.now(),
-    });
 };
 
 export const deleteProduct = async ({ id }) => {
     if (!id) {
         throw new Error("ID là bắt buộc");
     }
-    await deleteDoc(doc(db, `products/${id}`));
+
+    try {
+        await deleteDoc(doc(db, `products/${id}`));
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        throw new Error(`Lỗi khi xóa sản phẩm: ${error.message}`);
+    }
 };

@@ -3,98 +3,87 @@ import {
     collection,
     deleteDoc,
     doc,
-    setDoc, // setDoc có thể dùng để update nếu bạn muốn ghi đè toàn bộ
-    updateDoc, // Import updateDoc để cập nhật một phần tài liệu
+    setDoc,
+    updateDoc,
     Timestamp,
 } from "firebase/firestore";
+import { uploadImageToCloudinary } from "@/lib/uploadToCloudinary";
 
 export const createNewCategory = async ({ data, image }) => {
     if (!image) {
-        throw new Error("Ảnh là bắt buộc"); // Image is Required
+        throw new Error("Ảnh là bắt buộc");
     }
 
     if (!data?.name || data.name.trim() === '') {
-        throw new Error("Tên danh mục không được để trống"); // Name is required
+        throw new Error("Tên danh mục không được để trống");
     }
     if (!data?.slug || data.slug.trim() === '') {
-        throw new Error("Slug không được để trống"); // Slug is required
+        throw new Error("Slug không được để trống");
     }
 
-    let imageURL = ''; // Khởi tạo biến để lưu chuỗi Base64
+    try {
+        // Upload ảnh lên Cloudinary
+        const imageURL = await uploadImageToCloudinary(image, 'categories');
+        
+        const newId = doc(collection(db, `ids`)).id;
 
-    // Chuyển đổi hình ảnh sang chuỗi Base64
-    if (image) {
-        const reader = new FileReader();
-        reader.readAsDataURL(image);
-        await new Promise((resolve, reject) => {
-            reader.onload = () => {
-                imageURL = reader.result; // Lưu chuỗi Base64
-                resolve();
-            };
-            reader.onerror = error => reject(error);
+        await setDoc(doc(db, `categories/${newId}`), {
+            ...data,
+            id: newId,
+            imageURL: imageURL,
+            timestampCreate: Timestamp.now(),
         });
+
+        return { success: true, id: newId, imageURL };
+    } catch (error) {
+        console.error("Error creating category:", error);
+        throw new Error(`Lỗi khi tạo danh mục: ${error.message}`);
     }
-
-    const newId = doc(collection(db, `ids`)).id; // Tạo ID mới cho tài liệu mới
-
-    await setDoc(doc(db, `categories/${newId}`), {
-        ...data,
-        id: newId,
-        imageURL: imageURL, // Lưu chuỗi Base64 vào trường imageURL
-        timestampCreate: Timestamp.now(),
-    });
 };
 
 // sửa danh mục
 export const updateCategory = async ({ id, data, image }) => {
     if (!id) {
-        throw new Error("ID danh mục là bắt buộc để cập nhật"); // ID is Required
-    }
-
-    if (!image) {
-        throw new Error("Ảnh là bắt buộc"); // Image is Required
+        throw new Error("ID danh mục là bắt buộc để cập nhật");
     }
 
     if (!data?.name || data.name.trim() === '') {
-        throw new Error("Tên danh mục không được để trống"); // Name is required
+        throw new Error("Tên danh mục không được để trống");
     }
     if (!data?.slug || data.slug.trim() === '') {
-        throw new Error("Slug không được để trống"); // Slug is required
+        throw new Error("Slug không được để trống");
     }
 
-    let imageURL = ''; // Khởi tạo biến để lưu chuỗi Base64
+    try {
+        let updateData = { ...data, timestampUpdate: Timestamp.now() };
 
-    // Chuyển đổi hình ảnh sang chuỗi Base64
-    if (image) {
-        const reader = new FileReader();
-        reader.readAsDataURL(image);
-        await new Promise((resolve, reject) => {
-            reader.onload = () => {
-                imageURL = reader.result; // Lưu chuỗi Base64
-                resolve();
-            };
-            reader.onerror = error => reject(error);
-        });
+        // Nếu có ảnh mới, upload lên Cloudinary
+        if (image) {
+            const imageURL = await uploadImageToCloudinary(image, 'categories');
+            updateData.imageURL = imageURL;
+        }
+
+        const categoryRef = doc(db, `categories/${id}`);
+        await updateDoc(categoryRef, updateData);
+
+        return { success: true, imageURL: updateData.imageURL };
+    } catch (error) {
+        console.error("Error updating category:", error);
+        throw new Error(`Lỗi khi cập nhật danh mục: ${error.message}`);
     }
-
-    // Lấy tham chiếu đến tài liệu cần cập nhật
-    const categoryRef = doc(db, `categories/${id}`);
-
-    // Sử dụng updateDoc để cập nhật một phần tài liệu
-    // hoặc setDoc với { merge: true } để cập nhật hoặc tạo mới nếu không tồn tại
-    await updateDoc(categoryRef, {
-        ...data,
-        imageURL: imageURL, // Cập nhật chuỗi Base64 vào trường imageURL
-        timestampUpdate: Timestamp.now(), // Thêm trường timestampUpdate
-    });
-
 };
-
 
 // xoá danh mục
 export const deleteCategory = async ({ id }) => {
     if (!id) {
         throw new Error("ID là bắt buộc");
     }
-    await deleteDoc(doc(db, `categories/${id}`));
+
+    try {
+        await deleteDoc(doc(db, `categories/${id}`));
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        throw new Error(`Lỗi khi xóa danh mục: ${error.message}`);
+    }
 };

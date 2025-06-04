@@ -1,8 +1,8 @@
 // app/api/stripe/create-checkout/route.js
+import { db } from "@/lib/firebase";
+import { collection, doc, setDoc } from "firebase/firestore";
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-
-
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -21,11 +21,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Thông tin địa chỉ không đầy đủ' }, { status: 400 });
     }
 
-    const exchangeRate = 24000;
-    const usdAmount = Math.round(totalAmount / exchangeRate * 100);
+    // Tạo checkout ID
+    const checkoutId = doc(collection(db, `ids`)).id;
+    const ref = doc(db, `users/${uid}/checkout_sessions/${checkoutId}`);
 
+    // Tạo line items cho Stripe
     const lineItems = products.map(item => {
-      const unitAmount = Math.round((item.price / exchangeRate) * 100);
+      const unitAmount = Math.round(item.price);
 
       if (unitAmount <= 0) {
         throw new Error(`Sản phẩm "${item.title}" có đơn giá không hợp lệ`);
@@ -33,6 +35,7 @@ export async function POST(request) {
 
       const productData = {
         name: item.title,
+        description: item.shortDescription || "",
         metadata: {
           product_id: item.id.toString(),
         },
@@ -44,7 +47,7 @@ export async function POST(request) {
 
       return {
         price_data: {
-          currency: 'usd',
+          currency: 'vnd',
           product_data: productData,
           unit_amount: unitAmount,
         },
@@ -53,21 +56,12 @@ export async function POST(request) {
     });
 
     const metadata = {
+      checkoutId: checkoutId,
       uid: uid?.toString() || '',
       user_email: userEmail?.toString() || '',
-      full_name: address.fullName.toString(),
-      mobile: address.mobile.toString(),
-      email: address.email?.toString() || '',
-      address_line_1: address.addressLine1.toString(),
-      address_line_2: address.addressLine2?.toString() || '',
-      pincode: address.pincode?.toString() || '',
-      city: address.city?.toString() || '',
-      state: address.state?.toString() || '',
-      order_note: address.orderNote?.toString() || '',
+      address: JSON.stringify(address),
       payment_mode: 'prepaid',
       total_amount_vnd: totalAmount.toString(),
-      total_amount_usd: usdAmount.toString(),
-      exchange_rate: exchangeRate.toString(),
       order_date: new Date().toISOString(),
     };
 
@@ -75,21 +69,32 @@ export async function POST(request) {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/order-success?session_id={CHECKOUT_SESSION_ID}&payment_mode=prepaid`,
-      cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN}/checkout?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/checkout-success?checkout_id=${checkoutId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN}/checkout-failed?checkout_id=${checkoutId}`,
       customer_email: userEmail || address.email || undefined,
       metadata,
       billing_address_collection: 'auto',
-     
+    });
+
+    // Lưu thông tin checkout session vào Firebase
+    await setDoc(ref, {
+      id: checkoutId,
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: lineItems,
+      metadata: metadata,
+      success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/checkout-success?checkout_id=${checkoutId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN}/checkout-failed?checkout_id=${checkoutId}`,
+      stripe_session_id: session.id,
+      url: session.url,
+      created_at: new Date().toISOString(),
     });
 
     console.log('Stripe session created:', session.id);
 
-    return NextResponse.json({ url: session.url, session_id: session.id });
-
+    return NextResponse.json({ url: session.url, checkout_id: checkoutId });
   } catch (error) {
     console.error('Stripe checkout error:', error);
     return NextResponse.json({
