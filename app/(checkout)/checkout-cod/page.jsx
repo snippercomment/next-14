@@ -2,25 +2,11 @@ import Footer from "@/app/components/Footer";
 import Header from "@/app/components/Header";
 import { admin, adminDB } from "@/lib/firebase_admin";
 import Link from "next/link";
-import SuccessMessage from "./compoments/SuccessMessage";
-
 
 const fetchCheckout = async (checkoutId) => {
   const list = await adminDB
-    .collectionGroup("checkout_sessions")
+    .collectionGroup("checkout_sessions_cod")
     .where("id", "==", checkoutId)
-    .get();
-  if (list.docs.length === 0) {
-    throw new Error("Mã số thanh toán không hợp lệ");
-  }
-  return list.docs[0].data();
-};
-
-const fetchPayment = async (checkoutId) => {
-  const list = await adminDB
-    .collectionGroup("payments")
-    .where("metadata.checkoutId", "==", checkoutId)
-    .where("status", "==", "succeeded")
     .get();
   if (list.docs.length === 0) {
     throw new Error("Invalid Checkout ID");
@@ -28,19 +14,23 @@ const fetchPayment = async (checkoutId) => {
   return list.docs[0].data();
 };
 
-const processOrder = async ({ payment, checkout }) => {
-  const order = await adminDB.doc(`orders/${payment?.id}`).get();
+const processOrder = async ({ checkout }) => {
+  const order = await adminDB.doc(`orders/${checkout?.id}`).get();
   if (order.exists) {
     return false;
   }
-  const uid = payment?.metadata?.uid;
+  const uid = checkout?.metadata?.uid;
 
-  await adminDB.doc(`orders/${payment?.id}`).set({
+  await adminDB.doc(`orders/${checkout?.id}`).set({
     checkout: checkout,
-    payment: payment,
+    payment: {
+      amount: checkout?.line_items?.reduce((prev, curr) => {
+        return prev + curr?.price_data?.unit_amount * curr?.quantity;
+      }, 0),
+    },
     uid: uid,
-    id: payment?.id,
-    paymentMode: "prepaid",
+    id: checkout?.id,
+    paymentMode: "cod",
     timestampCreate: admin.firestore.Timestamp.now(),
   });
 
@@ -81,26 +71,24 @@ const processOrder = async ({ payment, checkout }) => {
 export default async function Page({ searchParams }) {
   const { checkout_id } = searchParams;
   const checkout = await fetchCheckout(checkout_id);
-  const payment = await fetchPayment(checkout_id);
 
-  const result = await processOrder({ checkout, payment });
+  const result = await processOrder({ checkout });
 
   return (
     <main>
       <Header />
-      <SuccessMessage />
       <section className="min-h-screen flex flex-col gap-3 justify-center items-center">
         <div className="flex justify-center w-full">
           <img src="/svgs/Mobile payments-rafiki.svg" className="h-48" alt="" />
         </div>
         <h1 className="text-2xl font-semibold text-green">
-          Đơn hàng của bạn {" "}
-          <span className="font-bold text-green-600">đã đặt thành công</span> 
+         Đơn hàng của bạn {" "}
+          <span className="font-bold text-green-600">đặt thành công</span> 
         </h1>
         <div className="flex items-center gap-4 text-sm">
           <Link href={"/account"}>
             <button className="text-blue-600 border border-blue-600 px-5 py-2 rounded-lg bg-white">
-             Đi đến trang đơn hàng
+              Đi đến trang đơn hàng
             </button>
           </Link>
         </div>

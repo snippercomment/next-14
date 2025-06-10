@@ -28,7 +28,7 @@ export default function Page() {
             <img className="h-[200px]" src="/svgs/Empty-pana.svg" alt="" />
           </div>
           <h1 className="text-gray-600 font-semibold">
-            Please Add Products To Cart
+           Vui lòng thêm sản phẩm vào giỏ hàng
           </h1>
         </div>
       )}
@@ -58,7 +58,7 @@ function ProductItem({ item }) {
   const { data: product } = useProduct({ productId: item?.id });
 
   const handleRemove = async () => {
-    if (!confirm("Are you sure?")) return;
+    if (!confirm("Bạn có chắc chắn không??")) return;
     setIsRemoving(true);
     try {
       const newList = data?.carts?.filter((d) => d?.id != item?.id);

@@ -3,9 +3,6 @@
 
 import Link from "next/link";
 import Slider from "react-slick";
-import FavoriteButton from "./FavoriteButton";
-import AuthContextProvider from "@/contexts/AuthContext";
-import AddToCartButton from "./AddToCartButton";
 
 export default function FeaturedProductSlider({ featuredProducts }) {
     var settings = {
@@ -36,19 +33,7 @@ export default function FeaturedProductSlider({ featuredProducts }) {
                                             {product?.shortDescription}
                                         </h1>
                                     </div>
-                                    <AuthContextProvider>
-                                        <div className="flex items-center gap-4">
-                                            <Link
-                                                href={`/checkout?type=buynow&productId=${product?.id}`}
-                                            >
-                                                <button className="bg-blue-500 text-white text-xs md:text-sm px-4 py-1.5 rounded-lg">
-                                                    MUA NGAY
-                                                </button>
-                                            </Link>
-                                            <AddToCartButton productId={product?.id} type={"large"} />
-                                            <FavoriteButton productId={product?.id} />
-                                        </div>
-                                    </AuthContextProvider>
+                                   
                                 </div>
                                 <div className="">
                                     <Link href={`/products/${product?.id}`}>

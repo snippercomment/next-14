@@ -1,7 +1,7 @@
 import Link from "next/link";
 import FavoriteButton from "./FavoriteButton";
 import AuthContextProvider from "@/contexts/AuthContext";
-import AddToCartButton from "./AddToCartButton";
+
 import { getProductReviewCounts } from "@/lib/firestore/products/count/read";
 import { Suspense } from "react";
 import MyRating from "./MyRating";
@@ -28,18 +28,20 @@ export function ProductCard({ product }) {
         return new Intl.NumberFormat("vi-VN", {
             style: "currency",
             currency: "VND",
-            minimumFractionDigits: 0, // No decimal places for Vietnamese Dong
+            minimumFractionDigits: 0, 
         }).format(price);
     };
 
     return (
         <div className="flex flex-col gap-3 border p-4 rounded-lg">
             <div className="relative w-full">
-                <img
+                <Link href={`/products/${product?.id}`}>
+                    <img
                     src={product?.featureImageURL}
                     className="rounded-lg h-48 w-full object-cover"
                     alt={product?.title}
                 />
+                </Link>
                 <div className="absolute top-1 right-1">
                     <AuthContextProvider>
                         <FavoriteButton productId={product?.id} />
@@ -70,18 +72,7 @@ export function ProductCard({ product }) {
                     </h3>
                 </div>
             )}
-            <div className="flex items-center gap-4 w-full">
-                <div className="w-full">
-                    <Link href={`/checkout?type=buynow&productId=${product?.id}`}>
-                        <button className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg text-xs w-full">
-                            Mua ngay
-                        </button>
-                    </Link>
-                </div>
-                <AuthContextProvider>
-                    <AddToCartButton productId={product?.id} />
-                </AuthContextProvider>
-            </div>
+           
         </div>
     );
 }

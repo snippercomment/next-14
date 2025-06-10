@@ -78,7 +78,7 @@ function SignInWithGoogleComponent() {
     };
     return (
         <Button isLoading={isLoading} isDisabled={isLoading} onClick={handleLogin}>
-            Sign In With Google
+           Đăng nhập bằng Google
         </Button>
     );
 }
