@@ -17,11 +17,8 @@ export const createPaymentIntentCheckout = async (orderData) => {
   return url;
 };
 
-// SỬA: Hàm tạo COD order với xóa cart
 export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
   const checkoutId = `cod_${doc(collection(db, `ids`)).id}`;
-  
-  // Tạo line items giống pattern cũ
   let line_items = [];
   products.forEach((item) => {
     line_items.push({
@@ -35,7 +32,7 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
               `${process.env.NEXT_PUBLIC_DOMAIN}/logo.png`,
           ],
           metadata: {
-            productId: item?.product?.id?.toString(), // Đảm bảo là string
+            productId: item?.product?.id?.toString(),
           },
         },
         unit_amount: item?.product?.salePrice,
@@ -86,8 +83,8 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
       state: address.state || '',
       orderNote: address.orderNote || '',
     },
-    status: 'succeeded',
-    payment_status: 'succeeded',
+    status: 'pending',              
+    payment_status: 'pending',     
     payment_method: 'cod',
     paymentMode: 'cod',
     order_date: new Date().toISOString(),
@@ -120,49 +117,68 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
       state: address.state || '',
       orderNote: address.orderNote || '',
     },
-    status: 'succeeded',
-    payment_status: 'succeeded',
+    status: 'pending',             
+    payment_status: 'pending',     
     payment_method: 'cod',
     order_date: new Date().toISOString(),
     created_at: new Date().toISOString(),
     createdAt: Timestamp.now(),
   });
-
-  // SỬA: XÓA CART SAU KHI TẠO ORDER THÀNH CÔNG
   try {
     const userRef = doc(db, `users/${uid}`);
     const userDoc = await getDoc(userRef);
     const userData = userDoc.data();
     
     if (userData?.carts && userData.carts.length > 0) {
-      // Tạo danh sách productId từ products đã mua
       const purchasedProductIds = products.map(item => item?.product?.id?.toString());
       
-      console.log('COD - Products purchased:', purchasedProductIds);
-      console.log('COD - Current cart:', userData.carts);
-      
-      // Xóa các sản phẩm đã mua khỏi cart
       const updatedCarts = userData.carts.filter(cartItem => {
-        const shouldKeep = !purchasedProductIds.includes(cartItem?.id?.toString());
-        console.log(`COD - Cart item ${cartItem?.id} - Keep: ${shouldKeep}`);
-        return shouldKeep;
+        return !purchasedProductIds.includes(cartItem?.id?.toString());
       });
       
-      console.log('COD - Updated cart:', updatedCarts);
-      
-      // Cập nhật cart
       await updateDoc(userRef, { carts: updatedCarts });
       console.log('COD - Cart updated successfully');
     }
   } catch (error) {
     console.error('COD - Error updating cart:', error);
-    // Không throw error để không ảnh hưởng đến việc tạo order
   }
 
   return checkoutId;
 };
 
-// Giữ lại hàm cũ để tương thích
+export const updateCODOrderStatus = async (orderId, newStatus) => {
+  try {
+    const orderRef = doc(db, `orders/${orderId}`);
+    const updateData = {
+      status: newStatus,
+      updated_at: new Date().toISOString(),
+      updatedAt: Timestamp.now(),
+    };
+
+    // Nếu admin xác nhận COD thành công
+    if (newStatus === 'succeeded' || newStatus === 'completed') {
+      updateData.payment_status = 'succeeded';
+    }
+
+    await updateDoc(orderRef, updateData);
+    
+    // Cập nhật cả trong user orders nếu có
+    const orderDoc = await getDoc(orderRef);
+    const orderData = orderDoc.data();
+    
+    if (orderData?.uid) {
+      const userOrderRef = doc(db, `users/${orderData.uid}/orders/${orderId}`);
+      await updateDoc(userOrderRef, updateData);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating COD order status:', error);
+    throw error;
+  }
+};
+
+
 export const createCODOrder = async ({ uid, products, address, totalAmount }) => {
   return await createCheckoutCODAndGetId({ uid, products, address });
 };

@@ -3,6 +3,7 @@ import { Search, UserCircle2 } from "lucide-react";
 import LogoutButton from "./LogoutButton";
 import AuthContextProvider from "@/contexts/AuthContext";
 import HeaderClientButtons from "./HeaderClientButtons";
+import AdminButton from "./AdminButton";
 export default function Header() {
   const menuList = [
     {
@@ -44,9 +45,9 @@ export default function Header() {
         })}
       </div>
       <div className="flex items-center gap-1">
-        {/* <AuthContextProvider>
+        <AuthContextProvider>
           <AdminButton />
-        </AuthContextProvider> */}
+        </AuthContextProvider>
         <Link href={`/search`}>
           <button
             title="Tìm kiếm sản phẩm"
