@@ -4,11 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { auth } from "@/lib/firebase";
 import { createUser } from "@/lib/firestore/user/write";
 import { Button } from "@nextui-org/react";
-import {
-  GoogleAuthProvider,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,7 +14,6 @@ export default function Page() {
   const { user } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-
   const [data, setData] = useState({});
 
   const handleData = (key, value) => {
@@ -27,36 +22,55 @@ export default function Page() {
       [key]: value,
     });
   };
-
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, data?.email, data?.password);
-      toast.success("Đăng nhập thành công");
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        data?.email,
+        data?.password
+      );
+      await updateProfile(credential.user, {
+        displayName: data?.name,
+      });
+      const user = credential.user;
+      await createUser({
+        uid: user?.uid,
+        displayName: data?.name,
+        photoURL: user?.photoURL,
+      });
+      toast.success("Đăng ký thành công");
+      router.push("/account");
     } catch (error) {
       toast.error(error?.message);
     }
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    if (user) {
-      router.push("/account");
-    }
-  }, [user]);
-
   return (
     <main className="w-full flex justify-center items-center bg-gray-300 md:p-24 p-10 min-h-screen">
       <section className="flex flex-col gap-3">
+       
         <div className="flex flex-col gap-3 bg-white md:p-10 p-5 rounded-xl md:min-w-[440px] w-full">
-          <h1 className="font-bold text-xl text-center">Đăng nhập bằng Email</h1>
+          <h1 className="font-bold text-xl text-center">Đăng ký bằng Email</h1>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              handleLogin();
+              handleSignUp();
             }}
             className="flex flex-col gap-3"
           >
+            <input
+              placeholder="Nhập tên của bạn"
+              type="text"
+              name="user-name"
+              id="user-name"
+              value={data?.name}
+              onChange={(e) => {
+                handleData("name", e.target.value);
+              }}
+              className="px-3 py-2 rounded-xl border focus:outline-none w-full"
+            />
             <input
               placeholder="Nhập Email của bạn"
               type="email"
@@ -85,49 +99,18 @@ export default function Page() {
               type="submit"
               color="primary"
             >
-             Đăng nhập
+                Đăng ký
             </Button>
           </form>
           <div className="flex justify-between">
-            <Link href={`/sign-up`}>
+            <Link href={`/login`}>
               <button className="font-semibold text-sm text-blue-700">
-              Tạo tài khoản
-              </button>
-            </Link>
-            <Link href={`/forget-password`}>
-              <button className="font-semibold text-sm text-blue-700">
-               Quên mật khẩu?
+                Đã là người dùng? Đăng nhập
               </button>
             </Link>
           </div>
-          <hr />
-          <SignInWithGoogleComponent />
         </div>
       </section>
     </main>
-  );
-}
-
-function SignInWithGoogleComponent() {
-  const [isLoading, setIsLoading] = useState(false);
-  const handleLogin = async () => {
-    setIsLoading(true);
-    try {
-      const credential = await signInWithPopup(auth, new GoogleAuthProvider());
-      const user = credential.user;
-      await createUser({
-        uid: user?.uid,
-        displayName: user?.displayName,
-        photoURL: user?.photoURL,
-      });
-    } catch (error) {
-      toast.error(error?.message);
-    }
-    setIsLoading(false);
-  };
-  return (
-    <Button isLoading={isLoading} isDisabled={isLoading} onClick={handleLogin}>
-      Đăng nhập bằng Google
-    </Button>
   );
 }
