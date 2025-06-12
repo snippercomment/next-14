@@ -3,6 +3,8 @@ import Photo from "./Components/Photo";
 import Detail from "./Components/Detail";
 import Review from "./Components/Review";
 import RelatedProducts from "./Components/RalatedProduct";
+import AddReview from "./Components/AddReview";
+import AuthContextProvider from "@/contexts/AuthContext";
 export default async function Page({ params }) {
     const { productId } = params;
     const product = await getProduct({ id: productId });
@@ -14,7 +16,12 @@ export default async function Page({ params }) {
                 <Detail product={product} />
             </section>
             {/* thông tin sản phẩm */}
+            <AuthContextProvider>
+            <div className="flex flex-col md:flex-row gap-4 md:max-w-[900px] w-full">
+            <AddReview productId={productId} />
             <Review productId={productId} />
+            </div>
+             </AuthContextProvider>
             <RelatedProducts categoryId={product?.categoryId} />
 
         </main>
