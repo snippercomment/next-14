@@ -9,6 +9,9 @@ import AddToCartButton from "@/app/components/AddToCartButton";
 import FavoriteButton from "@/app/components/FavoriteButton";
 import MyRating from "@/app/components/MyRating";
 import AuthContextProvider from "@/contexts/AuthContext";
+import { getBrand } from "@/lib/firestore/brands/read_server";
+import { getCategory } from "@/lib/firestore/categories/read_server";
+import { getProductReviewCounts } from "@/lib/firestore/products/count/read";
 import Link from "next/link";
 import { Suspense, useState, useEffect } from "react";
 
@@ -39,7 +42,7 @@ export default function Details({ product, brands, categories, reviewCounts }) {
         const storageField = categoryInfo?.storageField;
         const storageData = product?.[storageField];
 
-        // Ưu tiên cấu trúc mới dựa trên productType
+        
         if (Array.isArray(storageData) && storageData.length > 0) {
             return storageData;
         }
@@ -47,7 +50,7 @@ export default function Details({ product, brands, categories, reviewCounts }) {
         else if (Array.isArray(product?.storages) && product.storages.length > 0) {
             return product.storages;
         }
-        // Fallback cho field 'specifications' cũ (ví dụ laptop với data cũ)
+        // Fallback cho field 'specifications' cũ
         else if (Array.isArray(product?.specifications) && product.specifications.length > 0) {
             return product.specifications;
         }
@@ -62,18 +65,20 @@ export default function Details({ product, brands, categories, reviewCounts }) {
     const availableColors = getSelectedColors();
     const storageOptions = getSelectedStorages();
 
-    // Không tự động chọn - để người dùng tự chọn
+   
 
     return (
         <div className="w-full flex flex-col gap-4">
             <div className="flex gap-3">
-                <Category category={selectedCategory} />
-                <Brand brand={selectedBrand} />
+                <Category categoryId={product?.categoryId} />
+                <Brand brandId={product?.brandId} />
             </div>
 
             <h1 className="font-semibold text-xl md:text-4xl">{product?.title}</h1>
 
-            <RatingReview reviewCounts={reviewCounts} />
+            <Suspense fallback="Failed To Load">
+                <RatingReview product={product} />
+            </Suspense>
 
             <h2 className="text-gray-600 text-sm line-clamp-3 md:line-clamp-4">
                 {product?.shortDescription}
@@ -252,21 +257,27 @@ export default function Details({ product, brands, categories, reviewCounts }) {
     );
 }
 
-// Chuyển thành Client Component thông thường, nhận data từ props
-function Category({ category }) {
+// Chuyển thành async components để fetch data từ server
+async function Category({ categoryId }) {
+    const category = await getCategory({ id: categoryId });
+    
     if (!category) return null;
     
     return (
-        <div className="flex items-center gap-1 border px-3 py-1 rounded-full">
-            {category.imageURL && (
-                <img className="h-4 w-4 object-contain" src={category.imageURL} alt={category.name || ""} />
-            )}
-            <h4 className="text-xs font-semibold">{category.name}</h4>
-        </div>
+        <Link href={`/categories/${categoryId}`}>
+            <div className="flex items-center gap-1 border px-3 py-1 rounded-full">
+                {category.imageURL && (
+                    <img className="h-4 w-4 object-contain" src={category.imageURL} alt={category.name || ""} />
+                )}
+                <h4 className="text-xs font-semibold">{category.name}</h4>
+            </div>
+        </Link>
     );
 }
 
-function Brand({ brand }) {
+async function Brand({ brandId }) {
+    const brand = await getBrand({ id: brandId });
+    
     if (!brand) return null;
     
     return (
@@ -281,12 +292,14 @@ function Brand({ brand }) {
     );
 }
 
-function RatingReview({ reviewCounts }) {
+async function RatingReview({ product }) {
+    const counts = await getProductReviewCounts({ productId: product?.id });
+    
     return (
         <div className="flex gap-3 items-center">
-            <MyRating value={reviewCounts?.averageRating ?? 0} />
+            <MyRating value={counts?.averageRating ?? 0} />
             <h1 className="text-sm text-gray-400">
-                <span>{reviewCounts?.averageRating?.toFixed(1) || '0.0'}</span> ({reviewCounts?.totalReviews || 0})
+                <span>{counts?.averageRating?.toFixed(1) || '0.0'}</span> ({counts?.totalReviews || 0})
             </h1>
         </div>
     );

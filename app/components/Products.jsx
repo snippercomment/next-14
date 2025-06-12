@@ -77,15 +77,15 @@ export function ProductCard({ product }) {
     );
 }
 
-export async function RatingReview({ product }) {
-    const counts = await getProductReviewCounts({ productId: product?.id });
-    return (
-        <div className="flex gap-3 items-center">
-            <MyRating value={counts?.averageRating ?? 0} />
-            <h1 className="text-xs text-gray-400">
-                <span>{counts?.averageRating?.toFixed(1)}</span> ({counts?.totalReviews}
-                )
-            </h1>
-        </div>
-    );
+async function RatingReview({ product }) {
+  const counts = await getProductReviewCounts({ productId: product?.id });
+  return (
+    <div className="flex gap-3 items-center ">
+      <MyRating value={counts?.averageRating ?? 0} />
+      <h1 className="text-xs text-gray-400">
+        <span>{counts?.averageRating?.toFixed(1)}</span> ({counts?.totalReviews}
+        )
+      </h1>
+    </div>
+  );
 }

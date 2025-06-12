@@ -173,7 +173,23 @@ async function createOrderAndUpdateInventory(session, uid, checkoutId) {
     line_items: checkoutData.line_items || [],
     
     checkout: checkoutData,
-    payment: paymentData,
+    
+    // ✅ THÊM: Tạo cấu trúc payment nhỏ gọn cho aggregate
+    payment: {
+      id: checkoutId,
+      amount: session.amount_total,
+      amount_total: session.amount_total,
+      currency: session.currency || 'vnd',
+      status: 'succeeded',
+      payment_method: 'card',
+      payment_status: 'completed',
+      created_at: new Date().toISOString(),
+      metadata: {
+        checkoutId: checkoutId,
+        uid: uid,
+        payment_mode: 'prepaid',
+      }
+    },
     
     timestampCreate: admin.firestore.Timestamp.now(),
     created_at: new Date().toISOString(),
@@ -181,7 +197,7 @@ async function createOrderAndUpdateInventory(session, uid, checkoutId) {
 
   await orderRef.set(orderData);
 
-  // SỬA: Đảm bảo xóa cart và cập nhật inventory
+  // Cập nhật inventory và cart
   await updateInventoryAndCart(checkoutData.line_items, uid);
 }
 
@@ -191,7 +207,6 @@ async function updateInventoryAndCart(lineItems, uid) {
     return;
   }
 
-  // SỬA: Tạo danh sách productId từ line_items
   const productList = lineItems.map(item => ({
     productId: item?.price_data?.product_data?.metadata?.productId,
     quantity: item?.quantity || 1,
@@ -209,7 +224,7 @@ async function updateInventoryAndCart(lineItems, uid) {
   const productIds = productList.map(item => item.productId);
 
   try {
-    // SỬA: Cập nhật cart của user - xóa các sản phẩm đã mua
+    // Cập nhật cart của user - xóa các sản phẩm đã mua
     const userRef = adminDB.doc(`users/${uid}`);
     const userDoc = await userRef.get();
     const userData = userDoc.data();
@@ -218,7 +233,6 @@ async function updateInventoryAndCart(lineItems, uid) {
       console.log('Current cart before filter:', userData.carts);
       console.log('ProductIds to remove:', productIds);
       
-      // SỬA: Sử dụng id thay vì productId để so sánh
       const updatedCarts = userData.carts.filter(cartItem => {
         const shouldKeep = !productIds.includes(cartItem?.id?.toString()) && 
                           !productIds.includes(cartItem?.productId?.toString());
@@ -234,7 +248,7 @@ async function updateInventoryAndCart(lineItems, uid) {
       console.log('User has no cart items');
     }
 
-    // SỬA: Cập nhật inventory
+    // Cập nhật inventory
     const batch = adminDB.batch();
     productList.forEach(item => {
       if (item.productId) {
