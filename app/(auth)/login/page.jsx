@@ -115,10 +115,12 @@ function SignInWithGoogleComponent() {
     try {
       const credential = await signInWithPopup(auth, new GoogleAuthProvider());
       const user = credential.user;
+       
       await createUser({
         uid: user?.uid,
         displayName: user?.displayName,
         photoURL: user?.photoURL,
+        email: user?.email, 
       });
     } catch (error) {
       toast.error(error?.message);

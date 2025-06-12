@@ -38,6 +38,8 @@ export default function Page() {
         uid: user?.uid,
         displayName: data?.name,
         photoURL: user?.photoURL,
+        email: user?.email, 
+        
       });
       toast.success("Đăng ký thành công");
       router.push("/account");

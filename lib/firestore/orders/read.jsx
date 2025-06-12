@@ -24,7 +24,7 @@ export function useOrder({ id }) {
           if (snapshot.exists()) {
             next(null, snapshot.data());
           } else {
-            next(null, null); // Document không tồn tại
+            next(null, null); 
           }
         },
         (err) => next(err, null)
@@ -46,7 +46,7 @@ export function useOrder({ id }) {
 
 export function useOrders({ uid }) {
   const { data, error } = useSWRSubscription(
-    uid ? ["orders", uid] : null, // Chỉ chạy khi có uid
+    uid ? ["orders", uid] : null, 
     ([path, uid], { next }) => {
       const ref = query(
         collection(db, path),
