@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import {
     getProductCategoryInfo,
@@ -7,29 +7,23 @@ import {
 } from "@/app/admin/products/form/components/Colors";
 import AddToCartButton from "@/app/components/AddToCartButton";
 import FavoriteButton from "@/app/components/FavoriteButton";
-import MyRating from "@/app/components/MyRating";
 import AuthContextProvider from "@/contexts/AuthContext";
-import { getBrand } from "@/lib/firestore/brands/read_server";
-import { getCategory } from "@/lib/firestore/categories/read_server";
-import { getProductReviewCounts } from "@/lib/firestore/products/count/read";
+
 import Link from "next/link";
 import { Suspense, useState, useEffect } from "react";
 
-export default function Details({ product, brands, categories, reviewCounts }) {
+// Import các Server Components
+import { Brand, Category, RatingReview } from "./ProductInfo";
+
+export default function Details({ product, brands, categories }) {
     const [selectedStorage, setSelectedStorage] = useState("");
     const [selectedColor, setSelectedColor] = useState("");
 
-    // Lấy thông tin brand và category từ props đã được truyền xuống
     const selectedBrand = brands?.find(brand => brand.id === product?.brandId);
     const selectedCategory = categories?.find(category => category.id === product?.categoryId);
-
-    // Xác định loại sản phẩm
     const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
-
-    // Lấy thông tin cấu hình theo loại sản phẩm
     const categoryInfo = getProductCategoryInfo(productType);
 
-    // Lấy các màu sắc đã được chọn cho sản phẩm này
     const getSelectedColors = () => {
         if (Array.isArray(product?.colorIds) && product.colorIds.length > 0) {
             return product.colorIds.map(colorId => getColorById(colorId)).filter(Boolean);
@@ -37,47 +31,40 @@ export default function Details({ product, brands, categories, reviewCounts }) {
         return [];
     };
 
-    // Lấy các dung lượng đã được chọn cho sản phẩm này
     const getSelectedStorages = () => {
         const storageField = categoryInfo?.storageField;
         const storageData = product?.[storageField];
 
-        
-        if (Array.isArray(storageData) && storageData.length > 0) {
-            return storageData;
-        }
-        // Fallback cho field 'storages' cũ
-        else if (Array.isArray(product?.storages) && product.storages.length > 0) {
-            return product.storages;
-        }
-        // Fallback cho field 'specifications' cũ
-        else if (Array.isArray(product?.specifications) && product.specifications.length > 0) {
-            return product.specifications;
-        }
-        // Fallback cho single 'storage' field
-        else if (product?.storage) {
-            return [product.storage];
-        }
-
+        if (Array.isArray(storageData) && storageData.length > 0) return storageData;
+        else if (Array.isArray(product?.storages) && product.storages.length > 0) return product.storages;
+        else if (Array.isArray(product?.specifications) && product.specifications.length > 0) return product.specifications;
+        else if (product?.storage) return [product.storage];
         return [];
     };
 
     const availableColors = getSelectedColors();
     const storageOptions = getSelectedStorages();
 
-   
+    useEffect(() => {
+        if (storageOptions.length === 1 && !selectedStorage) setSelectedStorage(storageOptions[0]);
+        if (availableColors.length === 1 && !selectedColor) setSelectedColor(availableColors[0].id);
+    }, [storageOptions, availableColors, selectedStorage, selectedColor]);
 
     return (
         <div className="w-full flex flex-col gap-4">
             <div className="flex gap-3">
-                <Category categoryId={product?.categoryId} />
-                <Brand brandId={product?.brandId} />
+                <Suspense fallback="Loading" >
+                    <Category categoryId={product?.categoryId} />
+                </Suspense>
+                <Suspense fallback="Loading">
+                    <Brand brandId={product?.brandId} />
+                </Suspense>
             </div>
 
             <h1 className="font-semibold text-xl md:text-4xl">{product?.title}</h1>
 
             <Suspense fallback="Failed To Load">
-                <RatingReview product={product} />
+                <RatingReview productId={product?.id} />
             </Suspense>
 
             <h2 className="text-gray-600 text-sm line-clamp-3 md:line-clamp-4">
@@ -91,8 +78,7 @@ export default function Details({ product, brands, categories, reviewCounts }) {
                 </span>
             </h3>
 
-            {/* Phần hiển thị các tùy chọn dung lượng/cấu hình */}
-            {storageOptions && storageOptions.length > 0 && (
+            {storageOptions.length > 0 && (
                 <div className="flex flex-col gap-3">
                     <h4 className="font-semibold text-gray-800">Phiên bản - Dung lượng</h4>
                     <div className="flex flex-wrap gap-2">
@@ -113,8 +99,7 @@ export default function Details({ product, brands, categories, reviewCounts }) {
                 </div>
             )}
 
-            {/* Phần hiển thị các tùy chọn màu sắc */}
-            {availableColors && availableColors.length > 0 && (
+            {availableColors.length > 0 && (
                 <div className="flex flex-col gap-3">
                     <h4 className="font-semibold text-gray-800">Màu sắc</h4>
                     <div className="flex flex-wrap gap-3">
@@ -128,20 +113,17 @@ export default function Details({ product, brands, categories, reviewCounts }) {
                                         : 'border-gray-300 bg-white hover:border-gray-400'
                                 }`}
                             >
-                                {/* Icon màu sắc */}
                                 <div
                                     className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm flex-shrink-0"
                                     style={{ backgroundColor: color.hexColor || '#000000' }}
                                 ></div>
-                                
+
                                 <div className="flex flex-col items-start">
                                     <span className={`text-sm font-medium ${
                                         selectedColor === color.id ? 'text-blue-700' : 'text-gray-700'
                                     }`}>
                                         {color.title}
                                     </span>
-                                    
-                                    {/* Giá tiền */}
                                     <span className={`text-sm font-semibold ${
                                         selectedColor === color.id ? 'text-blue-600' : 'text-green-600'
                                     }`}>
@@ -154,7 +136,6 @@ export default function Details({ product, brands, categories, reviewCounts }) {
                 </div>
             )}
 
-            {/* Hiển thị lựa chọn hiện tại */}
             {(selectedStorage || selectedColor) && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h5 className="font-medium text-blue-800 mb-2">Lựa chọn của bạn:</h5>
@@ -178,10 +159,9 @@ export default function Details({ product, brands, categories, reviewCounts }) {
             )}
 
             <div className="flex flex-wrap items-center gap-4">
-                {/* Kiểm tra điều kiện trước khi cho phép mua */}
                 {(() => {
-                    const hasStorageOptions = storageOptions && storageOptions.length > 0;
-                    const hasColorOptions = availableColors && availableColors.length > 0;
+                    const hasStorageOptions = storageOptions.length > 0;
+                    const hasColorOptions = availableColors.length > 0;
                     const needsStorage = hasStorageOptions && !selectedStorage;
                     const needsColor = hasColorOptions && !selectedColor;
                     const canPurchase = !needsStorage && !needsColor;
@@ -198,39 +178,32 @@ export default function Details({ product, brands, categories, reviewCounts }) {
                         const missingSelections = [];
                         if (needsStorage) missingSelections.push('dung lượng');
                         if (needsColor) missingSelections.push('màu sắc');
-                        
+
                         return (
-                            <div className="relative">
-                                <button 
+                            <div className="relative group">
+                                <button
                                     className="bg-gray-400 text-white rounded-lg px-6 py-2.5 font-medium cursor-not-allowed"
                                     disabled
-                                    title={`Vui lòng chọn ${missingSelections.join(' và ')} để tiếp tục`}
                                 >
                                     Mua Ngay
                                 </button>
-                                <div className="absolute -bottom-8 left-0 text-xs text-red-500 whitespace-nowrap">
+                                <div className="absolute -bottom-8 left-0 text-xs text-red-500 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                                     Chọn {missingSelections.join(' và ')} để mua
                                 </div>
                             </div>
                         );
                     }
                 })()}
-                
+
                 <AuthContextProvider>
                     <AddToCartButton
-                        type={"lagre"}
+                        type={"large"}
                         productId={product?.id}
-                        selectedOptions={{
-                            storage: selectedStorage,
-                            color: selectedColor
-                        }}
-                        disabled={(() => {
-                            const hasStorageOptions = storageOptions && storageOptions.length > 0;
-                            const hasColorOptions = availableColors && availableColors.length > 0;
-                            const needsStorage = hasStorageOptions && !selectedStorage;
-                            const needsColor = hasColorOptions && !selectedColor;
-                            return needsStorage || needsColor;
-                        })()}
+                        selectedOptions={{ storage: selectedStorage, color: selectedColor }}
+                        disabled={
+                            (storageOptions.length > 0 && !selectedStorage) ||
+                            (availableColors.length > 0 && !selectedColor)
+                        }
                     />
                 </AuthContextProvider>
 
@@ -253,54 +226,6 @@ export default function Details({ product, brands, categories, reviewCounts }) {
                     dangerouslySetInnerHTML={{ __html: product?.description ?? "" }}
                 ></div>
             </div>
-        </div>
-    );
-}
-
-// Chuyển thành async components để fetch data từ server
-async function Category({ categoryId }) {
-    const category = await getCategory({ id: categoryId });
-    
-    if (!category) return null;
-    
-    return (
-        <Link href={`/categories/${categoryId}`}>
-            <div className="flex items-center gap-1 border px-3 py-1 rounded-full">
-                {category.imageURL && (
-                    <img className="h-4 w-4 object-contain" src={category.imageURL} alt={category.name || ""} />
-                )}
-                <h4 className="text-xs font-semibold">{category.name}</h4>
-            </div>
-        </Link>
-    );
-}
-
-async function Brand({ brandId }) {
-    const brand = await getBrand({ id: brandId });
-    
-    if (!brand) return null;
-    
-    return (
-        <div className="flex items-center gap-1 border px-3 py-1 rounded-full">
-            {brand.imageURL && (
-                <img className="h-4 w-4 object-contain" src={brand.imageURL} alt={brand.name || ""} />
-            )}
-            {brand.name && (
-                <h4 className="text-xs font-semibold">{brand.name}</h4>
-            )}
-        </div>
-    );
-}
-
-async function RatingReview({ product }) {
-    const counts = await getProductReviewCounts({ productId: product?.id });
-    
-    return (
-        <div className="flex gap-3 items-center">
-            <MyRating value={counts?.averageRating ?? 0} />
-            <h1 className="text-sm text-gray-400">
-                <span>{counts?.averageRating?.toFixed(1) || '0.0'}</span> ({counts?.totalReviews || 0})
-            </h1>
         </div>
     );
 }
