@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@nextui-org/react";
 import confetti from "canvas-confetti";
 import { CheckSquare2Icon, Square, ChevronDown } from "lucide-react";
+import Link from "next/link"; // Import Link từ Next.js
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -45,6 +46,7 @@ export default function Checkout({ productList }) {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMode, setPaymentMode] = useState("prepaid");
   const [address, setAddress] = useState({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false); // State cho checkbox điều khoản
   const { user } = useAuth();
   const router = useRouter();
 
@@ -62,6 +64,12 @@ export default function Checkout({ productList }) {
   }, 0);
 
   const handlePlaceOrder = async () => {
+    // Kiểm tra điều khoản trước khi đặt hàng
+    if (!acceptedTerms) {
+      toast.error("Vui lòng đồng ý với điều khoản và điều kiện");
+      return;
+    }
+
     try {
       setIsLoading(true);
 
@@ -114,6 +122,8 @@ export default function Checkout({ productList }) {
           setPaymentMode={setPaymentMode}
           isLoading={isLoading}
           totalPrice={totalPrice}
+          acceptedTerms={acceptedTerms}
+          setAcceptedTerms={setAcceptedTerms}
           onPlaceOrder={handlePlaceOrder}
         />
       </div>
@@ -225,7 +235,7 @@ function OrderSummary({ productList, totalPrice }) {
 }
 
 // Component con để quản lý phần thanh toán
-function PaymentSection({ paymentMode, setPaymentMode, isLoading, totalPrice, onPlaceOrder }) {
+function PaymentSection({ paymentMode, setPaymentMode, isLoading, totalPrice, acceptedTerms, setAcceptedTerms, onPlaceOrder }) {
   return (
     <section className="flex flex-col gap-3 border rounded-xl p-4">
       <h2 className="text-xl font-semibold">Phương thức thanh toán</h2>
@@ -252,22 +262,39 @@ function PaymentSection({ paymentMode, setPaymentMode, isLoading, totalPrice, on
         </button>
       ))}
 
-      <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
-        <CheckSquare2Icon size={16} className="text-blue-500" />
+      {/* Checkbox điều khoản có thể click */}
+      <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+        <button
+          onClick={() => setAcceptedTerms(!acceptedTerms)}
+          className="mt-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+        >
+          {acceptedTerms ? (
+            <CheckSquare2Icon size={16} className="text-blue-500" />
+          ) : (
+            <Square size={16} className="text-gray-400" />
+          )}
+        </button>
         <p className="text-sm text-gray-700">
           Tôi đồng ý với{" "}
-          <span className="text-blue-600 underline cursor-pointer hover:text-blue-800">
-            điều khoản và điều kiện
-          </span>{" "}
+          <Link 
+            href="/warranty"
+            className="text-blue-600 underline hover:text-blue-800 transition-colors"
+          >
+            điều khoản và bảo hành
+          </Link>{" "}
           của cửa hàng
         </p>
       </div>
 
       <Button
         isLoading={isLoading}
-        isDisabled={isLoading || totalPrice <= 0}
+        isDisabled={isLoading || totalPrice <= 0 || !acceptedTerms}
         onClick={onPlaceOrder}
-        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 text-base hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
+        className={`font-semibold py-3 text-base transition-all duration-200 ${
+          acceptedTerms 
+            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800" 
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        }`}
         size="lg"
       >
         {isLoading ? "Đang xử lý..." : `Đặt hàng • ${formatPrice(totalPrice)} đ`}

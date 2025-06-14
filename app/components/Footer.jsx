@@ -18,8 +18,7 @@ export default function Footer() {
                         <ul className="space-y-2 text-sm text-gray-300">
                             <li><a href="#" className="hover:text-white">Giới thiệu về công ty</a></li>
                             <li><a href="#" className="hover:text-white">Quy chế hoạt động</a></li>
-                            <li><a href="#" className="hover:text-white">Tin tức khuyến mại</a></li>
-                            <li><a href="#" className="hover:text-white">Hướng dẫn mua hàng & thanh toán online</a></li>
+                            <li><a href="/payonline" className="hover:text-white">Hướng dẫn mua hàng & thanh toán online</a></li>
                         </ul>
                     </div>
 
@@ -28,9 +27,9 @@ export default function Footer() {
                         <h3 className="font-semibold text-lg mb-4">CHÍNH SÁCH</h3>
                         <ul className="space-y-2 text-sm text-gray-300">
                             <li><a href="/warranty" className="hover:text-white">Chính sách bảo hành</a></li>
-                            <li><a href="#" className="hover:text-white">Chính sách đổi trả</a></li>
+                            <li><a href="/return" className="hover:text-white">Chính sách đổi trả</a></li>
                             <li><a href="#" className="hover:text-white">Chính sách bảo mật</a></li>
-                            <li><a href="#" className="hover:text-white">Chính sách mua hàng</a></li>
+                          
                         </ul>
                     </div>
 
