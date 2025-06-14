@@ -6,7 +6,7 @@ import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 import BrandProduct from "../../form/BrandProduct";
 import Sort from "../../form/Sort";
-import Search from "../../form/SearchBar";
+
 
 import Panigation from "../../form/Panigation";
 
@@ -54,16 +54,6 @@ export default function ProductPage() {
         if (selectedBrand) {
             filtered = filtered.filter(product => product.brandId === selectedBrand);
         }
-
-        // Filter by search query
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(product =>
-                product.title?.toLowerCase().includes(query) ||
-                product.shortDescription?.toLowerCase().includes(query)
-            );
-        }
-
         // Sort products
         switch (sortBy) {
             case 'newest':
@@ -129,11 +119,7 @@ export default function ProductPage() {
                                     Khám phá bộ sưu tập điện thoại mới nhất
                                 </p>
                             </div>
-                            <Search
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                                placeholder="Tìm kiếm điện thoại..."
-                            />
+                           
                         </div>
 
                         {/* Brand Filter */}

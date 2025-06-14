@@ -10,10 +10,6 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
     const pathname = usePathname();
     const router = useRouter();
 
-    // DEBUG: Log để kiểm tra
-    console.log('Current pathname:', pathname);
-    console.log('All brands:', brands);
-
     // Xác định category dựa trên pathname
     const getCurrentCategory = () => {
         if (pathname.includes('/iphone')) return 'iphone';
@@ -24,7 +20,6 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
     };
 
     const currentCategory = getCurrentCategory();
-    console.log('Current category:', currentCategory);
 
     // Lọc brands theo category hiện tại
     const filteredBrands = brands?.filter(brand => {
@@ -33,35 +28,9 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
         return brand.category === currentCategory;
     }) || [];
 
-    console.log('Filtered brands:', filteredBrands);
+    
 
-    // Fallback emoji cho trường hợp không có ảnh
-    const fallbackLogos = {
-        // iPhone brands
-        'Apple': '🍎',
-        'iPhone': '🍎',
-
-        // Laptop brands
-        'Dell': '💻',
-        'HP': '🖥️',
-        'Lenovo': '⚡',
-        'Asus': '🎮',
-        'Acer': '💻',
-        'MSI': '🎮',
-        'MacBook': '🍎',
-        'Thinkpad': '🖤',
-
-        // Accessory brands
-        'Anker': '🔌',
-        'Belkin': '🔌',
-        'Logitech': '🖱️',
-        'SanDisk': '💾',
-        'Samsung': '📱',
-        'Xiaomi': '🔥',
-        'Ugreen': '🔌',
-        'Baseus': '⚡'
-    };
-
+    
     // Handle brand click - navigate đến trang brand
     const handleBrandClick = (brandId, brandName) => {
         // Navigate đến trang brand với URL parameter
@@ -124,7 +93,7 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
                         />
                     ) : (
                         <span className="text-lg">
-                            {fallbackLogos[brand.name] || '🏷️'}
+                            {fallbackLogos[brand.name] || ''}
                         </span>
                     )}
 

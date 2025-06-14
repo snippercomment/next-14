@@ -16,10 +16,7 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
         { value: 'price_high', label: 'Giá cao đến thấp' },
         { value: 'name_asc', label: 'Tên A-Z' },
         { value: 'name_desc', label: 'Tên Z-A' },
-        { value: 'stock_high', label: 'Số lượng nhiều nhất' },
-        { value: 'stock_low', label: 'Số lượng ít nhất' },
-        { value: 'orders_high', label: 'Đơn hàng nhiều nhất' },
-        { value: 'orders_low', label: 'Đơn hàng ít nhất' },
+        
     ];
 
     const itemsOptions = [
@@ -27,7 +24,7 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
         { value: 5, label: '5 Sản phẩm' },
         { value: 10, label: '10 Sản phẩm' },
         { value: 20, label: '20 Sản phẩm' },
-        { value: 100, label: '100 Sản phẩm' },
+       
     ];
 
     // Xử lý click outside để đóng dropdown
@@ -88,30 +85,7 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
                         ignorePunctuation: true
                     });
 
-                case 'stock_high':
-                    // Sắp xếp số lượng từ nhiều đến ít
-                    const stockA = parseInt(a.stock) || 0;
-                    const stockB = parseInt(b.stock) || 0;
-                    return stockB - stockA;
-
-                case 'stock_low':
-                    // Sắp xếp số lượng từ ít đến nhiều
-                    const stockA2 = parseInt(a.stock) || 0;
-                    const stockB2 = parseInt(b.stock) || 0;
-                    return stockA2 - stockB2;
-
-                case 'orders_high':
-                    // Sắp xếp đơn hàng từ nhiều đến ít
-                    const ordersA = parseInt(a.orders) || 0;
-                    const ordersB = parseInt(b.orders) || 0;
-                    return ordersB - ordersA;
-
-                case 'orders_low':
-                    // Sắp xếp đơn hàng từ ít đến nhiều
-                    const ordersA2 = parseInt(a.orders) || 0;
-                    const ordersB2 = parseInt(b.orders) || 0;
-                    return ordersA2 - ordersB2;
-
+               
                 default:
                     return 0;
             }
@@ -121,10 +95,8 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
     };
 
     // Xử lý chọn sort option
-    const handleSortSelect = (value) => {
-        console.log('Selected sort:', value); // Debug log
+    const handleSortSelect = (value) => {     
         onSortChange(value);
-
         // Thực hiện sắp xếp dữ liệu
         if (data && onDataSorted) {
             const sortedData = sortData(data, value);
@@ -136,7 +108,6 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
 
     // Xử lý chọn items per page
     const handleItemsSelect = (value) => {
-        console.log('Selected items per page:', value); // Debug log
         onItemsPerPageChange(value);
         setShowItemsDropdown(false);
     };
@@ -147,7 +118,7 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
             const sortedData = sortData(data, sortBy);
             onDataSorted(sortedData);
         }
-    }, [data]); // Chỉ chạy khi data thay đổi, không phụ thuộc vào sortBy để tránh loop
+    }, [data]); 
 
     // Tìm label hiện tại
     const currentSortLabel = sortOptions.find(opt => opt.value === sortBy)?.label || 'Giá thấp đến cao';

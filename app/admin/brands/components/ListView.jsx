@@ -102,13 +102,7 @@ export default function ListView() {
                         Tổng cộng: {filteredBrands.length} thương hiệu
                     </p>
                 </div>
-                <Button
-                    startContent={<Plus size={16} />}
-                    className="bg-blue-600 text-white hover:bg-blue-700"
-                    onPress={() => router.push("/admin/brands")}
-                >
-                    Thêm thương hiệu
-                </Button>
+                
             </div>
 
             {/* Bộ lọc */}

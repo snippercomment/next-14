@@ -6,14 +6,14 @@ import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 import BrandProduct from "../../form/BrandProduct";
 import Sort from "../../form/Sort";
-import Search from "../../form/SearchBar";
+
 
 import Panigation from "../../form/Panigation";
 
 export default function ProductPage() {
     // State management
     const [selectedBrand, setSelectedBrand] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
+    
     const [sortBy, setSortBy] = useState('newest');
     const [itemsPerPage, setItemsPerPage] = useState(12);
     const [currentPage, setCurrentPage] = useState(1);
@@ -129,11 +129,7 @@ export default function ProductPage() {
                                     Khám phá bộ sưu tập điện thoại mới nhất
                                 </p>
                             </div>
-                            <Search
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                                placeholder="Tìm kiếm điện thoại..."
-                            />
+                            
                         </div>
 
                         {/* Brand Filter */}
