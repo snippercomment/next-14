@@ -77,35 +77,35 @@ export const phoneColors = [
         name: "Titan Đen",
         title: "iPhone Pro Titan Đen",
         hexColor: "#2C2C2C",
-        category: "iphone-pro"
+        category: "iphone"
     },
     {
         id: "titan-white",
         name: "Titan Trắng",
         title: "iPhone Pro Titan Trắng",
         hexColor: "#F8F8FF",
-        category: "iphone-pro"
+        category: "iphone"
     },
     {
         id: "titan-natural",
         name: "Titan Tự Nhiên",
         title: "iPhone Pro Titan Tự Nhiên",
         hexColor: "#D2B48C",
-        category: "iphone-pro"
+        category: "iphone"
     },
     {
         id: "titan-blue",
         name: "Titan Xanh",
         title: "iPhone Pro Titan Xanh",
         hexColor: "#4682B4",
-        category: "iphone-pro"
+        category: "iphone"
     },
     {
         id: "titan-desert",
         name: "Titan Sa Mạc",
         title: "iPhone Pro Titan Sa Mạc",
         hexColor: "#DAA520",
-        category: "iphone-pro"
+        category: "iphone"
     },
 
     // Samsung Colors
@@ -159,6 +159,52 @@ export const phoneColors = [
         category: "samsung"
     },
 
+    // Vivo Colors
+    {
+        id: "vivo-cosmic-black",
+        name: "Đen Vũ Trụ",
+        title: "Vivo Đen Vũ Trụ",
+        hexColor: "#000000",
+        category: "vivo"
+    },
+    {
+        id: "vivo-sunset-gold",
+        name: "Vàng Hoàng Hôn",
+        title: "Vivo Vàng Hoàng Hôn",
+        hexColor: "#FFD700",
+        category: "vivo"
+    },
+    {
+        id: "vivo-aurora-blue",
+        name: "Xanh Cực Quang",
+        title: "Vivo Xanh Cực Quang",
+        hexColor: "#4169E1",
+        category: "vivo"
+    },
+
+    // OPPO Colors
+    {
+        id: "oppo-glowing-black",
+        name: "Đen Phát Sáng",
+        title: "OPPO Đen Phát Sáng",
+        hexColor: "#000000",
+        category: "oppo"
+    },
+    {
+        id: "oppo-glowing-gold",
+        name: "Vàng Phát Sáng",
+        title: "OPPO Vàng Phát Sáng",
+        hexColor: "#FFD700",
+        category: "oppo"
+    },
+    {
+        id: "oppo-aurora-green",
+        name: "Xanh Cực Quang",
+        title: "OPPO Xanh Cực Quang",
+        hexColor: "#00FF7F",
+        category: "oppo"
+    },
+
     // Xiaomi Colors
     {
         id: "xiaomi-midnight-black",
@@ -189,53 +235,7 @@ export const phoneColors = [
         category: "xiaomi"
     },
 
-    // Oppo Colors
-    {
-        id: "oppo-glowing-black",
-        name: "Đen Phát Sáng",
-        title: "OPPO Đen Phát Sáng",
-        hexColor: "#000000",
-        category: "oppo"
-    },
-    {
-        id: "oppo-glowing-gold",
-        name: "Vàng Phát Sáng",
-        title: "OPPO Vàng Phát Sáng",
-        hexColor: "#FFD700",
-        category: "oppo"
-    },
-    {
-        id: "oppo-aurora-green",
-        name: "Xanh Cực Quang",
-        title: "OPPO Xanh Cực Quang",
-        hexColor: "#00FF7F",
-        category: "oppo"
-    },
-
-    // Vivo Colors
-    {
-        id: "vivo-cosmic-black",
-        name: "Đen Vũ Trụ",
-        title: "Vivo Đen Vũ Trụ",
-        hexColor: "#000000",
-        category: "vivo"
-    },
-    {
-        id: "vivo-sunset-gold",
-        name: "Vàng Hoàng Hôn",
-        title: "Vivo Vàng Hoàng Hôn",
-        hexColor: "#FFD700",
-        category: "vivo"
-    },
-    {
-        id: "vivo-aurora-blue",
-        name: "Xanh Cực Quang",
-        title: "Vivo Xanh Cực Quang",
-        hexColor: "#4169E1",
-        category: "vivo"
-    },
-
-    // MacBook Colors laptop
+    // MacBook Colors
     {
         id: "macbook-space-gray",
         name: "Xám Không Gian",
@@ -309,6 +309,29 @@ export const phoneColors = [
         category: "asus"
     },
 
+    // Lenovo Laptop Colors
+    {
+        id: "lenovo-gray",
+        name: "Xám",
+        title: "Lenovo Xám",
+        hexColor: "#808080",
+        category: "lenovo"
+    },
+    {
+        id: "lenovo-silver",
+        name: "Bạc",
+        title: "Lenovo Bạc",
+        hexColor: "#C0C0C0",
+        category: "lenovo"
+    },
+    {
+        id: "lenovo-black",
+        name: "Đen",
+        title: "Lenovo Đen",
+        hexColor: "#000000",
+        category: "lenovo"
+    },
+
     // Dell Laptop Colors
     {
         id: "dell-platinum-silver",
@@ -375,22 +398,24 @@ export const phoneColors = [
         hexColor: "#355E3B",
         category: "hp"
     },
-    // lenovo
+
+    // MSI Laptop Colors
     {
-        id: "lenovo-gray",
-        name: "Xám",
-        title: "Lenovo Xám",
-        hexColor: "#808080",
-        category: "lenovo"
+        id: "msi-black",
+        name: "Đen",
+        title: "MSI Đen",
+        hexColor: "#000000",
+        category: "msi"
     },
     {
-        id: "lenovo-silver",
+        id: "msi-silver",
         name: "Bạc",
-        title: "Lenovo Bạc",
+        title: "MSI Bạc",
         hexColor: "#C0C0C0",
-        category: "lenovo"
+        category: "msi"
     },
-    // acer
+
+    // Acer Laptop Colors
     {
         id: "acer-gray",
         name: "Xám",
@@ -412,55 +437,45 @@ export const phoneColors = [
         hexColor: "#000000",
         category: "acer"
     },
-    // MSI
-    {
-        id: "msi-black",
-        name: "Đen",
-        title: "MSI Đen",
-        hexColor: "#000000",
-        category: "msi"
-    },
-    {
-        id: "msi-silver",
-        name: "Xám",
-        title: "MSI Xám",
-        hexColor: "#808080",
-        category: "msi"
-    },
 
-
-    // Headphone Colors
+    // Gaming Headphone Colors
     {
-        id: "headphone-black",
+        id: "gaming-headphone-black",
         name: "Đen",
-        title: "Tai Nghe Đen",
+        title: "Tai Nghe Gaming Đen",
         hexColor: "#000000",
-        category: "headphone"
+        category: "gaming"
     },
     {
-        id: "headphone-white",
+        id: "gaming-headphone-white",
         name: "Trắng",
-        title: "Tai Nghe Trắng",
+        title: "Tai Nghe Gaming Trắng",
         hexColor: "#FFFFFF",
-        category: "headphone"
+        category: "gaming"
     },
     {
-        id: "headphone-silver",
-        name: "Bạc",
-        title: "Tai Nghe Bạc",
-        hexColor: "#C0C0C0",
-        category: "headphone"
+        id: "gaming-headphone-red",
+        name: "Đỏ",
+        title: "Tai Nghe Gaming Đỏ",
+        hexColor: "#FF0000",
+        category: "gaming"
     },
-
     {
-        id: "headphone-blue",
+        id: "gaming-headphone-blue",
         name: "Xanh Dương",
-        title: "Tai Nghe Xanh Dương",
+        title: "Tai Nghe Gaming Xanh Dương",
         hexColor: "#0000FF",
-        category: "headphone"
+        category: "gaming"
+    },
+    {
+        id: "gaming-headphone-rgb",
+        name: "RGB",
+        title: "Tai Nghe Gaming RGB",
+        hexColor: "#FF00FF",
+        category: "gaming"
     },
 
-    // Logitech
+    // Logitech Mouse Colors
     {
         id: "logitech-black",
         name: "Đen",
@@ -489,7 +504,8 @@ export const phoneColors = [
         hexColor: "#0000FF",
         category: "logitech"
     },
-    // Hyper
+
+    // Hyper Mouse Colors
     {
         id: "hyper-black",
         name: "Đen",
@@ -511,7 +527,8 @@ export const phoneColors = [
         hexColor: "#0000FF",
         category: "hyper"
     },
-    // Razer
+
+    // Razer Mouse Colors
     {
         id: "razer-black",
         name: "Đen",
@@ -527,17 +544,33 @@ export const phoneColors = [
         category: "razer"
     },
     {
-        id: "razer-blue",
-        name: "Xanh Dương",
-        title: "Razer Xanh Dương",
-        hexColor: "#0000FF",
+        id: "razer-green",
+        name: "Xanh Lá",
+        title: "Razer Xanh Lá",
+        hexColor: "#00FF41",
+        category: "razer"
     },
-    // Corsair
+
+    // Corsair Mouse Colors
     {
         id: "corsair-black",
         name: "Đen",
         title: "Corsair Đen",
         hexColor: "#000000",
+        category: "corsair"
+    },
+    {
+        id: "corsair-white",
+        name: "Trắng",
+        title: "Corsair Trắng",
+        hexColor: "#FFFFFF",
+        category: "corsair"
+    },
+    {
+        id: "corsair-rgb",
+        name: "RGB",
+        title: "Corsair RGB",
+        hexColor: "#FF00FF",
         category: "corsair"
     }
 ];
@@ -564,6 +597,9 @@ export const laptopSpecOptions = [
     "M2 8-Core CPU - 10-Core GPU 16GB - 512GB SSD",
     "M2 8-Core CPU - 10-Core GPU 24GB - 1TB SSD",
     "M2 Pro 10-Core CPU - 16-Core GPU 16GB - 512GB SSD",
+    "M2 Pro 10-Core CPU - 10-COre GPU 24TB-1TB SSD",
+    "M2 Pro 10-Core CPU - 10-COre GPU 24TB-512 SSD",
+    "M2 Pro 10-Core CPU - 10-COre GPU 16TB-1TB SSD",
     "M2 Pro 12-Core CPU - 19-Core GPU 16GB - 1TB SSD",
     "M2 Max 12-Core CPU - 30-Core GPU 32GB - 1TB SSD",
     "M2 Max 12-Core CPU - 38-Core GPU 64GB - 2TB SSD",
@@ -599,7 +635,9 @@ export const headphoneSpecOptions = [
     "USB-C - 20Hz-40kHz",
     "Wireless 2.4GHz - 20Hz-20kHz",
     "Noise Canceling - 20Hz-20kHz",
-    "Hi-Res Audio - 40kHz"
+    "Hi-Res Audio - 40kHz",
+    "Gaming RGB - 7.1 Surround Sound",
+    "Pro Gaming - 50mm Drivers"
 ];
 
 // Mouse specifications  
@@ -615,7 +653,7 @@ export const mouseSpecOptions = [
     "Gaming RGB - 25600 DPI"
 ];
 
-// Product categories mapping - TÁCH RIÊNG TAI NGHE VÀ CHUỘT
+// Product categories mapping
 export const productCategories = {
     phone: {
         name: "Điện thoại",
@@ -649,9 +687,10 @@ export const getColorsByCategory = (category) => {
 };
 
 export const getColorsByProductType = (productType) => {
-    const phoneCategories = ["iphone", "iphone-pro", "samsung", "xiaomi", "oppo", "vivo", "acer", "msi", "lenovo"];
-    const laptopCategories = ["macbook", "asus", "dell", "hp", "acer", "msi", "lenovo"];
-    const headphoneCategories = ["headphone"];
+    // Updated category mappings based on your requirements
+    const phoneCategories = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
+    const laptopCategories = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer"];
+    const headphoneCategories = ["gaming"];
     const mouseCategories = ["logitech", "hyper", "razer", "corsair"];
 
     switch (productType) {
@@ -684,18 +723,15 @@ export const getColorById = (id) => {
     return phoneColors.find(color => color.id === id);
 };
 
-// Detect product type from brand/category - TÁCH RIÊNG TAI NGHE VÀ CHUỘT
+// Updated product type detection logic
 export const detectProductType = (brandName, categoryName) => {
-    const phoneKeywords = ["iphone", "samsung", "xiaomi", "oppo", "vivo", "phone", "điện thoại", "acer", "msi", "lenovo"];
-    const laptopKeywords = ["macbook", "asus", "dell", "hp", "laptop", "máy tính", "acer", "msi", "lenovo"];
-    const headphoneKeywords = ["headphone", "tai nghe", "airpods", "earbuds"];
-    const mouseKeywords = ["mouse", "chuột", "logitech", "hyper", "razer", "corsair"];
+    const phoneKeywords = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
+    const laptopKeywords = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer", "laptop", "máy tính"];
+    const headphoneKeywords = ["gaming", "headphone", "tai nghe", "âm thanh", "audio"];
+    const mouseKeywords = ["logitech", "hyper", "razer", "corsair", "mouse", "chuột"];
 
     const searchText = `${brandName || ""} ${categoryName || ""}`.toLowerCase();
 
-    if (phoneKeywords.some(keyword => searchText.includes(keyword))) {
-        return "phone";
-    }
     if (laptopKeywords.some(keyword => searchText.includes(keyword))) {
         return "laptop";
     }
@@ -705,6 +741,8 @@ export const detectProductType = (brandName, categoryName) => {
     if (mouseKeywords.some(keyword => searchText.includes(keyword))) {
         return "mouse";
     }
+    if (phoneKeywords.some(keyword => searchText.includes(keyword))) {
+        return "phone";
+    }
 
-    return "phone"; // default
 };

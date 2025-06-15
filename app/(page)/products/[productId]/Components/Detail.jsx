@@ -18,6 +18,7 @@ import { Brand, Category, RatingReview } from "./ProductInfo";
 export default function Details({ product, brands, categories }) {
     const [selectedStorage, setSelectedStorage] = useState("");
     const [selectedColor, setSelectedColor] = useState("");
+    const [showFullDescription, setShowFullDescription] = useState(false);
 
     const selectedBrand = brands?.find(brand => brand.id === product?.brandId);
     const selectedCategory = categories?.find(category => category.id === product?.categoryId);
@@ -220,11 +221,164 @@ export default function Details({ product, brands, categories }) {
                 </div>
             )}
 
-            <div className="flex flex-col gap-2 py-2">
-                <div
-                    className="text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: product?.description ?? "" }}
-                ></div>
+            {/* Phần mô tả sản phẩm chi tiết */}
+            <div className="border-t pt-6 mt-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">Mô tả sản phẩm</h3>
+                
+                {product?.description ? (
+                    <div className="bg-gray-50 rounded-lg p-6">
+                        <div
+                            className={`text-gray-700 leading-relaxed prose prose-sm max-w-none ${
+                                !showFullDescription ? 'line-clamp-6' : ''
+                            }`}
+                            dangerouslySetInnerHTML={{ __html: product.description }}
+                        />
+                        
+                        {/* Nút xem thêm/thu gọn */}
+                        <button
+                            onClick={() => setShowFullDescription(!showFullDescription)}
+                            className="mt-4 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                        >
+                            {showFullDescription ? 'Thu gọn' : 'Xem thêm'}
+                        </button>
+                    </div>
+                ) : (
+                    /* Nếu không có mô tả chi tiết, hiển thị thông tin cơ bản */
+                    <div className="bg-gray-50 rounded-lg p-6">
+                        <div className="text-gray-700 leading-relaxed">
+                            <p className="mb-4 text-base">{product?.shortDescription}</p>
+                            
+                            {/* Hiển thị thông số kỹ thuật từ các trường có sẵn */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                <h4 className="col-span-full font-semibold text-gray-800 text-lg mb-2">
+                                    Thông số kỹ thuật
+                                </h4>
+                                
+                                {selectedBrand && (
+                                    <div className="flex justify-between py-2 border-b border-gray-200">
+                                        <span className="font-medium text-gray-600">Thương hiệu:</span>
+                                        <span className="text-gray-800 font-medium">{selectedBrand.name}</span>
+                                    </div>
+                                )}
+                                
+                                {selectedCategory && (
+                                    <div className="flex justify-between py-2 border-b border-gray-200">
+                                        <span className="font-medium text-gray-600">Danh mục:</span>
+                                        <span className="text-gray-800 font-medium">{selectedCategory.name}</span>
+                                    </div>
+                                )}
+                                
+                                {storageOptions.length > 0 && (
+                                    <div className="flex justify-between py-2 border-b border-gray-200">
+                                        <span className="font-medium text-gray-600">
+                                            {categoryInfo?.storageLabel || 'Dung lượng'}:
+                                        </span>
+                                        <span className="text-gray-800 font-medium">
+                                            {storageOptions.join(', ')}
+                                        </span>
+                                    </div>
+                                )}
+                                
+                                {availableColors.length > 0 && (
+                                    <div className="flex justify-between py-2 border-b border-gray-200">
+                                        <span className="font-medium text-gray-600">Màu sắc:</span>
+                                        <div className="flex gap-2">
+                                            {availableColors.map((color, index) => (
+                                                <div key={color.id} className="flex items-center gap-1">
+                                                    <div
+                                                        className="w-4 h-4 rounded-full border border-gray-300"
+                                                        style={{ backgroundColor: color.hexColor || '#000000' }}
+                                                    />
+                                                    <span className="text-gray-800 text-sm font-medium">
+                                                        {color.title}
+                                                        {index < availableColors.length - 1 && ','}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {product?.weight && (
+                                    <div className="flex justify-between py-2 border-b border-gray-200">
+                                        <span className="font-medium text-gray-600">Trọng lượng:</span>
+                                        <span className="text-gray-800 font-medium">{product.weight}</span>
+                                    </div>
+                                )}
+                                
+                                {product?.dimensions && (
+                                    <div className="flex justify-between py-2 border-b border-gray-200">
+                                        <span className="font-medium text-gray-600">Kích thước:</span>
+                                        <span className="text-gray-800 font-medium">{product.dimensions}</span>
+                                    </div>
+                                )}
+                                
+                                {product?.warranty && (
+                                    <div className="flex justify-between py-2 border-b border-gray-200">
+                                        <span className="font-medium text-gray-600">Bảo hành:</span>
+                                        <span className="text-gray-800 font-medium">{product.warranty}</span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Thông tin bổ sung */}
+                            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                                <h5 className="font-semibold text-blue-800 mb-2">Thông tin bổ sung</h5>
+                                <ul className="text-sm text-blue-700 space-y-1">
+                                    <li>• Sản phẩm chính hãng, đầy đủ phụ kiện từ nhà sản xuất</li>
+                                    <li>• Hỗ trợ trả góp 0% lãi suất</li>
+                                    <li>• Giao hàng nhanh toàn quốc</li>
+                                    <li>• Hỗ trợ kỹ thuật 24/7</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Thông tin vận chuyển và chính sách */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h5 className="font-semibold text-green-800">Miễn phí vận chuyển</h5>
+                    </div>
+                    <p className="text-sm text-green-700">
+                        Giao hàng miễn phí cho đơn hàng trên 500,000đ
+                    </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h5 className="font-semibold text-blue-800">Đổi trả dễ dàng</h5>
+                    </div>
+                    <p className="text-sm text-blue-700">
+                        Đổi trả trong vòng 7 ngày nếu có lỗi từ nhà sản xuất
+                    </p>
+                </div>
+
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m4-6V7a2 2 0 00-2-2H8a2 2 0 00-2 2v2" />
+                            </svg>
+                        </div>
+                        <h5 className="font-semibold text-orange-800">Bảo hành chính hãng</h5>
+                    </div>
+                    <p className="text-sm text-orange-700">
+                        Bảo hành chính hãng theo quy định của nhà sản xuất
+                    </p>
+                </div>
             </div>
         </div>
     );

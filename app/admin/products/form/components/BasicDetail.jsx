@@ -3,13 +3,12 @@
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 import {
-    phoneColors,
     getColorsByProductType,
     getStorageOptionsByProductType,
     getProductCategoryInfo,
     detectProductType,
     getColorById
-} from "./colors"; // Import từ file colors.js đã cập nhật
+} from "./colors"; 
 
 // Định nghĩa các danh mục thương hiệu - đồng bộ với form thương hiệu
 const BRAND_CATEGORIES = {
