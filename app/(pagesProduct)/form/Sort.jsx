@@ -16,16 +16,9 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
         { value: 'price_high', label: 'Giá cao đến thấp' },
         { value: 'name_asc', label: 'Tên A-Z' },
         { value: 'name_desc', label: 'Tên Z-A' },
-        
     ];
 
-    const itemsOptions = [
-        { value: 3, label: '3 Sản phẩm' },
-        { value: 5, label: '5 Sản phẩm' },
-        { value: 10, label: '10 Sản phẩm' },
-        { value: 20, label: '20 Sản phẩm' },
-       
-    ];
+   
 
     // Xử lý click outside để đóng dropdown
     useEffect(() => {
@@ -47,28 +40,28 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
         };
     }, [showSortDropdown, showItemsDropdown]);
 
-    // Logic sắp xếp dữ liệu - CẬP NHẬT cho cấu trúc dữ liệu admin
+    // Logic sắp xếp dữ liệu - CẬP NHẬT dựa trên cấu trúc dữ liệu thực tế
     const sortData = (data, sortType) => {
         if (!data || !Array.isArray(data)) return [];
 
         const sortedData = [...data].sort((a, b) => {
             switch (sortType) {
                 case 'price_low':
-                    // Sắp xếp theo salePrice (giá bán thực tế) từ thấp đến cao
-                    const salePriceA = parseFloat(a.salePrice) || 0;
-                    const salePriceB = parseFloat(b.salePrice) || 0;
-                    return salePriceA - salePriceB;
+                    // Ưu tiên salePrice nếu có, không thì dùng price
+                    const priceA = parseFloat(a.salePrice) || parseFloat(a.price) || 0;
+                    const priceB = parseFloat(b.salePrice) || parseFloat(b.price) || 0;
+                    return priceA - priceB;
 
                 case 'price_high':
-                    // Sắp xếp theo salePrice (giá bán thực tế) từ cao đến thấp
-                    const salePriceA2 = parseFloat(a.salePrice) || 0;
-                    const salePriceB2 = parseFloat(b.salePrice) || 0;
-                    return salePriceB2 - salePriceA2;
+                    // Ưu tiên salePrice nếu có, không thì dùng price
+                    const priceA2 = parseFloat(a.salePrice) || parseFloat(a.price) || 0;
+                    const priceB2 = parseFloat(b.salePrice) || parseFloat(b.price) || 0;
+                    return priceB2 - priceA2;
 
                 case 'name_asc':
                     // Sắp xếp tên A-Z (sử dụng trường title)
-                    const titleA = (a.title || '').toLowerCase();
-                    const titleB = (b.title || '').toLowerCase();
+                    const titleA = (a.title || '').toString().toLowerCase().trim();
+                    const titleB = (b.title || '').toString().toLowerCase().trim();
                     return titleA.localeCompare(titleB, 'vi', {
                         sensitivity: 'base',
                         numeric: true,
@@ -77,15 +70,14 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
 
                 case 'name_desc':
                     // Sắp xếp tên Z-A (sử dụng trường title)
-                    const titleA2 = (a.title || '').toLowerCase();
-                    const titleB2 = (b.title || '').toLowerCase();
+                    const titleA2 = (a.title || '').toString().toLowerCase().trim();
+                    const titleB2 = (b.title || '').toString().toLowerCase().trim();
                     return titleB2.localeCompare(titleA2, 'vi', {
                         sensitivity: 'base',
                         numeric: true,
                         ignorePunctuation: true
                     });
 
-               
                 default:
                     return 0;
             }
@@ -122,7 +114,7 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
 
     // Tìm label hiện tại
     const currentSortLabel = sortOptions.find(opt => opt.value === sortBy)?.label || 'Giá thấp đến cao';
-    const currentItemsLabel = itemsOptions.find(opt => opt.value === itemsPerPage)?.label || '10 Sản phẩm';
+
 
     return (
         <div className="flex gap-4 items-center flex-wrap">
@@ -162,16 +154,7 @@ export default function Sort({ sortBy, onSortChange, itemsPerPage, onItemsPerPag
 
             {/* Items per page Dropdown */}
             <div className="relative" ref={itemsRef}>
-                <button
-                    onClick={() => {
-                        setShowItemsDropdown(!showItemsDropdown);
-                        setShowSortDropdown(false); // Đóng dropdown kia
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]"
-                >
-                    <span className="text-sm font-medium text-gray-700">{currentItemsLabel}</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform text-gray-500 flex-shrink-0 ${showItemsDropdown ? 'rotate-180' : ''}`} />
-                </button>
+               
 
                 {showItemsDropdown && (
                     <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 min-w-[140px]">

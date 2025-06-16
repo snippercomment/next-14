@@ -438,42 +438,29 @@ export const phoneColors = [
         category: "acer"
     },
 
-    // Gaming Headphone Colors
+    // Sony Headphone Colors
     {
-        id: "gaming-headphone-black",
+        id: "sony-headphone-black",
         name: "Đen",
-        title: "Tai Nghe Gaming Đen",
+        title: "Tai Nghe Sony Đen",
         hexColor: "#000000",
-        category: "gaming"
+        category: "sony"
     },
     {
-        id: "gaming-headphone-white",
+        id: "sony-headphone-white",
         name: "Trắng",
-        title: "Tai Nghe Gaming Trắng",
+        title: "Tai Nghe Sony Trắng",
         hexColor: "#FFFFFF",
-        category: "gaming"
+        category: "sony"
     },
     {
-        id: "gaming-headphone-red",
+        id: "sony-headphone-red",
         name: "Đỏ",
-        title: "Tai Nghe Gaming Đỏ",
+        title: "Tai Nghe Sony Đỏ",
         hexColor: "#FF0000",
-        category: "gaming"
+        category: "sony"
     },
-    {
-        id: "gaming-headphone-blue",
-        name: "Xanh Dương",
-        title: "Tai Nghe Gaming Xanh Dương",
-        hexColor: "#0000FF",
-        category: "gaming"
-    },
-    {
-        id: "gaming-headphone-rgb",
-        name: "RGB",
-        title: "Tai Nghe Gaming RGB",
-        hexColor: "#FF00FF",
-        category: "gaming"
-    },
+   
 
     // Logitech Mouse Colors
     {
@@ -504,6 +491,15 @@ export const phoneColors = [
         hexColor: "#0000FF",
         category: "logitech"
     },
+    {
+        id: "logitech-pink",
+        name:"Hồng",
+        title:"Logitech Hồng",
+        hexColor:"#ffc0cb",
+        category:"logitech"
+
+    }
+    ,
 
     // Hyper Mouse Colors
     {
@@ -770,9 +766,9 @@ export const getColorsByCategory = (category) => {
 export const getColorsByProductType = (productType) => {
     // Updated category mappings based on your requirements
     const phoneCategories = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
-    const laptopCategories = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer"];
-    const headphoneCategories = ["gaming"];
-    const mouseCategories = ["logitech", "hyper", "razer", "corsair"];
+    const laptopCategories = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer",];
+    const headphoneCategories = ["sony"];
+    const mouseCategories = ["logitech", "hyper", "razer", "corsair","gaming"];
 
     switch (productType) {
         case "phone":
@@ -808,8 +804,8 @@ export const getColorById = (id) => {
 export const detectProductType = (brandName, categoryName) => {
     const phoneKeywords = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
     const laptopKeywords = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer", "laptop", "máy tính"];
-    const headphoneKeywords = ["gaming", "headphone", "tai nghe", "âm thanh", "audio"];
-    const mouseKeywords = ["logitech", "hyper", "razer", "corsair", "mouse", "chuột"];
+    const headphoneKeywords = ["sony", "headphone", ];
+    const mouseKeywords = ["logitech", "hyper", "razer", "corsair", "mouse", "chuột","gaming"];
 
     const searchText = `${brandName || ""} ${categoryName || ""}`.toLowerCase();
 

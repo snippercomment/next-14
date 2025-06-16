@@ -11,7 +11,7 @@ export default function Header() {
       link: "/",
     },
     {
-      name: "Điện thoại",
+      name: "Iphone",
       link: "/iphone",
     },
     {
@@ -19,11 +19,11 @@ export default function Header() {
       link: "/laptop",
     },
     {
-      name: "Phụ kiện",
+      name: "Mouse",
       link: "/mouse",
     },
     {
-      name: "Âm thanh",
+      name: "Headphone",
       link: "/headphone",
     },
   ];
