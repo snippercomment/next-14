@@ -10,6 +10,8 @@ import Sort from '../form/Sort';
 import Paginate from '../form/Panigation';
 import ProductCard from '../form/ProductCard';
 import BrandProduct from '../form/BrandProduct';
+
+
 export default function Page() {
     const [selectedBrand, setSelectedBrand] = useState('');
     const [sortBy, setSortBy] = useState("newest");

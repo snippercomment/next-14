@@ -5,6 +5,21 @@ import Review from "./Components/Review";
 import RelatedProducts from "./Components/RalatedProduct";
 import AddReview from "./Components/AddReview";
 import AuthContextProvider from "@/contexts/AuthContext";
+
+
+
+export async function generateMetadata({ params }) {
+  const { productId } = params;
+  const product = await getProduct({ id: productId });
+
+  return {
+    title: `${product?.title} | Product`,
+    description: product?.shortDescription ?? "",
+    openGraph: {
+      images: [product?.featureImageURL],
+    },
+  };
+}
 export default async function Page({ params }) {
     const { productId } = params;
     const product = await getProduct({ id: productId });

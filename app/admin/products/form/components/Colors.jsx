@@ -575,82 +575,163 @@ export const phoneColors = [
     }
 ];
 
-// Phone storage options
+// Phone storage options - Cập nhật theo thị trường hiện tại
 export const phoneStorageOptions = [
-    "16GB",
-    "32GB",
     "64GB",
-    "128GB",
+    "128GB", 
     "256GB",
     "512GB",
-    "1TB",
-    "2TB"
+    "1TB"
 ];
 
-// Laptop specifications (CPU-GPU RAM-Storage)
+// Laptop specifications - Đã sửa lại các thông số chính xác
 export const laptopSpecOptions = [
-    // MacBook Options
+    // MacBook Air M1
     "M1 8-Core CPU - 7-Core GPU 8GB - 256GB SSD",
     "M1 8-Core CPU - 8-Core GPU 8GB - 512GB SSD",
+    
+    // MacBook Air M2
     "M2 8-Core CPU - 8-Core GPU 8GB - 256GB SSD",
     "M2 8-Core CPU - 10-Core GPU 8GB - 512GB SSD",
     "M2 8-Core CPU - 10-Core GPU 16GB - 512GB SSD",
     "M2 8-Core CPU - 10-Core GPU 24GB - 1TB SSD",
+    
+    // MacBook Pro M2
     "M2 Pro 10-Core CPU - 16-Core GPU 16GB - 512GB SSD",
-    "M2 Pro 10-Core CPU - 10-COre GPU 24TB-1TB SSD",
-    "M2 Pro 10-Core CPU - 10-COre GPU 24TB-512 SSD",
-    "M2 Pro 10-Core CPU - 10-COre GPU 16TB-1TB SSD",
     "M2 Pro 12-Core CPU - 19-Core GPU 16GB - 1TB SSD",
     "M2 Max 12-Core CPU - 30-Core GPU 32GB - 1TB SSD",
     "M2 Max 12-Core CPU - 38-Core GPU 64GB - 2TB SSD",
+    
+    // MacBook Pro M3
+    "M3 8-Core CPU - 10-Core GPU 8GB - 512GB SSD",
+    "M3 Pro 11-Core CPU - 14-Core GPU 18GB - 512GB SSD",
+    "M3 Pro 12-Core CPU - 18-Core GPU 18GB - 1TB SSD",
+    "M3 Max 14-Core CPU - 30-Core GPU 36GB - 1TB SSD",
+    "M3 Max 16-Core CPU - 40-Core GPU 48GB - 1TB SSD",
 
-    // Intel/AMD Options for other brands
-    "Intel i3-1115G4 4GB - 128GB SSD",
-    "Intel i5-1135G7 8GB - 256GB SSD",
-    "Intel i5-1135G7 8GB - 512GB SSD",
-    "Intel i5-12500H 16GB - 512GB SSD",
-    "Intel i7-1165G7 8GB - 512GB SSD",
-    "Intel i7-1255U 16GB - 512GB SSD",
-    "Intel i7-12700H 16GB - 1TB SSD",
-    "Intel i7-12700H RTX 3050 16GB - 512GB SSD",
-    "Intel i7-12700H RTX 3060 16GB - 1TB SSD",
-    "Intel i7-13700H RTX 4050 16GB - 512GB SSD",
-    "Intel i7-13700H RTX 4060 16GB - 1TB SSD",
-    "Intel i9-12900H RTX 3070 32GB - 1TB SSD",
-    "Intel i9-13900H RTX 4070 32GB - 1TB SSD",
-    "AMD Ryzen 5 5500U 8GB - 256GB SSD",
-    "AMD Ryzen 5 5600H 8GB - 512GB SSD",
-    "AMD Ryzen 7 5700U 16GB - 512GB SSD",
-    "AMD Ryzen 7 5800H 16GB - 1TB SSD",
-    "AMD Ryzen 7 6800H RTX 3050 16GB - 512GB SSD",
-    "AMD Ryzen 9 5900HX RTX 3070 32GB - 1TB SSD"
+    // Intel Core i3 (Entry Level)
+    "Intel i3-1115G4 4GB RAM - 128GB SSD",
+    "Intel i3-1115G4 8GB RAM - 256GB SSD",
+    "Intel i3-1215U 8GB RAM - 256GB SSD",
+    
+    // Intel Core i5 (Mid-range)
+    "Intel i5-1135G7 8GB RAM - 256GB SSD",
+    "Intel i5-1135G7 8GB RAM - 512GB SSD",
+    "Intel i5-1235U 8GB RAM - 512GB SSD",
+    "Intel i5-1235U 16GB RAM - 512GB SSD",
+    "Intel i5-12500H 16GB RAM - 512GB SSD",
+    "Intel i5-13500H 16GB RAM - 512GB SSD",
+    
+    // Intel Core i7 (High-end)
+    "Intel i7-1165G7 8GB RAM - 512GB SSD",
+    "Intel i7-1255U 16GB RAM - 512GB SSD",
+    "Intel i7-1260P 16GB RAM - 512GB SSD",
+    "Intel i7-12700H 16GB RAM - 512GB SSD",
+    "Intel i7-12700H 16GB RAM - 1TB SSD",
+    "Intel i7-13700H 16GB RAM - 1TB SSD",
+    
+    // Intel Core i7 với GPU rời
+    "Intel i7-12700H + RTX 3050 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3060 16GB RAM - 1TB SSD",
+    "Intel i7-13700H + RTX 4050 16GB RAM - 512GB SSD",
+    "Intel i7-13700H + RTX 4060 16GB RAM - 1TB SSD",
+    "Intel i7-13700H + RTX 4070 16GB RAM - 1TB SSD",
+    
+    // Intel Core i9 (Gaming/Workstation)
+    "Intel i9-12900H + RTX 3070 32GB RAM - 1TB SSD",
+    "Intel i9-13900H + RTX 4070 32GB RAM - 1TB SSD",
+    "Intel i9-13900H + RTX 4080 32GB RAM - 2TB SSD",
+    
+    // AMD Ryzen 5 (Mid-range)
+    "AMD Ryzen 5 5500U 8GB RAM - 256GB SSD",
+    "AMD Ryzen 5 5600H 8GB RAM - 512GB SSD",
+    "AMD Ryzen 5 7530U 8GB RAM - 512GB SSD",
+    "AMD Ryzen 5 7535HS 16GB RAM - 512GB SSD",
+    
+    // AMD Ryzen 7 (High-end)
+    "AMD Ryzen 7 5700U 16GB RAM - 512GB SSD",
+    "AMD Ryzen 7 5800H 16GB RAM - 512GB SSD",
+    "AMD Ryzen 7 6800H 16GB RAM - 1TB SSD",
+    "AMD Ryzen 7 7735HS 16GB RAM - 1TB SSD",
+    "AMD Ryzen 7 7840HS 16GB RAM - 1TB SSD",
+    
+    // AMD Ryzen 7 với GPU rời
+    "AMD Ryzen 7 6800H + RTX 3060 16GB RAM - 1TB SSD",
+    "AMD Ryzen 7 7735HS + RTX 4050 16GB RAM - 512GB SSD",
+    "AMD Ryzen 7 7840HS + RTX 4060 16GB RAM - 1TB SSD",
+    
+    // AMD Ryzen 9 (Gaming/Workstation)
+    "AMD Ryzen 9 5900HX + RTX 3070 32GB RAM - 1TB SSD",
+    "AMD Ryzen 9 6900HX + RTX 3080 32GB RAM - 1TB SSD",
+    "AMD Ryzen 9 7940HS + RTX 4070 32GB RAM - 2TB SSD"
 ];
 
-// Headphone specifications
+// Headphone specifications - Cập nhật theo thị trường
 export const headphoneSpecOptions = [
-    "Bluetooth 5.0 - 20Hz-20kHz",
-    "Bluetooth 5.1 - 20Hz-40kHz",
-    "Bluetooth 5.2 - 10Hz-22kHz",
-    "Wired 3.5mm - 20Hz-20kHz",
-    "USB-C - 20Hz-40kHz",
-    "Wireless 2.4GHz - 20Hz-20kHz",
-    "Noise Canceling - 20Hz-20kHz",
-    "Hi-Res Audio - 40kHz",
-    "Gaming RGB - 7.1 Surround Sound",
-    "Pro Gaming - 50mm Drivers"
+    // Tai nghe không dây cơ bản
+    "Bluetooth 5.0 - 20Hz-20kHz - 20h pin",
+    "Bluetooth 5.1 - 20Hz-20kHz - 30h pin",
+    "Bluetooth 5.2 - 20Hz-20kHz - 40h pin",
+    "Bluetooth 5.3 - 20Hz-40kHz - 50h pin",
+    
+    // Tai nghe có dây
+    "Wired 3.5mm - 20Hz-20kHz - 40mm Driver",
+    "USB-C - 20Hz-40kHz - 50mm Driver",
+    "USB-A - 20Hz-20kHz - 40mm Driver",
+    
+    // Tai nghe chống ồn
+    "ANC Bluetooth 5.2 - 20Hz-20kHz - 30h pin",
+    "ANC Bluetooth 5.3 - 20Hz-40kHz - 40h pin",
+    "Hybrid ANC - 20Hz-40kHz - 50h pin",
+    
+    // Tai nghe Hi-Fi
+    "Hi-Res Audio - 10Hz-40kHz - 50mm Driver",
+    "Hi-Res Audio - 5Hz-50kHz - Planar Driver",
+    "Studio Monitor - 15Hz-28kHz - 50mm Driver",
+    
+    // Tai nghe gaming
+    "Gaming 2.4GHz - 20Hz-20kHz - 7.1 Surround",
+    "Gaming RGB - 20Hz-20kHz - 50mm Driver",
+    "Pro Gaming - 15Hz-25kHz - 53mm Driver",
+    "Gaming Wireless - 20Hz-20kHz - 7.1 Virtual Surround",
+    
+    // Tai nghe gaming có dây
+    "Gaming Wired - 20Hz-20kHz - 40mm Driver",
+    "Gaming Pro - 12Hz-28kHz - 50mm Driver"
 ];
 
-// Mouse specifications  
+// Mouse specifications - Cập nhật theo thị trường
 export const mouseSpecOptions = [
-    "Wireless 2.4GHz - 1000 DPI",
-    "Wireless 2.4GHz - 1600 DPI",
-    "Bluetooth - 1200 DPI",
-    "Bluetooth - 2400 DPI",
-    "USB Wired - 3200 DPI",
-    "USB Wired - 6400 DPI",
-    "Gaming RGB - 12000 DPI",
-    "Gaming RGB - 16000 DPI",
-    "Gaming RGB - 25600 DPI"
+    // Chuột văn phòng
+    "Wireless 2.4GHz - 1000 DPI - 12 tháng pin",
+    "Wireless 2.4GHz - 1600 DPI - 18 tháng pin",
+    "Bluetooth 5.0 - 1200 DPI - 24 tháng pin",
+    "Bluetooth 5.1 - 1600 DPI - 12 tháng pin",
+    "Bluetooth 5.2 - 2400 DPI - 18 tháng pin",
+    
+    // Chuột có dây
+    "USB Wired - 1000 DPI - Quang học",
+    "USB Wired - 1600 DPI - Quang học",
+    "USB Wired - 3200 DPI - Quang học",
+    
+    // Chuột gaming entry
+    "Gaming Wired - 6400 DPI - RGB",
+    "Gaming Wired - 8000 DPI - RGB",
+    "Gaming Wireless - 12000 DPI - RGB",
+    
+    // Chuột gaming pro
+    "Gaming Pro - 16000 DPI - RGB - 1000Hz",
+    "Gaming Pro - 20000 DPI - RGB - 1000Hz",
+    "Gaming Pro - 25600 DPI - RGB - 8000Hz",
+    "Gaming Esports - 30000 DPI - RGB - 8000Hz",
+    
+    // Chuột gaming wireless
+    "Gaming Wireless - 25600 DPI - RGB - 1000Hz",
+    "Gaming Wireless Pro - 30000 DPI - RGB - 4000Hz",
+    
+    // Chuột đặc biệt
+    "Ergonomic - 1600 DPI - Thiết kế thẳng đứng",
+    "Ultra Light - 16000 DPI - 60g - Honeycomb"
 ];
 
 // Product categories mapping
@@ -745,4 +826,5 @@ export const detectProductType = (brandName, categoryName) => {
         return "phone";
     }
 
+  
 };
