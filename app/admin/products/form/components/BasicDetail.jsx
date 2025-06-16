@@ -9,7 +9,7 @@ import {
     getProductCategoryInfo,
     detectProductType,
     getColorById
-} from "./colors"; 
+} from "./Colors"; 
 
 // Định nghĩa các danh mục thương hiệu - đồng bộ với form thương hiệu
 const BRAND_CATEGORIES = {
