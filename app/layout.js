@@ -4,6 +4,7 @@ import { NextUIProvider } from "@nextui-org/react";
 import { Toaster } from "react-hot-toast";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import AuthContextProvider from "@/contexts/AuthContext"; // ✅ import vào đây
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -24,12 +25,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Toaster />
         <NextUIProvider>
-          {children}
+          <AuthContextProvider>
+            {children}
+          </AuthContextProvider>
         </NextUIProvider>
       </body>
     </html>
