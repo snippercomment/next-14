@@ -8,14 +8,18 @@ import {
   Card,
   CardBody,
   CircularProgress,
-  Divider,
+  Select,
+  SelectItem,
+  useDisclosure,
+  Chip,
 } from "@nextui-org/react";
-import { Save, X, Edit3, User, Mail, Camera, Sparkles } from "lucide-react"; 
+import { Save, X, Edit3, User, Mail, Camera, Sparkles, MapPin, Plus, Home, Building, MoreVertical, Trash2, Star } from "lucide-react"; 
 
 import { useUser } from "@/lib/firestore/user/read";
 import { updateUser } from "@/lib/firestore/user/write";
 import { useAuth } from "@/contexts/AuthContext";
 import { uploadImageToCloudinary } from "@/lib/uploadToCloudinary";
+import AddressModal from "@/app/components/AddressModal";
 
 export default function UserProfilePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -31,20 +35,41 @@ export default function UserProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Address Modal state
+  const {isOpen, onOpen, onOpenChange} = useDisclosure();
+  const [addresses, setAddresses] = useState([]);
+
   const [form, setForm] = useState({
     displayName: "",
+    gender: "",
+    dateOfBirth: "",
+    phoneNumber: "",
   });
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  const genderOptions = [
+    { key: "male", label: "Nam" },
+    { key: "female", label: "Nữ" },
+    { key: "other", label: "Khác" },
+  ];
+
   useEffect(() => {
     if (currentUser) {
       setForm({
         displayName: currentUser.displayName || "",
+        gender: currentUser.gender || "",
+        dateOfBirth: currentUser.dateOfBirth || "",
+        phoneNumber: currentUser.phoneNumber || "",
       });
       setImagePreview(currentUser.photoURL || "");
+      
+      // Load addresses if available
+      if (currentUser.addresses) {
+        setAddresses(currentUser.addresses);
+      }
     }
   }, [currentUser]);
 
@@ -107,6 +132,9 @@ export default function UserProfilePage() {
 
       await updateUser(uid, {
         displayName: form.displayName.trim(),
+        gender: form.gender,
+        dateOfBirth: form.dateOfBirth,
+        phoneNumber: form.phoneNumber.trim(),
         photoURL: photoURL,
       });
 
@@ -129,30 +157,120 @@ export default function UserProfilePage() {
     if (currentUser) {
       setForm({
         displayName: currentUser.displayName || "",
+        gender: currentUser.gender || "",
+        dateOfBirth: currentUser.dateOfBirth || "",
+        phoneNumber: currentUser.phoneNumber || "",
       });
       setImagePreview(currentUser.photoURL || "");
     }
   };
 
+  // Handle address operations
+  const handleAddressAdded = async (newAddress) => {
+    try {
+      // If this is set as default, unset all other defaults
+      const updatedAddresses = newAddress.isDefault 
+        ? addresses.map(addr => ({ ...addr, isDefault: false }))
+        : addresses;
+      
+      // Add to local state
+      const finalAddresses = [...updatedAddresses, newAddress];
+      setAddresses(finalAddresses);
+      
+      // Update user with new addresses
+      await updateUser(uid, {
+        addresses: finalAddresses
+      });
+      
+      setMessage("Thêm địa chỉ thành công!");
+    } catch (error) {
+      setMessage("Lỗi khi thêm địa chỉ! Vui lòng thử lại.");
+      console.error("Lỗi thêm địa chỉ:", error);
+      throw error;
+    }
+  };
+
+  const handleAddressDeleted = async (addressId) => {
+    try {
+      const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
+      setAddresses(updatedAddresses);
+      
+      await updateUser(uid, {
+        addresses: updatedAddresses
+      });
+      
+      setMessage("Xóa địa chỉ thành công!");
+    } catch (error) {
+      setMessage("Lỗi khi xóa địa chỉ! Vui lòng thử lại.");
+      console.error("Lỗi xóa địa chỉ:", error);
+    }
+  };
+
+  const handleAddressUpdated = async (updatedAddress) => {
+    try {
+      const updatedAddresses = addresses.map(addr => 
+        addr.id === updatedAddress.id ? updatedAddress : addr
+      );
+      setAddresses(updatedAddresses);
+      
+      await updateUser(uid, {
+        addresses: updatedAddresses
+      });
+      
+      setMessage("Cập nhật địa chỉ thành công!");
+    } catch (error) {
+      setMessage("Lỗi khi cập nhật địa chỉ! Vui lòng thử lại.");
+      console.error("Lỗi cập nhật địa chỉ:", error);
+    }
+  };
+
+  const handleSetDefaultAddress = async (addressId) => {
+    try {
+      const updatedAddresses = addresses.map(addr => ({
+        ...addr,
+        isDefault: addr.id === addressId
+      }));
+      setAddresses(updatedAddresses);
+      
+      await updateUser(uid, {
+        addresses: updatedAddresses
+      });
+      
+      setMessage("Đặt địa chỉ mặc định thành công!");
+    } catch (error) {
+      setMessage("Lỗi khi đặt địa chỉ mặc định! Vui lòng thử lại.");
+      console.error("Lỗi đặt địa chỉ mặc định:", error);
+    }
+  };
+
+  const getAddressTypeIcon = (type) => {
+    switch (type) {
+      case 'home':
+        return <Home className="w-4 h-4" />;
+      case 'office':
+        return <Building className="w-4 h-4" />;
+      default:
+        return <MapPin className="w-4 h-4" />;
+    }
+  };
+
+  const getAddressTypeLabel = (type) => {
+    switch (type) {
+      case 'home':
+        return 'Nhà riêng';
+      case 'office':
+        return 'Văn phòng';
+      default:
+        return 'Khác';
+    }
+  };
+
   if (isAuthLoading || isUserLoading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
         <div className="text-center">
-          <div className="relative">
-            <CircularProgress 
-              size="lg" 
-              color="primary"
-              classNames={{
-                svg: "w-20 h-20",
-                track: "stroke-white/20",
-                indicator: "stroke-gradient-to-r from-blue-500 to-purple-600"
-              }}
-            />
-            <div className="absolute inset-0 animate-pulse">
-              <Sparkles className="w-6 h-6 text-blue-500 absolute top-2 right-2 animate-bounce" />
-            </div>
-          </div>
-          <p className="mt-6 text-gray-600 font-medium">Đang tải thông tin...</p>
+          <CircularProgress size="lg" color="primary" />
+          <p className="mt-4 text-gray-600">Đang tải thông tin...</p>
         </div>
       </div>
     );
@@ -160,16 +278,14 @@ export default function UserProfilePage() {
 
   if (!uid || !user) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <Card className="max-w-md backdrop-blur-lg bg-white/70 border border-white/20 shadow-2xl">
-          <CardBody className="text-center p-10">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <User className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <Card className="max-w-md">
+          <CardBody className="text-center p-8">
+            <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
               Chưa đăng nhập
             </h2>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600">
               Bạn cần đăng nhập để xem và chỉnh sửa hồ sơ của mình.
             </p>
           </CardBody>
@@ -180,19 +296,17 @@ export default function UserProfilePage() {
 
   if (userFetchError) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
-        <Card className="max-w-md backdrop-blur-lg bg-white/70 border border-white/20 shadow-2xl">
-          <CardBody className="text-center p-10">
-            <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <X className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-red-600 mb-3">
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <Card className="max-w-md">
+          <CardBody className="text-center p-8">
+            <X className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-red-600 mb-2">
               Có lỗi xảy ra
             </h2>
-            <p className="text-gray-600 mb-4 leading-relaxed">
+            <p className="text-gray-600 mb-4">
               Không thể tải thông tin hồ sơ của bạn.
             </p>
-            <p className="text-sm text-gray-500 bg-gray-100 p-3 rounded-lg">
+            <p className="text-sm text-gray-500 bg-gray-100 p-3 rounded">
               {userFetchError.message}
             </p>
           </CardBody>
@@ -203,16 +317,14 @@ export default function UserProfilePage() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-        <Card className="max-w-md backdrop-blur-lg bg-white/70 border border-white/20 shadow-2xl">
-          <CardBody className="text-center p-10">
-            <div className="w-20 h-20 bg-gradient-to-br from-gray-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <User className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <Card className="max-w-md">
+          <CardBody className="text-center p-8">
+            <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
               Không tìm thấy hồ sơ
             </h2>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600">
               Hồ sơ của bạn chưa được tạo. Vui lòng thử lại hoặc liên hệ hỗ trợ.
             </p>
           </CardBody>
@@ -222,41 +334,44 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card className="backdrop-blur-lg bg-white/80 border border-white/20 shadow-2xl rounded-3xl overflow-hidden">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Profile Information Card */}
+        <Card className="shadow-lg">
           <CardBody className="p-0">
-            {/* Header Gradient */}
-            <div className="h-32 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative overflow-hidden">
-              <div className="absolute inset-0 bg-black/10"></div>
-              <div className="absolute top-4 right-4">
-                <Sparkles className="w-8 h-8 text-white/60 animate-pulse" />
+            {/* Header */}
+            <div className="bg-white px-6 py-4 border-b">
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-gray-800">Thông tin cá nhân</h1>
+                <Button
+                  color="primary"
+                  variant="light"
+                  startContent={<Edit3 className="w-4 h-4" />}
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="text-red-500"
+                >
+                  Cập nhật
+                </Button>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white/20 to-transparent"></div>
             </div>
 
-            <div className="px-8 pb-8 -mt-16 relative">
+            <div className="p-6">
               {/* Avatar Section */}
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-8">
                 <div className="relative">
-                  <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500">
-                    <Avatar
-                      isBordered={false}
-                      radius="full"
-                      size="xl"
-                      src={
-                        imagePreview || 
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(form.displayName || "User")}&background=6366f1&color=fff&size=200&bold=true`
-                      }
-                      className="w-full h-full text-large shadow-lg bg-white"
-                      fallback={<User className="w-16 h-16 text-gray-400" />}
-                    />
-                  </div>
+                  <Avatar
+                    src={
+                      imagePreview || 
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(form.displayName || "User")}&background=6366f1&color=fff&size=200&bold=true`
+                    }
+                    className="w-24 h-24 text-large"
+                    fallback={<User className="w-12 h-12 text-gray-400" />}
+                  />
                   {isEditing && (
-                    <div className="absolute -bottom-2 -right-2">
+                    <div className="absolute -bottom-1 -right-1">
                       <label htmlFor="avatar-upload" className="cursor-pointer">
-                        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200">
-                          <Camera className="w-5 h-5" />
+                        <div className="bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+                          <Camera className="w-4 h-4" />
                         </div>
                       </label>
                       <input
@@ -276,98 +391,292 @@ export default function UserProfilePage() {
                 </div>
               </div>
 
-              {/* User Info Section */}
-              <div className="text-center space-y-4 mb-8">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                  {currentUser.displayName || "Chưa có tên hiển thị"}
-                </h1>
-                <div className="flex items-center justify-center gap-2 text-gray-600">
-                  <Mail className="w-5 h-5" />
-                  <p className="text-lg">{user.email}</p>
+              {/* Profile Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Họ và tên:</span>
+                    {isEditing ? (
+                      <Input
+                        value={form.displayName}
+                        onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+                        placeholder="Nhập tên hiển thị"
+                        variant="bordered"
+                        size="sm"
+                        className="max-w-xs"
+                        classNames={{
+                          inputWrapper: "border-gray-300"
+                        }}
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">
+                        {currentUser.displayName || "-"}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Giới tính:</span>
+                    {isEditing ? (
+                      <Select
+                        selectedKeys={form.gender ? [form.gender] : []}
+                        onSelectionChange={(keys) => setForm({ ...form, gender: Array.from(keys)[0] || "" })}
+                        placeholder="Chọn giới tính"
+                        variant="bordered"
+                        size="sm"
+                        className="max-w-xs"
+                        classNames={{
+                          trigger: "border-gray-300"
+                        }}
+                      >
+                        {genderOptions.map((gender) => (
+                          <SelectItem key={gender.key} value={gender.key}>
+                            {gender.label}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    ) : (
+                      <span className="text-gray-900 font-medium">
+                        {currentUser.gender ? 
+                          genderOptions.find(g => g.key === currentUser.gender)?.label || currentUser.gender 
+                          : "-"
+                        }
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Ngày sinh:</span>
+                    {isEditing ? (
+                      <Input
+                        type="date"
+                        value={form.dateOfBirth}
+                        onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+                        variant="bordered"
+                        size="sm"
+                        className="max-w-xs"
+                        classNames={{
+                          inputWrapper: "border-gray-300"
+                        }}
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">
+                        {currentUser.dateOfBirth || "-"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Số điện thoại:</span>
+                    {isEditing ? (
+                      <Input
+                        value={form.phoneNumber}
+                        onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+                        placeholder="Nhập số điện thoại"
+                        variant="bordered"
+                        size="sm"
+                        className="max-w-xs"
+                        classNames={{
+                          inputWrapper: "border-gray-300"
+                        }}
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">
+                        {currentUser.phoneNumber || "-"}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Email:</span>
+                    <span className="text-gray-900 font-medium">
+                      {user.email}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Địa chỉ mặc định:</span>
+                    <span className="text-gray-900 font-medium">
+                      {addresses.find(addr => addr.isDefault)?.label || "-"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Edit Form or Edit Button */}
-              {isEditing ? (
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <Input
-                      label="Tên hiển thị"
-                      value={form.displayName}
-                      onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-                      placeholder="Nhập tên hiển thị của bạn"
-                      variant="bordered"
-                      fullWidth
-                      size="lg"
-                      isRequired
-                      startContent={<User className="w-5 h-5 text-gray-400" />}
-                      classNames={{
-                        input: "text-lg",
-                        inputWrapper: "border-2 hover:border-blue-400 focus-within:!border-blue-500 bg-white/50 backdrop-blur-sm"
-                      }}
-                    />
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-4 justify-center pt-4">
-                    <Button
-                      className="px-8 py-3 font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                      startContent={<Save className="w-5 h-5" />}
-                      isLoading={isSaving}
-                      onClick={handleSave}
-                      radius="full"
-                      size="lg"
-                    >
-                      {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
-                    </Button>
-                    <Button
-                      color="danger"
-                      variant="bordered"
-                      startContent={<X className="w-5 h-5" />}
-                      onClick={handleCancel}
-                      className="px-8 py-3 font-semibold border-2 hover:bg-red-50 transform hover:scale-105 transition-all duration-200"
-                      radius="full"
-                      size="lg"
-                      isDisabled={isSaving}
-                    >
-                      Hủy
-                    </Button>
-                  </div>
-
-                  {/* Message Display */}
-                  {message && (
-                    <div className="text-center pt-4">
-                      <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium shadow-lg backdrop-blur-sm ${
-                        message.includes("thành công") 
-                          ? "text-green-700 bg-green-100/80 border-2 border-green-200" 
-                          : "text-red-700 bg-red-100/80 border-2 border-red-200"
-                      }`}>
-                        {message.includes("thành công") ? (
-                          <Sparkles className="w-4 h-4" />
-                        ) : (
-                          <X className="w-4 h-4" />
-                        )}
-                        {message}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center">
+              {/* Action Buttons */}
+              {isEditing && (
+                <div className="flex gap-4 justify-center mt-8 pt-6 border-t border-gray-200">
                   <Button
-                    startContent={<Edit3 className="w-5 h-5" />}
-                    onClick={() => setIsEditing(true)}
-                    className="px-10 py-4 text-lg font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                    radius="full"
-                    size="lg"
+                    color="primary"
+                    startContent={<Save className="w-4 h-4" />}
+                    isLoading={isSaving}
+                    onClick={handleSave}
+                    className="px-6"
                   >
-                    Chỉnh sửa hồ sơ
+                    {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
                   </Button>
+                  <Button
+                    color="default"
+                    variant="bordered"
+                    startContent={<X className="w-4 h-4" />}
+                    onClick={handleCancel}
+                    className="px-6"
+                    isDisabled={isSaving}
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              )}
+
+              {/* Message Display */}
+              {message && (
+                <div className="text-center mt-4">
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
+                    message.includes("thành công") 
+                      ? "text-green-700 bg-green-100 border border-green-200" 
+                      : "text-red-700 bg-red-100 border border-red-200"
+                  }`}>
+                    {message.includes("thành công") ? (
+                      <Sparkles className="w-4 h-4" />
+                    ) : (
+                      <X className="w-4 h-4" />
+                    )}
+                    {message}
+                  </div>
                 </div>
               )}
             </div>
           </CardBody>
         </Card>
+
+        {/* Address Management Card */}
+        <Card className="shadow-lg">
+          <CardBody className="p-0">
+            {/* Header */}
+            <div className="bg-white px-6 py-4 border-b">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Sổ địa chỉ
+                </h2>
+                <Button
+                  color="primary"
+                  startContent={<Plus className="w-4 h-4" />}
+                  onClick={onOpen}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  Thêm địa chỉ
+                </Button>
+              </div>
+            </div>
+
+            {/* Address List */}
+            <div className="p-6">
+              {addresses.length === 0 ? (
+                <div className="text-center py-12">
+                  <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-500 mb-2">
+                    Chưa có địa chỉ nào
+                  </h3>
+                  <p className="text-gray-400 mb-6">
+                    Thêm địa chỉ để thuận tiện cho việc đặt hàng
+                  </p>
+                  <Button
+                    color="primary"
+                    startContent={<Plus className="w-4 h-4" />}
+                    onClick={onOpen}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    Thêm địa chỉ đầu tiên
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {addresses.map((address) => (
+                    <Card key={address.id} className="border border-gray-200">
+                      <CardBody className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="flex items-center gap-1 text-gray-600">
+                                {getAddressTypeIcon(address.type)}
+                                <span className="font-medium">{address.label}</span>
+                              </div>
+                              {address.isDefault && (
+                                <Chip
+                                  startContent={<Star className="w-3 h-3" />}
+                                  variant="flat"
+                                  color="warning"
+                                  size="sm"
+                                >
+                                  Mặc định
+                                </Chip>
+                              )}
+                              <Chip
+                                variant="flat"
+                                color="default"
+                                size="sm"
+                              >
+                                {getAddressTypeLabel(address.type)}
+                              </Chip>
+                            </div>
+                            
+                            <div className="space-y-1 text-sm">
+                              <p className="font-medium text-gray-900">
+                                {address.recipientName}
+                              </p>
+                              <p className="text-gray-600">
+                                {address.phoneNumber}
+                              </p>
+                              <p className="text-gray-600">
+                                {address.fullAddress}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {!address.isDefault && (
+                              <Button
+                                size="sm"
+                                variant="light"
+                                color="warning"
+                                startContent={<Star className="w-3 h-3" />}
+                                onClick={() => handleSetDefaultAddress(address.id)}
+                              >
+                                Đặt mặc định
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="light"
+                              color="danger"
+                              isIconOnly
+                              onClick={() => handleAddressDeleted(address.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+       
+        {/* Add Address Modal */}
+        <AddressModal
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+          onAddressAdded={handleAddressAdded}
+          uid={uid}
+        />
       </div>
     </div>
   );

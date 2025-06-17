@@ -1,23 +1,21 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useProducts } from "@/lib/firestore/products/read";
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 import BrandProduct from "../../form/BrandProduct";
 import Sort from "../../form/Sort";
 
-
 import Panigation from "../../form/Panigation";
 
 export default function ProductPage() {
     // State management
     const [selectedBrand, setSelectedBrand] = useState('');
-    
     const [sortBy, setSortBy] = useState('newest');
-    const [itemsPerPage, setItemsPerPage] = useState(12);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [lastSnapDocList, setLastSnapDocList] = useState([]);
+    const [itemsPerPage] = useState(12); 
+    const [allProducts, setAllProducts] = useState([]); 
+    const [lastSnapDoc, setLastSnapDoc] = useState(null);
 
     // API calls
     const { data: brands } = useBrands();
@@ -27,91 +25,43 @@ export default function ProductPage() {
         data: products,
         error,
         isLoading,
-        lastSnapDoc,
+        lastSnapDoc: newLastSnapDoc,
     } = useProducts({
         pageLimit: itemsPerPage,
-        lastSnapDoc: lastSnapDocList?.length === 0
-            ? null
-            : lastSnapDocList[lastSnapDocList?.length - 1],
+        lastSnapDoc: lastSnapDoc,
         brandId: selectedBrand || null,
-        searchQuery: searchQuery || null,
         sortBy: sortBy
     });
 
-    // Reset pagination when filters change
+    // Reset khi filter thay đổi
     useEffect(() => {
-        setLastSnapDocList([]);
-        setCurrentPage(1);
-    }, [selectedBrand, searchQuery, sortBy, itemsPerPage]);
+        setAllProducts([]);
+        setLastSnapDoc(null);
+    }, [selectedBrand, sortBy]);
 
-    // Filtered and sorted products
-    const filteredProducts = useMemo(() => {
-        if (!products) return [];
-
-        let filtered = [...products];
-
-        // Filter by brand
-        if (selectedBrand) {
-            filtered = filtered.filter(product => product.brandId === selectedBrand);
+    // Cập nhật danh sách sản phẩm khi có data mới
+    useEffect(() => {
+        if (products && products.length > 0) {
+            if (lastSnapDoc === null) {
+                // Lần đầu load hoặc reset filter
+                setAllProducts(products);
+            } else {
+                // Load more - thêm sản phẩm mới vào danh sách
+                setAllProducts(prev => [...prev, ...products]);
+            }
+            setLastSnapDoc(newLastSnapDoc);
         }
+    }, [products, newLastSnapDoc]);
 
-        // Filter by search query
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(product =>
-                product.title?.toLowerCase().includes(query) ||
-                product.shortDescription?.toLowerCase().includes(query)
-            );
-        }
-
-        // Sort products
-        switch (sortBy) {
-            case 'newest':
-                filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                break;
-            case 'oldest':
-                filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-                break;
-            case 'price_low':
-                filtered.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
-                break;
-            case 'price_high':
-                filtered.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
-                break;
-            case 'name_asc':
-                filtered.sort((a, b) => a.title?.localeCompare(b.title));
-                break;
-            case 'name_desc':
-                filtered.sort((a, b) => b.title?.localeCompare(a.title));
-                break;
-            default:
-                break;
-        }
-
-        return filtered;
-    }, [products, selectedBrand, searchQuery, sortBy]);
-
-    // Pagination handlers
-    const handleNextPage = () => {
-        if (lastSnapDoc) {
-            let newStack = [...lastSnapDocList];
-            newStack.push(lastSnapDoc);
-            setLastSnapDocList(newStack);
-            setCurrentPage(prev => prev + 1);
+    // Load more handler
+    const handleLoadMore = () => {
+        if (newLastSnapDoc && !isLoading) {
+            setLastSnapDoc(newLastSnapDoc);
         }
     };
 
-    const handlePrevPage = () => {
-        if (lastSnapDocList.length > 0) {
-            let newStack = [...lastSnapDocList];
-            newStack.pop();
-            setLastSnapDocList(newStack);
-            setCurrentPage(prev => prev - 1);
-        }
-    };
-
-    const hasNextPage = products && products.length === itemsPerPage;
-    const hasPrevPage = lastSnapDocList.length > 0;
+    // Kiểm tra còn sản phẩm để load không
+    const hasMore = products && products.length === itemsPerPage && newLastSnapDoc;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -119,7 +69,7 @@ export default function ProductPage() {
             <div className="bg-white shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 py-6">
                     <div className="flex flex-col gap-4">
-                        {/* Title and Search */}
+                        {/* Title */}
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">
@@ -129,7 +79,6 @@ export default function ProductPage() {
                                     Khám phá bộ sưu tập điện thoại mới nhất
                                 </p>
                             </div>
-                            
                         </div>
 
                         {/* Brand Filter */}
@@ -147,19 +96,14 @@ export default function ProductPage() {
                 {/* Sort and Filter Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                     <div className="text-sm text-gray-600">
-                        {isLoading ? (
+                        {isLoading && allProducts.length === 0 ? (
                             <span>Đang tải...</span>
                         ) : (
                             <span>
-                                Hiển thị {filteredProducts.length} sản phẩm
+                                Hiển thị {allProducts.length} sản phẩm
                                 {selectedBrand && brands && (
                                     <span className="ml-1">
                                         · {brands.find(b => b.id === selectedBrand)?.name}
-                                    </span>
-                                )}
-                                {searchQuery && (
-                                    <span className="ml-1">
-                                        · "{searchQuery}"
                                     </span>
                                 )}
                             </span>
@@ -169,23 +113,56 @@ export default function ProductPage() {
                     <Sort
                         sortBy={sortBy}
                         onSortChange={setSortBy}
-                        itemsPerPage={itemsPerPage}
-                        onItemsPerPageChange={setItemsPerPage}
                     />
                 </div>
 
+                {/* Products Grid */}
+                {isLoading && allProducts.length === 0 ? (
+                    <div className="text-center py-8">
+                        <div className="inline-flex items-center gap-2">
+                            <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                            <span>Đang tải...</span>
+                        </div>
+                    </div>
+                ) : error ? (
+                    <div className="text-center py-8 text-red-600">
+                        <span>Có lỗi xảy ra khi tải sản phẩm</span>
+                    </div>
+                ) : allProducts && allProducts.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+                            {allProducts.map((product, index) => (
+                                <div key={`${product.id}-${index}`} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                                    {/* Product card content sẽ được render ở đây */}
+                                    <div className="p-4">
+                                        <h3 className="font-medium text-gray-900 mb-2">
+                                            {product.name || 'Tên sản phẩm'}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 mb-2">
+                                            {product.description || 'Mô tả sản phẩm'}
+                                        </p>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-lg font-bold text-blue-600">
+                                                {product.price ? `${product.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
-
-                {/* Pagination */}
-                {!isLoading && filteredProducts.length > 0 && (
-                    <Panigation
-                        currentPage={currentPage}
-                        hasNextPage={hasNextPage}
-                        hasPrevPage={hasPrevPage}
-                        onNextPage={handleNextPage}
-                        onPrevPage={handlePrevPage}
-                        isLoading={isLoading}
-                    />
+                        {/* Load More Button */}
+                        <Panigation
+                            onLoadMore={handleLoadMore}
+                            isLoading={isLoading}
+                            hasMore={hasMore}
+                            totalProducts={allProducts.length}
+                        />
+                    </>
+                ) : (
+                    <div className="text-center py-8 text-gray-500">
+                        <span>Không tìm thấy sản phẩm nào</span>
+                    </div>
                 )}
             </div>
         </div>

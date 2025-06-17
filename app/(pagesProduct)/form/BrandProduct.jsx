@@ -1,4 +1,6 @@
 "use client";
+
+import Link from "next/link";
 import { useBrands } from "@/lib/firestore/brands/read";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -28,22 +30,6 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
         return brand.category === currentCategory;
     }) || [];
 
-    
-
-    
-    // Handle brand click - navigate đến trang brand
-    const handleBrandClick = (brandId, brandName) => {
-        // Navigate đến trang brand với URL parameter
-        const basePath = pathname.split('?')[0]; // Remove query params
-        const brandQuery = `?brand=${brandId}&name=${encodeURIComponent(brandName)}`;
-        router.push(`${basePath}${brandQuery}`);
-
-        // Cũng update state nếu có onBrandChange
-        if (onBrandChange) {
-            onBrandChange(brandId);
-        }
-    };
-
     // Handle "Tất cả" click
     const handleAllBrandsClick = () => {
         // Remove brand query param
@@ -56,6 +42,7 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
         }
     };
 
+
     // Nếu không có category phù hợp, không hiển thị gì
     if (!currentCategory) {
         return null;
@@ -66,23 +53,31 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
             {/* Nút Tất cả */}
             <button
                 onClick={handleAllBrandsClick}
-                className={`px-6 py-3 rounded-full whitespace-nowrap font-medium border-2 transition-colors ${selectedBrand === ''
+                className={`px-6 py-3 rounded-full whitespace-nowrap font-medium border-2 transition-colors ${
+                    selectedBrand === ''
                         ? 'bg-blue-500 text-white border-blue-500'
                         : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
-                    }`}
+                }`}
             >
                 Tất cả
             </button>
 
             {/* Danh sách brands được lọc theo category */}
             {filteredBrands.map((brand) => (
-                <button
+                <Link
                     key={brand.id}
-                    onClick={() => handleBrandClick(brand.id, brand.name)}
-                    className={`px-6 py-3 rounded-full whitespace-nowrap font-medium border-2 transition-colors flex items-center gap-2 ${selectedBrand === brand.id
+                    href={`/brands/${brand.id}`}
+                    className={`px-6 py-3 rounded-full whitespace-nowrap font-medium border-2 transition-colors flex items-center gap-2 ${
+                        selectedBrand === brand.id
                             ? 'bg-blue-500 text-white border-blue-500'
                             : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
-                        }`}
+                    }`}
+                    onClick={() => {
+                        // Update state if needed
+                        if (onBrandChange) {
+                            onBrandChange(brand.id);
+                        }
+                    }}
                 >
                     {/* Logo thương hiệu - ưu tiên ảnh từ database */}
                     {brand.imageURL ? (
@@ -99,7 +94,7 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
 
                     {/* Tên thương hiệu */}
                     <span>{brand.name}</span>
-                </button>
+                </Link>
             ))}
         </div>
     );

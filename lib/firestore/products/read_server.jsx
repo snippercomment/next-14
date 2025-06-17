@@ -34,6 +34,7 @@ export const getProducts = async () => {
     );
     return list.docs.map((snap) => snap.data());
 };
+
 // lấy danh sách sản phẩm theo danh mục
 export const getProductsByCategory = async ({ categoryId }) => {
     const list = await getDocs(
@@ -41,6 +42,18 @@ export const getProductsByCategory = async ({ categoryId }) => {
             collection(db, "products"),
             orderBy("timestampCreate", "desc"),
             where("categoryId", "==", categoryId)
+        )
+    );
+    return list.docs.map((snap) => snap.data());
+};
+
+// lấy danh sách sản phẩm theo thương hiệu
+export const getProductsByBrand = async ({ brandId }) => {
+    const list = await getDocs(
+        query(
+            collection(db, "products"),
+            orderBy("timestampCreate", "desc"),
+            where("brandId", "==", brandId)
         )
     );
     return list.docs.map((snap) => snap.data());

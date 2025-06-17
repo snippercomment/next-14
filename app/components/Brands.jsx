@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Slider from "react-slick";
 
 export default function Brands({ brands }) {
@@ -44,23 +45,29 @@ export default function Brands({ brands }) {
 
     return (
         <div className="flex flex-col gap-8 justify-center overflow-hidden md:p-10 p-5">
+            <div className="flex justify-center w-full">
+                <h1 className="text-lg font-semibold">Mua sắm theo thương hiệu</h1>
+            </div>
             <Slider {...settings}>
                 {(brands?.length <= 2
                     ? [...brands, ...brands, ...brands]
                     : brands
                 )?.map((brand) => {
                     return (
-                        <div className="px-2">
-                            <div className="flex flex-col gap-2 items-center justify-center">
-                                <div className="h-20 rounded-lg md:p-5 p-2 border overflow-hidden">
-                                    <img
-                                        className="h-full w-full object-cover"
-                                        src={brand?.imageURL}
-                                        alt=""
-                                    />
+                        <Link href={`/brands/${brand?.id}`} key={brand?.id}>
+                            <div className="px-2">
+                                <div className="flex flex-col gap-2 items-center justify-center">
+                                    <div className="h-20 rounded-lg md:p-5 p-2 border overflow-hidden hover:shadow-lg transition-shadow">
+                                        <img
+                                            className="h-full w-full object-contain"
+                                            src={brand?.imageURL}
+                                            alt={brand?.name}
+                                        />
+                                    </div>
+                                    <h1 className="font-semibold text-center">{brand?.name}</h1>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     );
                 })}
             </Slider>

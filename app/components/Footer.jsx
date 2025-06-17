@@ -37,10 +37,10 @@ export default function Footer() {
                     <div>
                         <h3 className="font-semibold text-lg mb-4">SẢN PHẨM</h3>
                         <ul className="space-y-2 text-sm text-gray-300">
-                            <li><a href="/iphone" className="hover:text-white">Điện thoại</a></li>
+                            <li><a href="/iphone" className="hover:text-white">Iphone</a></li>
                             <li><a href="/laptop" className="hover:text-white">Laptop</a></li>
-                            <li><a href="/mouse" className="hover:text-white">Phụ kiện</a></li>
-                            <li><a href="/headphone" className="hover:text-white">Âm thanh</a></li>
+                            <li><a href="/mouse" className="hover:text-white">Mouse</a></li>
+                            <li><a href="/headphone" className="hover:text-white">Headphone</a></li>
                         </ul>
                     </div>
                 </div>
