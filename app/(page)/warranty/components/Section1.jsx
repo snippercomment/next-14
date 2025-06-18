@@ -98,7 +98,7 @@ export default function Section1() {
             </li>
             <li className="flex items-start">
               <span className="text-red-500 mr-2">•</span>
-              <span>Áp dụng cho khách hàng mua lần đầu tại CellphoneS</span>
+              <span>Áp dụng cho khách hàng mua lần đầu tại Discount</span>
             </li>
             <li className="flex items-start">
               <span className="text-red-500 mr-2">•</span>

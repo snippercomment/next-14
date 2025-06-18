@@ -135,7 +135,7 @@ export default function ReturnExchangePage() {
                     </h3>
                     <div className="space-y-3">
                       <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                       
                         <p className="text-gray-700">Sau khi đặt hàng thành công, khi muốn hủy giao dịch, quý khách hàng vui lòng:</p>
                       </div>
                       <div className="ml-6 space-y-2">
@@ -153,7 +153,7 @@ export default function ReturnExchangePage() {
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                       
                         <p className="text-gray-700">Tự chủ nhận hàng và xác nhận hủy mua sản phẩm khi bên vận chuyển giao hàng</p>
                       </div>
                     </div>

@@ -103,25 +103,6 @@ export default function SearchBox() {
           )}
         </Button>
       </form>
-             
-      {/* Gợi ý tìm kiếm */}
-      {!q && (
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-500 mb-2">Gợi ý tìm kiếm:</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {["iPhone", "Samsung", "MacBook", "Dell", "AirPods"].map((suggestion) => (
-              <button
-                key={suggestion}
-                onClick={() => handleSuggestionClick(suggestion)}
-                disabled={isLoading}
-                className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50"
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

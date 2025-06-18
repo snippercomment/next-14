@@ -64,7 +64,7 @@ export default function Brands({ brands }) {
                                             alt={brand?.name}
                                         />
                                     </div>
-                                    <h1 className="font-semibold text-center">{brand?.name}</h1>
+                                   
                                 </div>
                             </div>
                         </Link>

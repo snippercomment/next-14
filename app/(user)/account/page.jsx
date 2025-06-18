@@ -13,7 +13,7 @@ import {
   useDisclosure,
   Chip,
 } from "@nextui-org/react";
-import { Save, X, Edit3, User, Mail, Camera, Sparkles, MapPin, Plus, Home, Building, MoreVertical, Trash2, Star } from "lucide-react"; 
+import { Save, X, Edit3, User, Camera, Sparkles, MapPin, Plus, Home, Building, Trash2, Star } from "lucide-react"; 
 
 import { useUser } from "@/lib/firestore/user/read";
 import { updateUser } from "@/lib/firestore/user/write";
@@ -560,8 +560,8 @@ export default function UserProfilePage() {
             <div className="bg-white px-6 py-4 border-b">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Sổ địa chỉ
+                
+                  Địa chỉ
                 </h2>
                 <Button
                   color="primary"

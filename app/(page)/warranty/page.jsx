@@ -82,20 +82,20 @@ export default function WarrantyPolicy() {
           <h3 className="font-bold text-gray-800 mb-3">Điều kiện đổi trả:</h3>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start">
-              <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+             
               <span><strong>Máy:</strong> Như mới, không xước xát, không dán decal, hình trang trí</span>
             </li>
             <li className="flex items-start">
-              <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+    
               <span><strong>Máy cũ:</strong> có tình trạng sản phẩm như lúc mới mua</span>
             </li>
             <li className="flex items-start">
-              <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+             
               <span><strong>Hộp:</strong> Như mới, không móp méo, rách, vỡ, bị viết, vẽ, quận băng dính, kẹo; có Serial/IMEI trên hộp trùng với thân máy.</span>
             </li>
            
             <li className="flex items-start">
-              <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+          
               <span><strong>Tài khoản:</strong> Máy đã được xuất khỏi tất cả các tài khoản như: iCloud, Google Account, Mi Account...</span>
             </li>
           </ul>

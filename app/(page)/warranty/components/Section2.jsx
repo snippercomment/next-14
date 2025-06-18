@@ -48,15 +48,15 @@ export default function Section2() {
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
               <li className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-gray-500 mr-2">•</span>
                 <span>Bảo hành chính hãng từ 12-24 tháng</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-gray-500 mr-2">•</span>
                 <span>Bảo hành tại các trung tâm ủy quyền</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-gray-500 mr-2">•</span>
                 <span>Hỗ trợ cài đặt phần mềm cơ bản</span>
               </li>
             </ul>
