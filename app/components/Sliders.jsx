@@ -1,6 +1,4 @@
 "use client";
-
-
 import Link from "next/link";
 import Slider from "react-slick";
 
@@ -12,12 +10,13 @@ export default function FeaturedProductSlider({ featuredProducts }) {
         slidesToShow: 1,
         slidesToScroll: 1,
     };
+
     return (
-        <div className="overflow-hidden">
+        <div className="overflow-hidden ">
             <Slider {...settings}>
                 {featuredProducts?.map((product) => {
                     return (
-                        <div>
+                        <div key={product?.id}>
                             <div className="flex flex-col-reverse md:flex-row gap-4 bg-[#f8f8f8] p-5 md:px-24 md:py-20 w-full">
                                 <div className="flex-1 flex flex-col md:gap-10 gap-4">
                                     <h2 className="text-gray-500 text-xs md:text-base">
@@ -33,14 +32,13 @@ export default function FeaturedProductSlider({ featuredProducts }) {
                                             {product?.shortDescription}
                                         </h1>
                                     </div>
-                                   
                                 </div>
                                 <div className="">
                                     <Link href={`/products/${product?.id}`}>
                                         <img
-                                            className="h-[14rem] md:h-[23rem]"
+                                            className="h-[14rem] md:h-[23rem] object-contain"
                                             src={product?.featureImageURL}
-                                            alt=""
+                                            alt={product?.title || "Product image"}
                                         />
                                     </Link>
                                 </div>

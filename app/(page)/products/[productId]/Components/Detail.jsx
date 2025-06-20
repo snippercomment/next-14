@@ -320,17 +320,6 @@ export default function Details({ product, brands, categories }) {
                                     </div>
                                 )}
                             </div>
-                            
-                            {/* Thông tin bổ sung */}
-                            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                                <h5 className="font-semibold text-blue-800 mb-2">Thông tin bổ sung</h5>
-                                <ul className="text-sm text-blue-700 space-y-1">
-                                    <li>• Sản phẩm chính hãng, đầy đủ phụ kiện từ nhà sản xuất</li>
-                                    <li>• Hỗ trợ trả góp 0% lãi suất</li>
-                                    <li>• Giao hàng nhanh toàn quốc</li>
-                                    <li>• Hỗ trợ kỹ thuật 24/7</li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
                 )}
