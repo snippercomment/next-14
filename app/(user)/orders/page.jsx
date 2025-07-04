@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrders } from "@/lib/firestore/orders/read";
 import { CircularProgress } from "@nextui-org/react";
+import Link from "next/link";
 import { useState } from "react";
 
 const formatPrice = (price) => new Intl.NumberFormat("vi-VN").format(price);
@@ -309,7 +310,7 @@ export default function Page() {
             </div>
           </div>
           <p className="text-gray-500">Bạn chưa có đơn hàng nào</p>
-          <button className="text-red-500 hover:text-red-600">Trang chủ</button>
+         <Link href="/"> <button className="text-red-500 hover:text-red-600">Trang chủ</button></Link>
         </div>
       )}
       
