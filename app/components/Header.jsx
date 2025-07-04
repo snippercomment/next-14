@@ -90,7 +90,7 @@ export default function Header() {
                   onClick={() => setIsUserDropdownOpen(false)}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                 >
-                  <LogoutButton />
+                  <LogoutButton /> Đăng xuất
                 
                 </div>
               </div>
