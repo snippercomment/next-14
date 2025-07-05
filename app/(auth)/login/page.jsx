@@ -13,11 +13,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Page() {
   const { user } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [data, setData] = useState({});
 
@@ -28,10 +31,37 @@ export default function Page() {
     });
   };
 
+  // Load remembered credentials on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedPassword = localStorage.getItem("rememberedPassword");
+    const wasRemembered = localStorage.getItem("rememberMe") === "true";
+
+    if (wasRemembered && savedEmail) {
+      setData({
+        email: savedEmail,
+        password: savedPassword || "",
+      });
+      setRememberMe(true);
+    }
+  }, []);
+
   const handleLogin = async () => {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, data?.email, data?.password);
+      
+      // Handle remember me functionality
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", data?.email);
+        localStorage.setItem("rememberedPassword", data?.password);
+        localStorage.setItem("rememberMe", "true");
+      } else {
+        localStorage.removeItem("rememberedEmail");
+        localStorage.removeItem("rememberedPassword");
+        localStorage.removeItem("rememberMe");
+      }
+      
       toast.success("Đăng nhập thành công");
     } catch (error) {
       toast.error(error?.message);
@@ -62,41 +92,64 @@ export default function Page() {
               type="email"
               name="user-email"
               id="user-email"
-              value={data?.email}
+              value={data?.email || ""}
               onChange={(e) => {
                 handleData("email", e.target.value);
               }}
               className="px-3 py-2 rounded-xl border focus:outline-none w-full"
             />
-            <input
-              placeholder="Nhập mật khẩu của bạn"
-              type="password"
-              name="user-password"
-              id="user-password"
-              value={data?.password}
-              onChange={(e) => {
-                handleData("password", e.target.value);
-              }}
-              className="px-3 py-2 rounded-xl border focus:outline-none w-full"
-            />
+            <div className="relative">
+              <input
+                placeholder="Nhập mật khẩu của bạn"
+                type={showPassword ? "text" : "password"}
+                name="user-password"
+                id="user-password"
+                value={data?.password || ""}
+                onChange={(e) => {
+                  handleData("password", e.target.value);
+                }}
+                className="px-3 py-2 rounded-xl border focus:outline-none w-full pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="remember-me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="remember-me" className="text-sm text-gray-600">
+                Ghi nhớ tài khoản
+              </label>
+            </div>
+
             <Button
               isLoading={isLoading}
               isDisabled={isLoading}
               type="submit"
               color="primary"
             >
-             Đăng nhập
+              Đăng nhập
             </Button>
           </form>
           <div className="flex justify-between">
             <Link href={`/sign-up`}>
               <button className="font-semibold text-sm text-blue-700">
-              Tạo tài khoản
+                Tạo tài khoản
               </button>
             </Link>
             <Link href={`/forget-password`}>
               <button className="font-semibold text-sm text-blue-700">
-               Quên mật khẩu?
+                Quên mật khẩu?
               </button>
             </Link>
           </div>

@@ -1,7 +1,6 @@
 "use client";
-
 import Link from "next/link";
-import { Search, UserCircle2, ShoppingBag } from "lucide-react";
+import { Search, UserCircle2, ShoppingBag, Menu, X} from "lucide-react";
 import { useState } from "react";
 import LogoutButton from "./LogoutButton";
 import HeaderClientButtons from "./HeaderClientButtons";
@@ -9,6 +8,7 @@ import AdminButton from "./AdminButton";
 
 export default function Header() {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuList = [
     { name: "Trang chủ", link: "/" },
@@ -22,12 +22,21 @@ export default function Header() {
     setIsUserDropdownOpen(!isUserDropdownOpen);
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-white bg-opacity-65 backdrop-blur-2xl py-3 px-4 md:py-4 md:px-16 border-b flex items-center justify-between">
       <Link href={"/"}>
         <img className="h-4 md:h-5" src="/logo.png" alt="Logo" />
       </Link>
 
+      {/* Desktop Menu */}
       <div className="hidden md:flex gap-2 items-center font-semibold">
         {menuList.map((item) => (
           <Link href={item.link} key={item.name}>
@@ -84,27 +93,52 @@ export default function Header() {
                     Đơn hàng của tôi
                   </button>
                 </Link>
-
                 <div className="border-t border-gray-100">
-                <div
-                  onClick={() => setIsUserDropdownOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                >
-                  <LogoutButton /> Đăng xuất
-                
+                  <div
+                    onClick={() => setIsUserDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    <LogoutButton />
+                  </div>
                 </div>
-              </div>
               </div>
             </div>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={toggleMobileMenu}
+          className="md:hidden h-8 w-8 flex justify-center items-center rounded-full hover:bg-gray-50"
+          title="Menu"
+        >
+          {isMobileMenuOpen ? <X size={14} /> : <Menu size={14} />}
+        </button>
       </div>
 
-      {/* Overlay to close dropdown when clicking outside */}
-      {isUserDropdownOpen && (
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b shadow-lg">
+          <div className="py-2">
+            {menuList.map((item) => (
+              <Link href={item.link} key={item.name} onClick={closeMobileMenu}>
+                <button className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
+                  {item.name}
+                </button>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Overlay to close dropdowns when clicking outside */}
+      {(isUserDropdownOpen || isMobileMenuOpen) && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setIsUserDropdownOpen(false)}
+          onClick={() => {
+            setIsUserDropdownOpen(false);
+            setIsMobileMenuOpen(false);
+          }}
         />
       )}
     </nav>
