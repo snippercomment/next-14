@@ -73,6 +73,20 @@ export default function UserProfilePage() {
     }
   }, [currentUser]);
 
+  // Format phone number display
+  const formatPhoneNumber = (phone) => {
+    if (!phone) return "";
+    // Remove all non-digit characters
+    const numbers = phone.replace(/\D/g, '');
+    // Format as Vietnamese phone number
+    if (numbers.length === 10) {
+      return `${numbers.slice(0, 4)} ${numbers.slice(4, 7)} ${numbers.slice(7)}`;
+    } else if (numbers.length === 11) {
+      return `${numbers.slice(0, 4)} ${numbers.slice(4, 7)} ${numbers.slice(7)}`;
+    }
+    return phone;
+  };
+
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -348,7 +362,7 @@ export default function UserProfilePage() {
                   variant="light"
                   startContent={<Edit3 className="w-4 h-4" />}
                   onClick={() => setIsEditing(!isEditing)}
-                  className="text-red-500"
+                  className="text-blue-500"
                 >
                   Cập nhật
                 </Button>
@@ -429,6 +443,7 @@ export default function UserProfilePage() {
                         classNames={{
                           trigger: "border-gray-300"
                         }}
+                        aria-label="Chọn giới tính"
                       >
                         {genderOptions.map((gender) => (
                           <SelectItem key={gender.key} value={gender.key}>
@@ -486,7 +501,7 @@ export default function UserProfilePage() {
                       />
                     ) : (
                       <span className="text-gray-900 font-medium">
-                        {currentUser.phoneNumber || "-"}
+                        {formatPhoneNumber(currentUser.phoneNumber) || "-"}
                       </span>
                     )}
                   </div>
@@ -560,14 +575,14 @@ export default function UserProfilePage() {
             <div className="bg-white px-6 py-4 border-b">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                
+                  <MapPin className="w-5 h-5" />
                   Địa chỉ
                 </h2>
                 <Button
                   color="primary"
                   startContent={<Plus className="w-4 h-4" />}
                   onClick={onOpen}
-                  className="bg-red-500 hover:bg-red-600"
+                  className="bg-blue-500 hover:bg-blue-600"
                 >
                   Thêm địa chỉ
                 </Button>
@@ -577,92 +592,69 @@ export default function UserProfilePage() {
             {/* Address List */}
             <div className="p-6">
               {addresses.length === 0 ? (
-                <div className="text-center py-12">
-                  <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-500 mb-2">
-                    Chưa có địa chỉ nào
-                  </h3>
-                  <p className="text-gray-400 mb-6">
-                    Thêm địa chỉ để thuận tiện cho việc đặt hàng
-                  </p>
-                  <Button
-                    color="primary"
-                    startContent={<Plus className="w-4 h-4" />}
-                    onClick={onOpen}
-                    className="bg-red-500 hover:bg-red-600"
-                  >
-                    Thêm địa chỉ đầu tiên
-                  </Button>
+                <div className="text-center py-8 text-gray-500">
+                  <MapPin className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>Chưa có địa chỉ nào. Hãy thêm địa chỉ đầu tiên của bạn!</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {addresses.map((address) => (
-                    <Card key={address.id} className="border border-gray-200">
-                      <CardBody className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="flex items-center gap-1 text-gray-600">
-                                {getAddressTypeIcon(address.type)}
-                                <span className="font-medium">{address.label}</span>
-                              </div>
-                              {address.isDefault && (
-                                <Chip
-                                  startContent={<Star className="w-3 h-3" />}
-                                  variant="flat"
-                                  color="warning"
-                                  size="sm"
-                                >
-                                  Mặc định
-                                </Chip>
-                              )}
-                              <Chip
+                    <div
+                      key={address.id}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        address.isDefault 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            {getAddressTypeIcon(address.type)}
+                            <span className="font-medium text-gray-900">
+                              {address.label || getAddressTypeLabel(address.type)}
+                            </span>
+                            {address.isDefault && (
+                              <Chip 
+                                size="sm" 
+                                color="primary" 
                                 variant="flat"
-                                color="default"
-                                size="sm"
-                              >
-                                {getAddressTypeLabel(address.type)}
-                              </Chip>
-                            </div>
-                            
-                            <div className="space-y-1 text-sm">
-                              <p className="font-medium text-gray-900">
-                                {address.recipientName}
-                              </p>
-                              <p className="text-gray-600">
-                                {address.phoneNumber}
-                              </p>
-                              <p className="text-gray-600">
-                                {address.fullAddress}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            {!address.isDefault && (
-                              <Button
-                                size="sm"
-                                variant="light"
-                                color="warning"
                                 startContent={<Star className="w-3 h-3" />}
-                                onClick={() => handleSetDefaultAddress(address.id)}
                               >
-                                Đặt mặc định
-                              </Button>
+                                Mặc định
+                              </Chip>
                             )}
+                          </div>
+                          <p className="text-gray-600 mb-1">
+                            <strong>{address.recipientName}</strong> | {formatPhoneNumber(address.phoneNumber)}
+                          </p>
+                          <p className="text-gray-600 text-sm">
+                            {address.fullAddress}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          {!address.isDefault && (
                             <Button
                               size="sm"
+                              color="primary"
                               variant="light"
-                              color="danger"
-                              isIconOnly
-                              onClick={() => handleAddressDeleted(address.id)}
+                              onClick={() => handleSetDefaultAddress(address.id)}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              Đặt mặc định
                             </Button>
-                          </div>
+                          )}
+                          <Button
+                            size="sm"
+                            color="danger"
+                            variant="light"
+                            startContent={<Trash2 className="w-3 h-3" />}
+                            onClick={() => handleAddressDeleted(address.id)}
+                          >
+                            Xóa
+                          </Button>
                         </div>
-                      </CardBody>
-                    </Card>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

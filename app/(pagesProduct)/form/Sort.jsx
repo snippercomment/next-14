@@ -12,8 +12,7 @@ export default function Sort({ sortBy, onSortChange, data, onDataSorted }) {
     const sortOptions = [
         { value: 'price_low', label: 'Giá thấp đến cao' },
         { value: 'price_high', label: 'Giá cao đến thấp' },
-        { value: 'name_asc', label: 'Tên A-Z' },
-        { value: 'name_desc', label: 'Tên Z-A' },
+       
         { value: 'newest', label: 'Mới nhất' },
     ];
 
@@ -50,24 +49,7 @@ export default function Sort({ sortBy, onSortChange, data, onDataSorted }) {
                     const priceB2 = getPrice(b);
                     return priceB2 - priceA2;
 
-                case 'name_asc':
-                    const nameA = getName(a);
-                    const nameB = getName(b);
-                    return nameA.localeCompare(nameB, 'vi', {
-                        sensitivity: 'base',
-                        numeric: true,
-                        ignorePunctuation: true
-                    });
-
-                case 'name_desc':
-                    const nameA2 = getName(a);
-                    const nameB2 = getName(b);
-                    return nameB2.localeCompare(nameA2, 'vi', {
-                        sensitivity: 'base',
-                        numeric: true,
-                        ignorePunctuation: true
-                    });
-
+                
                 case 'newest':
                     // Sắp xếp theo ngày tạo (mới nhất trước)
                     const dateA = new Date(a.createdAt || a.timestamp || 0);

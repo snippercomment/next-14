@@ -4,17 +4,39 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProduct } from "@/lib/firestore/products/read";
 import { useUser } from "@/lib/firestore/user/read";
 import { updateCarts } from "@/lib/firestore/user/write";
-import { Button, CircularProgress } from "@nextui-org/react";
+import { Button, CircularProgress, Input } from "@nextui-org/react";
 import { Minus, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Page() {
   const { user } = useAuth();
   const { data, isLoading } = useUser({ uid: user?.uid });
+  const [cartValidation, setCartValidation] = useState({});
   
   if (isLoading) {
-    return (
+    // Check if cart is valid for checkout
+  const checkCartValidity = () => {
+    if (!data?.carts || data.carts.length === 0) return false;
+    
+    const hasInvalidItems = Object.values(cartValidation).some(item => 
+      item.isOutOfStock || item.exceedsStock
+    );
+    
+    return !hasInvalidItems;
+  };
+
+  const handleCheckout = () => {
+    if (!checkCartValidity()) {
+      toast.error("Không thể thanh toán! Vui lòng kiểm tra lại số lượng sản phẩm.");
+      return;
+    }
+    // Proceed to checkout
+    window.location.href = `/checkout?type=cart`;
+  };
+
+  return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <CircularProgress size="lg" />
       </div>
@@ -66,7 +88,16 @@ export default function Page() {
                 
                 <div className="divide-y divide-gray-200">
                   {data?.carts?.map((item, key) => (
-                    <ProductItem item={item} key={item?.id} />
+                    <ProductItem 
+                      item={item} 
+                      key={item?.id} 
+                      onValidationChange={(itemId, validationData) => {
+                        setCartValidation(prev => ({
+                          ...prev,
+                          [itemId]: validationData
+                        }));
+                      }}
+                    />
                   ))}
                 </div>
               </div>
@@ -107,6 +138,7 @@ function ProductItem({ item }) {
 
   const [isRemoving, setIsRemoving] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [inputQuantity, setInputQuantity] = useState(item?.quantity?.toString() || "1");
 
   const { data: product } = useProduct({ productId: item?.id });
 
@@ -123,6 +155,13 @@ function ProductItem({ item }) {
   };
 
   const handleUpdate = async (quantity) => {
+    // Kiểm tra tồn kho
+    if (product?.stock && quantity > product.stock) {
+      toast.error(`Bạn đã chọn hết! Chỉ còn ${product.stock} sản phẩm trong kho.`);
+      setInputQuantity(product.stock.toString());
+      return;
+    }
+
     setIsUpdating(true);
     try {
       const newList = data?.carts?.map((d) => {
@@ -140,6 +179,26 @@ function ProductItem({ item }) {
       toast.error(error?.message);
     }
     setIsUpdating(false);
+  };
+
+  const handleInputChange = (value) => {
+    setInputQuantity(value);
+  };
+
+  const handleInputBlur = () => {
+    const quantity = parseInt(inputQuantity);
+    if (isNaN(quantity) || quantity < 1) {
+      setInputQuantity("1");
+      handleUpdate(1);
+    } else {
+      handleUpdate(quantity);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleInputBlur();
+    }
   };
 
   // Helper function to format the price to Vietnamese Dong
@@ -186,25 +245,60 @@ function ProductItem({ item }) {
             )}
           </div>
 
+          {/* Stock Info */}
+          {product?.stock && (
+            <div className="mb-2">
+              <span className="text-sm text-gray-500">
+                Còn lại: <span className="font-medium text-gray-700">{product.stock}</span> sản phẩm
+              </span>
+            </div>
+          )}
+
           {/* Quantity Controls */}
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600 font-medium">Số lượng:</span>
             <div className="flex items-center border border-gray-300 rounded-lg">
               <Button
-                onClick={() => handleUpdate(item?.quantity - 1)}
-                isDisabled={isUpdating || item?.quantity <= 1}
+                onClick={() => {
+                  const newQuantity = Math.max(1, parseInt(inputQuantity) - 1);
+                  setInputQuantity(newQuantity.toString());
+                  handleUpdate(newQuantity);
+                }}
+                isDisabled={isUpdating || parseInt(inputQuantity) <= 1}
                 isIconOnly
                 size="sm"
                 className="h-8 w-8 min-w-0 bg-transparent hover:bg-gray-100"
               >
                 <Minus size={16} />
               </Button>
-              <span className="px-4 py-2 font-medium min-w-[3rem] text-center">
-                {item?.quantity}
-              </span>
+              
+              <Input
+                value={inputQuantity}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onBlur={handleInputBlur}
+                onKeyPress={handleKeyPress}
+                type="number"
+                min="1"
+                max={product?.stock || 999}
+                className="w-16 text-center"
+                classNames={{
+                  input: "text-center font-medium",
+                  inputWrapper: "border-0 shadow-none h-8 min-h-0"
+                }}
+                size="sm"
+              />
+              
               <Button
-                onClick={() => handleUpdate(item?.quantity + 1)}
-                isDisabled={isUpdating}
+                onClick={() => {
+                  const newQuantity = parseInt(inputQuantity) + 1;
+                  if (product?.stock && newQuantity > product.stock) {
+                    toast.error(`Bạn đã chọn hết! Chỉ còn ${product.stock} sản phẩm trong kho.`);
+                    return;
+                  }
+                  setInputQuantity(newQuantity.toString());
+                  handleUpdate(newQuantity);
+                }}
+                isDisabled={isUpdating || (product?.stock && parseInt(inputQuantity) >= product.stock)}
                 isIconOnly
                 size="sm"
                 className="h-8 w-8 min-w-0 bg-transparent hover:bg-gray-100"

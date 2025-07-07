@@ -83,6 +83,17 @@ export default function AddressModal({
     setMessage("");
   };
 
+  // Validate số điện thoại Việt Nam
+  const validatePhoneNumber = (phone) => {
+    // Loại bỏ khoảng trắng và dấu
+    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+    
+    // Regex cho số điện thoại Việt Nam
+    const phoneRegex = /^(\+84|84|0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
+    
+    return phoneRegex.test(cleanPhone);
+  };
+
   const handleAddAddress = async () => {
     setIsAdding(true);
     setMessage("");
@@ -95,6 +106,11 @@ export default function AddressModal({
 
       if (!addressForm.phoneNumber.trim()) {
         throw new Error("Vui lòng nhập số điện thoại!");
+      }
+
+      // Validate số điện thoại
+      if (!validatePhoneNumber(addressForm.phoneNumber)) {
+        throw new Error("Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại Việt Nam (ví dụ: 0901234567, 0987654321)");
       }
 
       if (!addressForm.city || !addressForm.district || !addressForm.ward) {
@@ -169,6 +185,7 @@ export default function AddressModal({
                     onChange={(e) => handleInputChange("recipientName", e.target.value)}
                     variant="bordered"
                     fullWidth
+                    aria-label="Tên người nhận"
                   />
                 </div>
 
@@ -179,11 +196,13 @@ export default function AddressModal({
                   </label>
                   <Input
                     type="tel"
-                    placeholder="Nhập số điện thoại"
+                    placeholder="Nhập số điện thoại (ví dụ: 0901234567)"
                     value={addressForm.phoneNumber}
                     onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
                     variant="bordered"
                     fullWidth
+                    aria-label="Số điện thoại"
+                    maxLength={15}
                   />
                 </div>
 
@@ -198,6 +217,7 @@ export default function AddressModal({
                     onSelectionChange={(keys) => handleInputChange("city", Array.from(keys)[0] || "")}
                     variant="bordered"
                     fullWidth
+                    aria-label="Tỉnh/Thành phố"
                   >
                     {VIETNAM_PROVINCES.map((province) => (
                       <SelectItem key={province.code} value={province.code}>
@@ -219,6 +239,7 @@ export default function AddressModal({
                     variant="bordered"
                     fullWidth
                     isDisabled={!addressForm.city}
+                    aria-label="Quận/Huyện"
                   >
                     {availableDistricts.map((district) => (
                       <SelectItem key={district} value={district}>
@@ -240,6 +261,7 @@ export default function AddressModal({
                     variant="bordered"
                     fullWidth
                     isDisabled={!addressForm.district}
+                    aria-label="Phường/Xã"
                   >
                     {availableWards.map((ward) => (
                       <SelectItem key={ward} value={ward}>
@@ -261,20 +283,7 @@ export default function AddressModal({
                     variant="bordered"
                     fullWidth
                     minRows={3}
-                  />
-                </div>
-
-                {/* Đặt tên cho địa chỉ */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Đặt tên cho địa chỉ
-                  </label>
-                  <Input
-                    placeholder="VD: Nhà riêng, Văn phòng..."
-                    value={addressForm.label}
-                    onChange={(e) => handleInputChange("label", e.target.value)}
-                    variant="bordered"
-                    fullWidth
+                    aria-label="Địa chỉ cụ thể"
                   />
                 </div>
 
@@ -289,6 +298,7 @@ export default function AddressModal({
                     onSelectionChange={(keys) => handleInputChange("type", Array.from(keys)[0] || "")}
                     variant="bordered"
                     fullWidth
+                    aria-label="Loại địa chỉ"
                   >
                     {addressTypes.map((type) => (
                       <SelectItem key={type.key} value={type.key}>
@@ -329,7 +339,7 @@ export default function AddressModal({
                 color="primary" 
                 onPress={handleAddAddress}
                 isLoading={isAdding}
-                className="bg-red-500 hover:bg-red-600"
+                className="bg-blue-500 hover:bg-blue-600"
               >
                 {isAdding ? "Đang thêm..." : "Thêm địa chỉ"}
               </Button>
