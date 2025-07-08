@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Modal,
   ModalContent,
@@ -26,9 +26,11 @@ export default function AddressModal({
   isOpen, 
   onOpenChange, 
   onAddressAdded, 
+  onAddressUpdated,
+  editingAddress,
   uid 
 }) {
-  const [isAdding, setIsAdding] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState("");
 
   const [addressForm, setAddressForm] = useState({
@@ -48,6 +50,28 @@ export default function AddressModal({
   
   // Lấy danh sách phường/xã theo quận được chọn
   const availableWards = getWardsByDistrict(addressForm.city, addressForm.district);
+
+  // Effect để load dữ liệu khi editingAddress thay đổi
+  useEffect(() => {
+    if (editingAddress) {
+      // Tìm mã tỉnh từ tên tỉnh
+      const province = VIETNAM_PROVINCES.find(p => p.name === editingAddress.cityName);
+      
+      setAddressForm({
+        recipientName: editingAddress.recipientName || "",
+        phoneNumber: editingAddress.phoneNumber || "",
+        city: province?.code || editingAddress.city || "",
+        district: editingAddress.district || "",
+        ward: editingAddress.ward || "",
+        address: editingAddress.address || "",
+        label: editingAddress.label || "",
+        type: editingAddress.type || "home",
+        isDefault: editingAddress.isDefault || false,
+      });
+    } else {
+      resetForm();
+    }
+  }, [editingAddress]);
 
   const handleInputChange = (field, value) => {
     setAddressForm(prev => {
@@ -94,8 +118,8 @@ export default function AddressModal({
     return phoneRegex.test(cleanPhone);
   };
 
-  const handleAddAddress = async () => {
-    setIsAdding(true);
+  const handleSubmit = async () => {
+    setIsProcessing(true);
     setMessage("");
     
     try {
@@ -122,8 +146,7 @@ export default function AddressModal({
       }
 
       // Tạo object địa chỉ hoàn chỉnh
-      const newAddress = {
-        id: Date.now().toString(), // Temporary ID
+      const addressData = {
         recipientName: addressForm.recipientName.trim(),
         phoneNumber: addressForm.phoneNumber.trim(),
         city: addressForm.city,
@@ -132,24 +155,39 @@ export default function AddressModal({
         ward: addressForm.ward,
         address: addressForm.address.trim(),
         fullAddress: `${addressForm.address.trim()}, ${addressForm.ward}, ${addressForm.district}, ${VIETNAM_PROVINCES.find(p => p.code === addressForm.city)?.name || ""}`,
-        label: addressForm.label.trim() || "Địa chỉ mới",
+        label: addressForm.label.trim() || (editingAddress ? editingAddress.label : "Địa chỉ mới"),
         type: addressForm.type || "home",
         isDefault: addressForm.isDefault,
-        createdAt: new Date().toISOString(),
       };
 
-      // Gọi callback để thêm địa chỉ
-      await onAddressAdded(newAddress);
+      if (editingAddress) {
+        // Cập nhật địa chỉ
+        const updatedAddress = {
+          ...addressData,
+          id: editingAddress.id,
+          createdAt: editingAddress.createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+        await onAddressUpdated(updatedAddress);
+      } else {
+        // Thêm địa chỉ mới
+        const newAddress = {
+          ...addressData,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString(),
+        };
+        await onAddressAdded(newAddress);
+      }
       
       // Reset form và đóng modal
       resetForm();
       onOpenChange(false);
       
     } catch (error) {
-      setMessage(error.message || "Lỗi khi thêm địa chỉ! Vui lòng thử lại.");
-      console.error("Lỗi thêm địa chỉ:", error);
+      setMessage(error.message || `Lỗi khi ${editingAddress ? 'cập nhật' : 'thêm'} địa chỉ! Vui lòng thử lại.`);
+      console.error(`Lỗi ${editingAddress ? 'cập nhật' : 'thêm'} địa chỉ:`, error);
     } finally {
-      setIsAdding(false);
+      setIsProcessing(false);
     }
   };
 
@@ -170,7 +208,7 @@ export default function AddressModal({
         {(onClose) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              Thêm địa chỉ mới
+              {editingAddress ? "Sửa địa chỉ" : "Thêm địa chỉ mới"}
             </ModalHeader>
             <ModalBody>
               <div className="space-y-4">
@@ -287,6 +325,21 @@ export default function AddressModal({
                   />
                 </div>
 
+                {/* Nhãn địa chỉ */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nhãn địa chỉ (tùy chọn)
+                  </label>
+                  <Input
+                    placeholder="Ví dụ: Nhà riêng, Văn phòng, Nhà bạn..."
+                    value={addressForm.label}
+                    onChange={(e) => handleInputChange("label", e.target.value)}
+                    variant="bordered"
+                    fullWidth
+                    aria-label="Nhãn địa chỉ"
+                  />
+                </div>
+
                 {/* Loại địa chỉ */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -331,17 +384,20 @@ export default function AddressModal({
                 color="danger" 
                 variant="light" 
                 onPress={handleClose}
-                isDisabled={isAdding}
+                isDisabled={isProcessing}
               >
                 Hủy
               </Button>
               <Button 
                 color="primary" 
-                onPress={handleAddAddress}
-                isLoading={isAdding}
+                onPress={handleSubmit}
+                isLoading={isProcessing}
                 className="bg-blue-500 hover:bg-blue-600"
               >
-                {isAdding ? "Đang thêm..." : "Thêm địa chỉ"}
+                {isProcessing ? 
+                  (editingAddress ? "Đang cập nhật..." : "Đang thêm...") : 
+                  (editingAddress ? "Cập nhật" : "Thêm địa chỉ")
+                }
               </Button>
             </ModalFooter>
           </>

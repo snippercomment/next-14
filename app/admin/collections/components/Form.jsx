@@ -67,7 +67,13 @@ export default function Form() {
     const handleUpdate = async () => {
         setIsLoading(true);
         try {
-            await updateCollection({ data: data, image: image });
+            // Chỉ truyền image nếu có ảnh mới được chọn
+            const updateData = {
+                id: id,
+                data: data,
+                ...(image && { image: image }) // Chỉ thêm image nếu có ảnh mới
+            };
+            await updateCollection(updateData);
             toast.success("Đã cập nhật bộ sưu tập thành công");
             setData(null);
             setImage(null);
@@ -96,11 +102,16 @@ export default function Form() {
                     <label htmlFor="collection-image" className="text-gray-500 text-sm">
                         Hình Ảnh <span className="text-red-500">*</span>{" "}
                     </label>
-                    {image && (
-                        <div className="flex justify-center items-center p-3">
-                            <img className="h-20" src={URL.createObjectURL(image)} alt="" />
-                        </div>
-                    )}
+                    <div className="flex justify-center items-center p-3">
+                        {/* Hiển thị ảnh mới nếu có, nếu không thì hiển thị ảnh cũ */}
+                        {image ? (
+                            <img className="h-20" src={URL.createObjectURL(image)} alt="Ảnh mới" />
+                        ) : (
+                            data?.imageURL && (
+                                <img className="h-20" src={data.imageURL} alt="Ảnh hiện tại" />
+                            )
+                        )}
+                    </div>
                     <input
                         onChange={(e) => {
                             if (e.target.files.length > 0) {

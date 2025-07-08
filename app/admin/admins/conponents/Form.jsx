@@ -13,13 +13,13 @@ export default function Form() {
     // lấy id từ url
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
+    
     // nếu có id thì lấy dữ liệu danh mục
     const fetchData = async () => {
         try {
             const res = await getAdmin({ id: id });
             if (!res) {
                 toast.error("Tài khoản không tồn tại");
-
             }
             else {
                 setData(res);
@@ -28,11 +28,13 @@ export default function Form() {
             toast.error(error?.message);
         }
     };
+    
     useEffect(() => {
         if (id) {
             fetchData();
         }
     }, [id]);
+    
     // xử lý dữ liệu
     const handleData = (key, value) => {
         setData((preData) => {
@@ -42,6 +44,7 @@ export default function Form() {
             }
         })
     }
+    
     // tạo danh mục
     const handleCreate = async () => {
         setIsLoading(true);
@@ -55,11 +58,18 @@ export default function Form() {
         }
         setIsLoading(false);
     }
+    
     // cập nhật danh mục
     const handleUpdate = async () => {
         setIsLoading(true);
         try {
-            await updateAdmin({ id: id, data: data, image: image });
+            // Chỉ truyền image nếu có ảnh mới được chọn
+            const updateData = {
+                id: id,
+                data: data,
+                ...(image && { image: image }) // Chỉ thêm image nếu có ảnh mới
+            };
+            await updateAdmin(updateData);
             toast.success("Cập nhật tài khoản thành công");
             setData(null);
             setImage(null);
@@ -69,6 +79,7 @@ export default function Form() {
         }
         setIsLoading(false);
     }
+    
     return (
         <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full md:w-[400px]">
             <h1 className="font-semibold">{id ? "Cập nhật" : "Tạo"} tài khoản</h1>
@@ -89,7 +100,14 @@ export default function Form() {
                         Ảnh <span className="text-red-500">*</span>{" "}
                     </label>
                     <div className="flex items-center justify-center p-3">
-                        {image && <img className="h-32" src={URL.createObjectURL(image)} alt="Ảnh" />}
+                        {/* Hiển thị ảnh mới nếu có, nếu không thì hiển thị ảnh cũ */}
+                        {image ? (
+                            <img className="h-32" src={URL.createObjectURL(image)} alt="Ảnh mới" />
+                        ) : (
+                            data?.imageURL && (
+                                <img className="h-32" src={data.imageURL} alt="Ảnh hiện tại" />
+                            )
+                        )}
                     </div>
                 </div>
                 <div>
@@ -104,8 +122,8 @@ export default function Form() {
                             }
                         }}
                     />
-
                 </div>
+                
                 {/*  tên tài khoản */}
                 <div className="flex flex-col gap-1">
                     <label htmlFor="admin-name" className="text-gray-500 text-sm">
@@ -123,8 +141,8 @@ export default function Form() {
                         }}
                         className="border px-4 py-2 rounded-lg w-full focus:outline"
                     />
-
                 </div>
+                
                 {/* Email */}
                 <div className="flex flex-col gap-1">
                     <label htmlFor="admin-email" className="text-gray-500 text-sm">
@@ -142,12 +160,12 @@ export default function Form() {
                         }}
                         className="border px-4 py-2 rounded-lg w-full focus:outline"
                     />
-
                 </div>
 
-                <Button isLoading={isLoading} isDisabled={isLoading} type="submit">{id ? "Cập nhật" : "Tạo"} tài khoản</Button>
+                <Button isLoading={isLoading} isDisabled={isLoading} type="submit">
+                    {id ? "Cập nhật" : "Tạo"} tài khoản
+                </Button>
             </form>
         </div>
-
     )
 }

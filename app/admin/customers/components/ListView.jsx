@@ -1,10 +1,27 @@
 "use client";
 
 import { useUsers } from "@/lib/firestore/user/read";
-import { Avatar, CircularProgress, Chip } from "@nextui-org/react";
+import { Avatar, CircularProgress, Chip, Button } from "@nextui-org/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
+
+const ITEMS_PER_PAGE = 5;
 
 export default function ListView() {
   const { data: users, error, isLoading } = useUsers();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Tính toán pagination
+  const totalPages = Math.ceil((users?.length || 0) / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentUsers = users?.slice(startIndex, endIndex) || [];
+
+  // Xử lý chuyển trang
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (isLoading) {
     return (
@@ -24,6 +41,15 @@ export default function ListView() {
   
   return (
     <div className="flex-1 flex flex-col gap-3 md:pr-5 md:px-0 px-5 rounded-xl">
+      {/* Header với tổng số khách hàng */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm text-gray-500 mt-1">
+            Tổng cộng: {users?.length || 0} khách hàng
+          </p>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-y-3 min-w-[1000px]">
           <thead>
@@ -52,12 +78,144 @@ export default function ListView() {
             </tr>
           </thead>
           <tbody>
-            {users?.map((item, index) => {
-              return <Row index={index} item={item} key={item?.id} />;
-            })}
+            {currentUsers.length > 0 ? (
+              currentUsers.map((item, index) => {
+                return <Row index={startIndex + index} item={item} key={item?.id} />;
+              })
+            ) : (
+              <tr>
+                <td colSpan="7" className="text-center py-10 text-gray-500 bg-white border rounded-lg">
+                  Không có dữ liệu người dùng
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+          <div className="text-sm text-gray-500">
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, users?.length || 0)} của {users?.length || 0} kết quả
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Previous Button */}
+            <Button
+              isIconOnly
+              variant="flat"
+              size="sm"
+              onPress={() => handlePageChange(currentPage - 1)}
+              isDisabled={currentPage === 1}
+              className="min-w-8 h-8"
+            >
+              <ChevronLeft size={16} />
+            </Button>
+
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {(() => {
+                const pageNumbers = [];
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                // Điều chỉnh startPage nếu endPage đã tới maximum
+                if (endPage === totalPages) {
+                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                // Hiển thị trang đầu và dấu ...
+                if (startPage > 1) {
+                  pageNumbers.push(
+                    <Button
+                      key={1}
+                      variant={currentPage === 1 ? "solid" : "flat"}
+                      size="sm"
+                      onPress={() => handlePageChange(1)}
+                      className={`min-w-8 h-8 ${currentPage === 1
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-gray-100"
+                        }`}
+                    >
+                      1
+                    </Button>
+                  );
+
+                  if (startPage > 2) {
+                    pageNumbers.push(
+                      <span key="start-ellipsis" className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+                }
+
+                // Hiển thị các trang ở giữa
+                for (let i = startPage; i <= endPage; i++) {
+                  if (i !== 1 && i !== totalPages) {
+                    pageNumbers.push(
+                      <Button
+                        key={i}
+                        variant={currentPage === i ? "solid" : "flat"}
+                        size="sm"
+                        onPress={() => handlePageChange(i)}
+                        className={`min-w-8 h-8 ${currentPage === i
+                            ? "bg-blue-600 text-white"
+                            : "hover:bg-gray-100"
+                          }`}
+                      >
+                        {i}
+                      </Button>
+                    );
+                  }
+                }
+
+                // Hiển thị dấu ... và trang cuối
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pageNumbers.push(
+                      <span key="end-ellipsis" className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  pageNumbers.push(
+                    <Button
+                      key={totalPages}
+                      variant={currentPage === totalPages ? "solid" : "flat"}
+                      size="sm"
+                      onPress={() => handlePageChange(totalPages)}
+                      className={`min-w-8 h-8 ${currentPage === totalPages
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-gray-100"
+                        }`}
+                    >
+                      {totalPages}
+                    </Button>
+                  );
+                }
+
+                return pageNumbers;
+              })()}
+            </div>
+
+            {/* Next Button */}
+            <Button
+              isIconOnly
+              variant="flat"
+              size="sm"
+              onPress={() => handlePageChange(currentPage + 1)}
+              isDisabled={currentPage === totalPages}
+              className="min-w-8 h-8"
+            >
+              <ChevronRight size={16} />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

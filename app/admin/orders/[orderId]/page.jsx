@@ -90,7 +90,6 @@ export default function Page() {
   const address = getOrderAddress(order);
   
   const isOnlinePayment = order?.paymentMode === 'prepaid' || 
-                         order?.paymentMode === 'online' || 
                          order?.payment_method === 'card';
   
   const lineItems = order?.line_items || order?.checkout?.line_items || [];
@@ -98,9 +97,7 @@ export default function Page() {
   const getPaymentModeLabel = (mode) => {
     const labels = {
       'prepaid': 'Thanh toán trực tuyến',
-      'cod': 'Thanh toán khi nhận hàng (COD)',
-      'online': 'Thanh toán trực tuyến',
-      'cash': 'Thanh toán tiền mặt'
+      'cod': 'Thanh toán khi nhận hàng (COD)',   
     };
     return labels[mode] || 'Thanh toán khi nhận hàng (COD)';
   };
@@ -108,17 +105,14 @@ export default function Page() {
   // Chuẩn hóa trạng thái đơn hàng
   const getStatusLabel = (status) => {
     const labels = {
-      'pending': 'Chờ xử lý',
+      'pending': 'Chờ xác nhận',
       'confirmed': 'Đã xác nhận',
-      'shipped': 'Đang giao hàng',
-      'delivered': 'Đã giao hàng',
       'cancelled': 'Đã hủy',
-      // Xử lý trạng thái cũ
-      'processing': 'Đã xác nhận',
+      'paid': 'Đã thanh toán',
       'completed': 'Đã giao hàng',
       'succeeded': 'Đã giao hàng'
     };
-    return labels[status] || 'Chờ xử lý';
+    return labels[status] || 'Chờ xác nhận';
   };
 
   // Lấy màu sắc cho trạng thái
@@ -126,11 +120,8 @@ export default function Page() {
     const colors = {
       'pending': 'bg-yellow-100 text-yellow-600',
       'confirmed': 'bg-blue-100 text-blue-600',
-      'shipped': 'bg-purple-100 text-purple-600',
-      'delivered': 'bg-green-100 text-green-600',
-      'cancelled': 'bg-red-100 text-red-600',
-      // Xử lý trạng thái cũ
-      'processing': 'bg-blue-100 text-blue-600',
+      'paid': 'bg-indigo-100 text-indigo-600',
+      'cancelled': 'bg-red-100 text-red-600',  
       'completed': 'bg-green-100 text-green-600',
       'succeeded': 'bg-green-100 text-green-600'
     };
@@ -214,17 +205,11 @@ export default function Page() {
               <td className="py-2">{address?.email || order?.customer_email || 'Chưa cập nhật'}</td>
             </tr>
             <tr className="border-b">
-              <td className="py-2 font-medium text-gray-700">Địa chỉ 1:</td>
+              <td className="py-2 font-medium text-gray-700">Địa chỉ:</td>
               <td className="py-2">{address?.addressLine1 || address?.address || address?.street || 'Chưa cập nhật'}</td>
             </tr>
-            <tr className="border-b">
-              <td className="py-2 font-medium text-gray-700">Địa chỉ 2:</td>
-              <td className="py-2">{address?.addressLine2 || address?.address2 || 'Không có'}</td>
-            </tr>
-            <tr className="border-b">
-              <td className="py-2 font-medium text-gray-700">Mã bưu điện:</td>
-              <td className="py-2">{address?.pincode || address?.zipCode || address?.postalCode || 'Chưa cập nhật'}</td>
-            </tr>
+            
+           
             <tr className="border-b">
               <td className="py-2 font-medium text-gray-700">Quận/Huyện:</td>
               <td className="py-2">{address?.city || address?.district || 'Chưa cập nhật'}</td>

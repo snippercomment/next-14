@@ -22,8 +22,10 @@ const ADDRESS_FIELDS = [
   { id: "fullName", label: "Họ và tên", required: true },
   { id: "mobile", label: "Số điện thoại", type: "tel", required: true },
   { id: "email", label: "Email", type: "email" },
-  { id: "addressLine1", label: "Địa chỉ chi tiết", required: true },
-  { id: "addressLine2", label: "Ghi chú địa chỉ" },
+  { id: "addressLine1", label: "Địa chỉ", required: true },
+  { id: "district", label: "Quận/Huyện", required: true },
+  { id: "city", label: "Tỉnh/Thành phố", required: true },
+  { id: "notes", label: "Ghi chú" },
 ];
 
 const PAYMENT_METHODS = [
@@ -54,8 +56,10 @@ export default function Checkout({ productList }) {
           fullName: defaultAddress.recipientName || currentUser.displayName || "",
           mobile: defaultAddress.phoneNumber || currentUser.phoneNumber || "",
           email: user?.email || "",
-          addressLine1: defaultAddress.fullAddress || "",
-          addressLine2: "",
+          addressLine1: defaultAddress.addressLine1 || defaultAddress.fullAddress || "",
+          district: defaultAddress.district || "",
+          city: defaultAddress.city || "",
+          notes: defaultAddress.notes || "",
         });
       } else {
         setAddress({
@@ -63,7 +67,9 @@ export default function Checkout({ productList }) {
           mobile: currentUser.phoneNumber || "",
           email: user?.email || "",
           addressLine1: "",
-          addressLine2: "",
+          district: "",
+          city: "",
+          notes: "",
         });
       }
     }
@@ -79,8 +85,10 @@ export default function Checkout({ productList }) {
       fullName: userAddress.recipientName || currentUser?.displayName || "",
       mobile: userAddress.phoneNumber || currentUser?.phoneNumber || "",
       email: user?.email || "",
-      addressLine1: userAddress.fullAddress || "",
-      addressLine2: "",
+      addressLine1: userAddress.addressLine1 || userAddress.fullAddress || "",
+      district: userAddress.district || "",
+      city: userAddress.city || "",
+      notes: userAddress.notes || "",
     });
   };
 
@@ -96,8 +104,16 @@ export default function Checkout({ productList }) {
 
     try {
       setIsLoading(true);
-      validateOrderData(productList, address, totalPrice);
-      const orderData = prepareOrderData(user, productList, address, totalPrice, paymentMode);
+      
+      // Tạo fullAddress từ các trường riêng biệt
+      const fullAddress = `${address.addressLine1}, ${address.district}, ${address.city}`;
+      const orderAddress = {
+        ...address,
+        fullAddress: fullAddress
+      };
+      
+      validateOrderData(productList, orderAddress, totalPrice);
+      const orderData = prepareOrderData(user, productList, orderAddress, totalPrice, paymentMode);
 
       if (paymentMode === "prepaid") {
         const url = await createPaymentIntentCheckout(orderData);
@@ -134,7 +150,7 @@ export default function Checkout({ productList }) {
         {currentUser?.addresses?.length > 0 && !useCustomAddress && (
           <div className="space-y-3 mb-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-sm font-medium">Chọn địa chỉ đã lưu:</h3>
+              <h3 className="text-sm font-medium">Chọn từ địa chỉ đã lưu:</h3>
               <button
                 onClick={() => setUseCustomAddress(true)}
                 className="text-sm text-blue-600 underline"
@@ -163,7 +179,9 @@ export default function Checkout({ productList }) {
                     <div className="font-medium">{addr.recipientName}</div>
                     <div className="text-sm text-gray-600">
                       {addr.phoneNumber}<br />
-                      {addr.fullAddress}
+                      {addr.addressLine1 || addr.fullAddress}<br />
+                      {addr.district}, {addr.city}
+                      {addr.notes && <><br />Ghi chú: {addr.notes}</>}
                     </div>
                   </div>
                 </div>

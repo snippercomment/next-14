@@ -13,7 +13,8 @@ import {
   useDisclosure,
   Chip,
 } from "@nextui-org/react";
-import { Save, X, Edit3, User, Camera, Sparkles, MapPin, Plus, Home, Building, Trash2, Star } from "lucide-react"; 
+import { Save, X, Edit3, User, Camera, Sparkles, MapPin, Plus, Home, Building, Trash2, Star, Edit, CheckCircle, AlertCircle } from "lucide-react"; 
+import toast, { Toaster } from 'react-hot-toast';
 
 import { useUser } from "@/lib/firestore/user/read";
 import { updateUser } from "@/lib/firestore/user/write";
@@ -33,11 +34,11 @@ export default function UserProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState("");
 
   // Address Modal state
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const [addresses, setAddresses] = useState([]);
+  const [editingAddress, setEditingAddress] = useState(null);
 
   const [form, setForm] = useState({
     displayName: "",
@@ -55,6 +56,55 @@ export default function UserProfilePage() {
     { key: "female", label: "Nữ" },
     { key: "other", label: "Khác" },
   ];
+
+  // Toast notification functions
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      duration: 3000,
+      position: 'top-right',
+      style: {
+        background: '#10B981',
+        color: '#fff',
+        borderRadius: '8px',
+        padding: '12px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+      },
+      icon: <CheckCircle className="w-5 h-5" />,
+    });
+  };
+
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      duration: 4000,
+      position: 'top-right',
+      style: {
+        background: '#EF4444',
+        color: '#fff',
+        borderRadius: '8px',
+        padding: '12px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+      },
+      icon: <AlertCircle className="w-5 h-5" />,
+    });
+  };
+
+  const showWarningToast = (message) => {
+    toast(message, {
+      duration: 3000,
+      position: 'top-right',
+      style: {
+        background: '#F59E0B',
+        color: '#fff',
+        borderRadius: '8px',
+        padding: '12px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+      },
+      icon: <AlertCircle className="w-5 h-5" />,
+    });
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -91,12 +141,12 @@ export default function UserProfilePage() {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
-        setMessage("Vui lòng chọn file ảnh!");
+        showErrorToast("Vui lòng chọn file ảnh!");
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        setMessage("Kích thước ảnh không được vượt quá 5MB!");
+        showErrorToast("Kích thước ảnh không được vượt quá 5MB!");
         return;
       }
 
@@ -107,23 +157,21 @@ export default function UserProfilePage() {
         setImagePreview(e.target.result);
       };
       reader.readAsDataURL(file);
-      setMessage("");
     }
   };
 
   const handleSave = async () => {
     setIsSaving(true);
-    setMessage("");
 
     try {
       if (!uid) {
-        setMessage("Lỗi: Không tìm thấy ID người dùng để cập nhật.");
+        showErrorToast("Lỗi: Không tìm thấy ID người dùng để cập nhật.");
         setIsSaving(false);
         return;
       }
 
       if (!form.displayName.trim()) {
-        setMessage("Tên hiển thị không được để trống!");
+        showErrorToast("Tên hiển thị không được để trống!");
         setIsSaving(false);
         return;
       }
@@ -135,7 +183,7 @@ export default function UserProfilePage() {
         try {
           photoURL = await uploadImageToCloudinary(selectedImage, 'user-avatars');
         } catch (uploadError) {
-          setMessage("Lỗi khi tải ảnh lên! Vui lòng thử lại.");
+          showErrorToast("Lỗi khi tải ảnh lên! Vui lòng thử lại.");
           console.error("Lỗi upload ảnh:", uploadError);
           setIsSaving(false);
           setIsUploadingImage(false);
@@ -153,10 +201,10 @@ export default function UserProfilePage() {
       });
 
       setSelectedImage(null);
-      setMessage("Cập nhật thành công!");
+      showSuccessToast("Cập nhật thông tin thành công!");
       setIsEditing(false);
     } catch (error) {
-      setMessage("Lỗi khi cập nhật! Vui lòng thử lại.");
+      showErrorToast("Lỗi khi cập nhật! Vui lòng thử lại.");
       console.error("Lỗi cập nhật profile:", error);
     } finally {
       setIsSaving(false);
@@ -166,7 +214,6 @@ export default function UserProfilePage() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setMessage("");
     setSelectedImage(null);
     if (currentUser) {
       setForm({
@@ -196,9 +243,9 @@ export default function UserProfilePage() {
         addresses: finalAddresses
       });
       
-      setMessage("Thêm địa chỉ thành công!");
+      showSuccessToast("Thêm địa chỉ thành công!");
     } catch (error) {
-      setMessage("Lỗi khi thêm địa chỉ! Vui lòng thử lại.");
+      showErrorToast("Lỗi khi thêm địa chỉ! Vui lòng thử lại.");
       console.error("Lỗi thêm địa chỉ:", error);
       throw error;
     }
@@ -213,27 +260,36 @@ export default function UserProfilePage() {
         addresses: updatedAddresses
       });
       
-      setMessage("Xóa địa chỉ thành công!");
+      showSuccessToast("Xóa địa chỉ thành công!");
     } catch (error) {
-      setMessage("Lỗi khi xóa địa chỉ! Vui lòng thử lại.");
+      showErrorToast("Lỗi khi xóa địa chỉ! Vui lòng thử lại.");
       console.error("Lỗi xóa địa chỉ:", error);
     }
   };
 
   const handleAddressUpdated = async (updatedAddress) => {
     try {
-      const updatedAddresses = addresses.map(addr => 
+      // If this is set as default, unset all other defaults
+      let updatedAddresses = addresses.map(addr => 
         addr.id === updatedAddress.id ? updatedAddress : addr
       );
+
+      // If the updated address is set as default, remove default from others
+      if (updatedAddress.isDefault) {
+        updatedAddresses = updatedAddresses.map(addr => 
+          addr.id === updatedAddress.id ? addr : { ...addr, isDefault: false }
+        );
+      }
+
       setAddresses(updatedAddresses);
       
       await updateUser(uid, {
         addresses: updatedAddresses
       });
       
-      setMessage("Cập nhật địa chỉ thành công!");
+      showSuccessToast("Cập nhật địa chỉ thành công!");
     } catch (error) {
-      setMessage("Lỗi khi cập nhật địa chỉ! Vui lòng thử lại.");
+      showErrorToast("Lỗi khi cập nhật địa chỉ! Vui lòng thử lại.");
       console.error("Lỗi cập nhật địa chỉ:", error);
     }
   };
@@ -250,11 +306,23 @@ export default function UserProfilePage() {
         addresses: updatedAddresses
       });
       
-      setMessage("Đặt địa chỉ mặc định thành công!");
+      showSuccessToast("Đặt địa chỉ mặc định thành công!");
     } catch (error) {
-      setMessage("Lỗi khi đặt địa chỉ mặc định! Vui lòng thử lại.");
+      showErrorToast("Lỗi khi đặt địa chỉ mặc định! Vui lòng thử lại.");
       console.error("Lỗi đặt địa chỉ mặc định:", error);
     }
+  };
+
+  // Mở modal để sửa địa chỉ
+  const handleEditAddress = (address) => {
+    setEditingAddress(address);
+    onOpen();
+  };
+
+  // Mở modal để thêm địa chỉ mới
+  const handleAddNewAddress = () => {
+    setEditingAddress(null);
+    onOpen();
   };
 
   const getAddressTypeIcon = (type) => {
@@ -277,6 +345,18 @@ export default function UserProfilePage() {
       default:
         return 'Khác';
     }
+  };
+
+  // Tách địa chỉ để hiển thị chỉ số nhà/đường
+  const formatAddressDisplay = (address) => {
+    if (!address) return "";
+    
+    // Tách số nhà và đường ra khỏi địa chỉ đầy đủ
+    const parts = address.fullAddress.split(", ");
+    if (parts.length > 0) {
+      return parts[0]; // Chỉ lấy số nhà và tên đường
+    }
+    return address.address || "";
   };
 
   if (isAuthLoading || isUserLoading) {
@@ -349,6 +429,9 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
+      {/* Toast Container */}
+      <Toaster />
+      
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Profile Information Card */}
         <Card className="shadow-lg">
@@ -516,7 +599,7 @@ export default function UserProfilePage() {
                   <div className="flex justify-between items-center py-3 border-b border-gray-200">
                     <span className="text-gray-600 font-medium">Địa chỉ mặc định:</span>
                     <span className="text-gray-900 font-medium">
-                      {addresses.find(addr => addr.isDefault)?.label || "-"}
+                      {formatAddressDisplay(addresses.find(addr => addr.isDefault)) || "-"}
                     </span>
                   </div>
                 </div>
@@ -546,24 +629,6 @@ export default function UserProfilePage() {
                   </Button>
                 </div>
               )}
-
-              {/* Message Display */}
-              {message && (
-                <div className="text-center mt-4">
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
-                    message.includes("thành công") 
-                      ? "text-green-700 bg-green-100 border border-green-200" 
-                      : "text-red-700 bg-red-100 border border-red-200"
-                  }`}>
-                    {message.includes("thành công") ? (
-                      <Sparkles className="w-4 h-4" />
-                    ) : (
-                      <X className="w-4 h-4" />
-                    )}
-                    {message}
-                  </div>
-                </div>
-              )}
             </div>
           </CardBody>
         </Card>
@@ -581,7 +646,7 @@ export default function UserProfilePage() {
                 <Button
                   color="primary"
                   startContent={<Plus className="w-4 h-4" />}
-                  onClick={onOpen}
+                  onClick={handleAddNewAddress}
                   className="bg-blue-500 hover:bg-blue-600"
                 >
                   Thêm địa chỉ
@@ -628,30 +693,45 @@ export default function UserProfilePage() {
                           <p className="text-gray-600 mb-1">
                             <strong>{address.recipientName}</strong> | {formatPhoneNumber(address.phoneNumber)}
                           </p>
-                          <p className="text-gray-600 text-sm">
-                            {address.fullAddress}
+                          <p className="text-gray-900 font-medium mb-1">
+                            {formatAddressDisplay(address)}
+                          </p>
+                          <p className="text-gray-500 text-sm">
+                            {address.ward}, {address.district}, {address.cityName}
                           </p>
                         </div>
-                        <div className="flex gap-2 ml-4">
-                          {!address.isDefault && (
+                        <div className="flex flex-col gap-2 ml-4">
+                          <div className="flex gap-2">
                             <Button
                               size="sm"
                               color="primary"
                               variant="light"
+                              startContent={<Edit className="w-3 h-3" />}
+                              onClick={() => handleEditAddress(address)}
+                            >
+                              Sửa
+                            </Button>
+                            <Button
+                              size="sm"
+                              color="danger"
+                              variant="light"
+                              startContent={<Trash2 className="w-3 h-3" />}
+                              onClick={() => handleAddressDeleted(address.id)}
+                            >
+                              Xóa
+                            </Button>
+                          </div>
+                          {!address.isDefault && (
+                            <Button
+                              size="sm"
+                              color="primary"
+                              variant="bordered"
                               onClick={() => handleSetDefaultAddress(address.id)}
+                              className="text-xs"
                             >
                               Đặt mặc định
                             </Button>
                           )}
-                          <Button
-                            size="sm"
-                            color="danger"
-                            variant="light"
-                            startContent={<Trash2 className="w-3 h-3" />}
-                            onClick={() => handleAddressDeleted(address.id)}
-                          >
-                            Xóa
-                          </Button>
                         </div>
                       </div>
                     </div>
@@ -662,11 +742,13 @@ export default function UserProfilePage() {
           </CardBody>
         </Card>
        
-        {/* Add Address Modal */}
+        {/* Add/Edit Address Modal */}
         <AddressModal
           isOpen={isOpen}
           onOpenChange={onOpenChange}
           onAddressAdded={handleAddressAdded}
+          onAddressUpdated={handleAddressUpdated}
+          editingAddress={editingAddress}
           uid={uid}
         />
       </div>

@@ -23,7 +23,6 @@ const calculateTotalAmount = (item) => {
   }
 
   const isOnlinePayment = item?.paymentMode === 'prepaid' || 
-                         item?.paymentMode === 'online' || 
                          item?.payment_method === 'card';
 
   return lineItems.reduce((total, curr) => {
@@ -193,26 +192,23 @@ function Row({ item, index }) {
     const labels = {
       'prepaid': { text: 'Trực tuyến', color: 'bg-blue-100 text-blue-600' },
       'cod': { text: 'COD', color: 'bg-orange-100 text-orange-600' },
-      'online': { text: 'Trực tuyến', color: 'bg-blue-100 text-blue-600' },
-      'cash': { text: 'Tiền mặt', color: 'bg-yellow-100 text-yellow-600' }
+     
     };
     return labels[mode] || { text: 'COD', color: 'bg-orange-100 text-orange-600' };
   };
   // Chuẩn hóa trạng thái đơn hàng 
   const getStatusLabel = (status) => {
-    const labels = {
-      'pending': { text: 'Chờ xử lý', color: 'bg-yellow-100 text-yellow-600' },
-      'confirmed': { text: 'Đã xác nhận', color: 'bg-blue-100 text-blue-600' },
-      'shipped': { text: 'Đang giao hàng', color: 'bg-purple-100 text-purple-600' },
-      'delivered': { text: 'Đã giao hàng', color: 'bg-green-100 text-green-600' },
-      'cancelled': { text: 'Đã hủy', color: 'bg-red-100 text-red-600' },
-      // Xử lý trạng thái cũ
-      'processing': { text: 'Đã xác nhận', color: 'bg-blue-100 text-blue-600' },
-      'completed': { text: 'Đã giao hàng', color: 'bg-green-100 text-green-600' },
-      'succeeded': { text: 'Đã giao hàng', color: 'bg-green-100 text-green-600' }
-    }; 
-    return labels[status] || { text: 'Chờ xử lý', color: 'bg-yellow-100 text-yellow-600' };
+  const labels = {
+    'pending': { text: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-600' },
+    'confirmed': { text: 'Đã xác nhận', color: 'bg-blue-100 text-blue-600' },
+    'paid': { text: 'Đã thanh toán', color: 'bg-indigo-100 text-indigo-600' },
+    'completed': { text: 'Đã giao hàng', color: 'bg-green-100 text-green-600' },
+    'succeeded': { text: 'Đã giao hàng', color: 'bg-green-100 text-green-600' },
+    'cancelled': { text: 'Đã huỷ', color: 'bg-red-100 text-red-600' },
   };
+
+  return labels[status] || { text: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-600' };
+};
   const paymentInfo = getPaymentModeLabel(item?.paymentMode);
   const statusInfo = getStatusLabel(item?.status);
   return (
