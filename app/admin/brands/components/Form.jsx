@@ -160,6 +160,8 @@ export default function Form() {
                             handleData("category", selectedCategory);
                         }}
                         className="w-full"
+                        aria-label="Chọn danh mục thương hiệu"
+                        isRequired
                     >
                         {Object.values(BRAND_CATEGORIES).map((category) => (
                             <SelectItem
@@ -189,7 +191,11 @@ export default function Form() {
                         }}
                         className="border border-gray-300 px-4 py-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
+                        aria-describedby="brand-name-help"
                     />
+                    <p id="brand-name-help" className="text-xs text-gray-500 sr-only">
+                        Nhập tên thương hiệu để hiển thị
+                    </p>
                 </div>
 
                 {/* Ảnh thương hiệu */}
@@ -220,8 +226,9 @@ export default function Form() {
                                 setImage(e.target.files[0])
                             }
                         }}
+                        aria-describedby="brand-image-help"
                     />
-                    <p className="text-xs text-gray-500">
+                    <p id="brand-image-help" className="text-xs text-gray-500">
                         Chấp nhận: JPG, PNG, GIF. Kích thước tối đa: 5MB
                     </p>
                 </div>
@@ -239,6 +246,7 @@ export default function Form() {
                             handleData("status", selectedStatus);
                         }}
                         className="w-full"
+                        aria-label="Chọn trạng thái hoạt động của thương hiệu"
                     >
                         <SelectItem key="active" value="active">
                             Hoạt động
@@ -255,9 +263,13 @@ export default function Form() {
                     type="submit"
                     className="bg-blue-600 text-white hover:bg-blue-700"
                     size="lg"
+                    aria-describedby="submit-button-help"
                 >
                     {isLoading ? "Đang xử lý..." : (id ? "Cập nhật" : "Tạo") + " thương hiệu"}
                 </Button>
+                <p id="submit-button-help" className="text-xs text-gray-500 sr-only">
+                    {id ? "Cập nhật thông tin thương hiệu" : "Tạo thương hiệu mới"}
+                </p>
             </form>
         </div>
     )

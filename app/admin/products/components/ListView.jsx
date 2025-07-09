@@ -2,143 +2,380 @@
 
 import { useProducts } from "@/lib/firestore/products/read";
 import { deleteProduct } from "@/lib/firestore/products/write";
-import { Button, CircularProgress } from "@nextui-org/react";
-import { Edit2, Trash2 } from "lucide-react";
+import { Button, CircularProgress, Select, SelectItem } from "@nextui-org/react";
+import { Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import { getColorById, getProductCategoryInfo, detectProductType } from "../form/components/Colors";
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 
-export default function ListView() {
-    const [pageLimit, setPageLimit] = useState(10);
-    const [lastSnapDocList, setLastSnapDocList] = useState([]);
+const ITEMS_PER_PAGE = 5;
 
-    // lấy danh sách brand và category
+export default function ListView() {
+    const [filterBrand, setFilterBrand] = useState("");
+    const [filterCategory, setFilterCategory] = useState("");
+    const [filterStatus, setFilterStatus] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const router = useRouter();
+
+    // Lấy danh sách brand và category
     const { data: brands } = useBrands();
     const { data: categories } = useCategories();
 
-    useEffect(() => {
-        setLastSnapDocList([]);
-    }, [pageLimit]);
-
+    // Load tất cả sản phẩm
     const {
         data: products,
         error,
         isLoading,
-        lastSnapDoc,
     } = useProducts({
-        pageLimit: pageLimit,
-        lastSnapDoc:
-            lastSnapDocList?.length === 0
-                ? null
-                : lastSnapDocList[lastSnapDocList?.length - 1],
+        pageLimit: 1000, // Load nhiều để có tất cả sản phẩm
+        lastSnapDoc: null,
     });
 
-    // trang tiếp
-    const handleNextPage = () => {
-        let newStack = [...lastSnapDocList];
-        newStack.push(lastSnapDoc);
-        setLastSnapDocList(newStack);
+    // Lọc dữ liệu sản phẩm
+    const filteredProducts = useMemo(() => {
+        return products?.filter(product => {
+            const matchBrand = !filterBrand || product.brandId === filterBrand;
+            const matchCategory = !filterCategory || product.categoryId === filterCategory;
+            
+            // Tính toán số lượng còn lại (tự động trừ đi số lượng đã bán)
+            const soldQuantity = product.soldQuantity || product.orders || 0;
+            const remainingStock = product.stock - soldQuantity;
+            
+            const matchStatus = !filterStatus || 
+                (filterStatus === "in-stock" && remainingStock > 0) ||
+                (filterStatus === "out-of-stock" && remainingStock <= 0);
+            return matchBrand && matchCategory && matchStatus;
+        }) || [];
+    }, [products, filterBrand, filterCategory, filterStatus]);
+
+    // Tính toán pagination
+    const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const currentProducts = filteredProducts.slice(startIndex, endIndex);
+
+    // Reset về trang 1 khi filter thay đổi
+    const handleFilterChange = (type, value) => {
+        setCurrentPage(1);
+        if (type === 'brand') {
+            setFilterBrand(value);
+        } else if (type === 'category') {
+            setFilterCategory(value);
+        } else if (type === 'status') {
+            setFilterStatus(value);
+        }
     };
-    // trang trước
-    const handlePrePage = () => {
-        let newStack = [...lastSnapDocList];
-        newStack.pop();
-        setLastSnapDocList(newStack);
+
+    // Xử lý chuyển trang
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     if (isLoading) {
         return (
-            <div>
-                <CircularProgress />
+            <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full">
+                <div className="flex items-center justify-center py-20">
+                    <CircularProgress size="lg" />
+                </div>
             </div>
         );
     }
+
     if (error) {
-        return <div>{error}</div>;
-    }
-    return (
-        <div className="flex-1 flex flex-col gap-3 md:pr-5 md:px-0 px-5 rounded-xl w-full overflow-x-auto">
-            <table className="border-separate border-spacing-y-3 min-w-full">
-                <thead>
-                    <tr>
-                        <th className="font-semibold border-y bg-white px-3 py-2 border-l rounded-l-lg w-16">
-                            STT
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 w-20">Ảnh</th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-64">
-                            Tên sản phẩm
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-32">
-                            Giá
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-36">
-                            Dung lượng
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-40">
-                            Màu sắc
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-24">
-                            Số lượng
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-24">
-                            Đơn hàng
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 text-left w-28">
-                            Trạng thái
-                        </th>
-                        <th className="font-semibold border-y bg-white px-3 py-2 border-r rounded-r-lg text-center w-32">
-                            Hành động
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {products?.map((item, index) => {
-                        return (
-                            <Row
-                                index={index + lastSnapDocList?.length * pageLimit}
-                                item={item}
-                                key={item?.id}
-                                brands={brands}
-                                categories={categories}
-                            />
-                        );
-                    })}
-                </tbody>
-            </table>
-            <div className="flex justify-between text-sm py-3">
-                <Button
-                    isDisabled={isLoading || lastSnapDocList?.length === 0}
-                    onClick={handlePrePage}
-                    size="sm"
-                    variant="bordered"
-                >
-                    Trang trước
-                </Button>
-                <select
-                    value={pageLimit}
-                    onChange={(e) => setPageLimit(e.target.value)}
-                    className="px-5 rounded-xl"
-                    name="perpage"
-                    id="perpage"
-                >
-                    <option value={3}>3 sản phẩm</option>
-                    <option value={5}>5 sản phẩm</option>
-                    <option value={10}>10 sản phẩm</option>
-                    <option value={20}>20 sản phẩm</option>
-                    <option value={100}>100 sản phẩm</option>
-                </select>
-                <Button
-                    isDisabled={isLoading || products?.length === 0}
-                    onClick={handleNextPage}
-                    size="sm"
-                    variant="bordered"
-                >
-                    Trang tiếp
-                </Button>
+        return (
+            <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full">
+                <div className="text-red-500 text-center py-10">
+                    Lỗi: {error}
+                </div>
             </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="font-semibold text-xl">Quản lý sản phẩm</h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Tổng cộng: {filteredProducts.length} sản phẩm
+                    </p>
+                </div>
+            </div>
+
+            {/* Bộ lọc */}
+            <div className="flex flex-col md:flex-row gap-3 mb-4">
+                <div className="flex flex-col gap-2 flex-1">
+                    <label className="text-gray-700 text-sm font-medium">
+                        Lọc theo thương hiệu
+                    </label>
+                    <Select
+                        placeholder="Tất cả thương hiệu"
+                        selectedKeys={filterBrand ? [filterBrand] : []}
+                        onSelectionChange={(keys) => {
+                            const selected = Array.from(keys)[0];
+                            handleFilterChange('brand', selected === "all" ? "" : selected || "");
+                        }}
+                        className="w-full"
+                        aria-label="Lọc theo thương hiệu"
+                    >
+                        <SelectItem key="all" value="all">
+                            Tất cả thương hiệu
+                        </SelectItem>
+                        {brands?.map((brand) => (
+                            <SelectItem key={brand.id} value={brand.id}>
+                                {brand.name}
+                            </SelectItem>
+                        ))}
+                    </Select>
+                </div>
+
+                <div className="flex flex-col gap-2 flex-1">
+                    <label className="text-gray-700 text-sm font-medium">
+                        Lọc theo danh mục
+                    </label>
+                    <Select
+                        placeholder="Tất cả danh mục"
+                        selectedKeys={filterCategory ? [filterCategory] : []}
+                        onSelectionChange={(keys) => {
+                            const selected = Array.from(keys)[0];
+                            handleFilterChange('category', selected === "all" ? "" : selected || "");
+                        }}
+                        className="w-full"
+                        aria-label="Lọc theo danh mục"
+                    >
+                        <SelectItem key="all" value="all">
+                            Tất cả danh mục
+                        </SelectItem>
+                        {categories?.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                            </SelectItem>
+                        ))}
+                    </Select>
+                </div>
+
+                <div className="flex flex-col gap-2 flex-1">
+                    <label className="text-gray-700 text-sm font-medium">
+                        Lọc theo trạng thái
+                    </label>
+                    <Select
+                        placeholder="Tất cả trạng thái"
+                        selectedKeys={filterStatus ? [filterStatus] : []}
+                        onSelectionChange={(keys) => {
+                            const selected = Array.from(keys)[0];
+                            handleFilterChange('status', selected === "all" ? "" : selected || "");
+                        }}
+                        className="w-full"
+                        aria-label="Lọc theo trạng thái"
+                    >
+                        <SelectItem key="all" value="all">
+                            Tất cả trạng thái
+                        </SelectItem>
+                        <SelectItem key="in-stock" value="in-stock">
+                            Còn hàng
+                        </SelectItem>
+                        <SelectItem key="out-of-stock" value="out-of-stock">
+                            Hết hàng
+                        </SelectItem>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Bảng dữ liệu */}
+            <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                    <thead>
+                        <tr className="border-b border-gray-200 bg-gray-50">
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                STT
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Ảnh
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Tên sản phẩm
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Giá
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Dung lượng
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Màu sắc
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Số lượng ban đầu
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Còn lại
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                Trạng thái
+                            </th>
+                            <th className="text-center py-3 px-4 font-medium text-gray-700">
+                                Hành động
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentProducts.length > 0 ? (
+                            currentProducts.map((item, index) => (
+                                <Row
+                                    key={item.id}
+                                    index={startIndex + index}
+                                    item={item}
+                                    brands={brands}
+                                    categories={categories}
+                                />
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="10" className="text-center py-10 text-gray-500">
+                                    {filteredProducts.length === 0 ?
+                                        "Không có dữ liệu sản phẩm" :
+                                        "Không có dữ liệu cho trang này"
+                                    }
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                    <div className="text-sm text-gray-500">
+                        Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} của {filteredProducts.length} kết quả
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Previous Button */}
+                        <Button
+                            isIconOnly
+                            variant="flat"
+                            size="sm"
+                            onPress={() => handlePageChange(currentPage - 1)}
+                            isDisabled={currentPage === 1}
+                            className="min-w-8 h-8"
+                            aria-label="Trang trước"
+                        >
+                            <ChevronLeft size={16} />
+                        </Button>
+
+                        {/* Page Numbers */}
+                        <div className="flex items-center gap-1">
+                            {(() => {
+                                const pageNumbers = [];
+                                const maxVisiblePages = 5;
+                                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                                // Điều chỉnh startPage nếu endPage đã tới maximum
+                                if (endPage === totalPages) {
+                                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                                }
+
+                                // Hiển thị trang đầu và dấu ...
+                                if (startPage > 1) {
+                                    pageNumbers.push(
+                                        <Button
+                                            key={1}
+                                            variant={currentPage === 1 ? "solid" : "flat"}
+                                            size="sm"
+                                            onPress={() => handlePageChange(1)}
+                                            className={`min-w-8 h-8 ${currentPage === 1
+                                                    ? "bg-blue-600 text-white"
+                                                    : "hover:bg-gray-100"
+                                                }`}
+                                            aria-label="Trang 1"
+                                        >
+                                            1
+                                        </Button>
+                                    );
+
+                                    if (startPage > 2) {
+                                        pageNumbers.push(
+                                            <span key="start-ellipsis" className="px-2 text-gray-400">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+                                }
+
+                                // Hiển thị các trang ở giữa
+                                for (let i = startPage; i <= endPage; i++) {
+                                    if (i !== 1 && i !== totalPages) {
+                                        pageNumbers.push(
+                                            <Button
+                                                key={i}
+                                                variant={currentPage === i ? "solid" : "flat"}
+                                                size="sm"
+                                                onPress={() => handlePageChange(i)}
+                                                className={`min-w-8 h-8 ${currentPage === i
+                                                        ? "bg-blue-600 text-white"
+                                                        : "hover:bg-gray-100"
+                                                    }`}
+                                                aria-label={`Trang ${i}`}
+                                            >
+                                                {i}
+                                            </Button>
+                                        );
+                                    }
+                                }
+
+                                // Hiển thị dấu ... và trang cuối
+                                if (endPage < totalPages) {
+                                    if (endPage < totalPages - 1) {
+                                        pageNumbers.push(
+                                            <span key="end-ellipsis" className="px-2 text-gray-400">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+
+                                    pageNumbers.push(
+                                        <Button
+                                            key={totalPages}
+                                            variant={currentPage === totalPages ? "solid" : "flat"}
+                                            size="sm"
+                                            onPress={() => handlePageChange(totalPages)}
+                                            className={`min-w-8 h-8 ${currentPage === totalPages
+                                                    ? "bg-blue-600 text-white"
+                                                    : "hover:bg-gray-100"
+                                                }`}
+                                            aria-label={`Trang ${totalPages}`}
+                                        >
+                                            {totalPages}
+                                        </Button>
+                                    );
+                                }
+
+                                return pageNumbers;
+                            })()}
+                        </div>
+
+                        {/* Next Button */}
+                        <Button
+                            isIconOnly
+                            variant="flat"
+                            size="sm"
+                            onPress={() => handlePageChange(currentPage + 1)}
+                            isDisabled={currentPage === totalPages}
+                            className="min-w-8 h-8"
+                            aria-label="Trang sau"
+                        >
+                            <ChevronRight size={16} />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -152,6 +389,10 @@ function Row({ item, index, brands, categories }) {
     const selectedCategory = categories?.find(category => category.id === item?.categoryId);
     const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
     const categoryInfo = getProductCategoryInfo(productType);
+
+    // Tính toán số lượng còn lại (tự động trừ đi số lượng đã bán)
+    const soldQuantity = item?.soldQuantity || item?.orders || 0;
+    const remainingStock = item?.stock - soldQuantity;
 
     const handleDelete = async () => {
         if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
@@ -175,32 +416,25 @@ function Row({ item, index, brands, categories }) {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND',
-            minimumFractionDigits: 0, // Không hiển thị số thập phân
+            minimumFractionDigits: 0,
         }).format(amount);
     };
 
-    // Hàm hiển thị dung lượng - ĐÃ CẬP NHẬT
+    // Hàm hiển thị dung lượng
     const renderStorages = () => {
         const storageField = categoryInfo.storageField;
         const storageData = item?.[storageField];
-        const displayLimit = 3; // Number of items to display before truncating
+        const displayLimit = 3;
 
         let dataToDisplay = [];
 
-        // Prioritize new structure based on productType
         if (Array.isArray(storageData) && storageData.length > 0) {
             dataToDisplay = storageData;
-        }
-        // Fallback for old 'storages' field
-        else if (Array.isArray(item?.storages) && item.storages.length > 0) {
+        } else if (Array.isArray(item?.storages) && item.storages.length > 0) {
             dataToDisplay = item.storages;
-        }
-        // Fallback for old 'specifications' field (e.g., for laptops with old data)
-        else if (Array.isArray(item?.specifications) && item.specifications.length > 0) {
+        } else if (Array.isArray(item?.specifications) && item.specifications.length > 0) {
             dataToDisplay = item.specifications;
-        }
-        // Fallback for single 'storage' field
-        else if (item?.storage) {
+        } else if (item?.storage) {
             dataToDisplay = [item.storage];
         }
 
@@ -214,7 +448,7 @@ function Row({ item, index, brands, categories }) {
                     {dataToDisplay.map((storage, idx) => (
                         <span
                             key={idx}
-                            className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded" // Unified styling
+                            className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
                         >
                             {storage}
                         </span>
@@ -224,10 +458,10 @@ function Row({ item, index, brands, categories }) {
         } else {
             return (
                 <div className="flex flex-wrap gap-1">
-                    {dataToDisplay.slice(0, displayLimit - 1).map((storage, idx) => ( // Show displayLimit - 1 items
+                    {dataToDisplay.slice(0, displayLimit - 1).map((storage, idx) => (
                         <span
                             key={idx}
-                            className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded" // Unified styling
+                            className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
                         >
                             {storage}
                         </span>
@@ -242,7 +476,6 @@ function Row({ item, index, brands, categories }) {
 
     // Hàm hiển thị màu sắc
     const renderColors = () => {
-        // Kiểm tra nếu có colorIds
         if (Array.isArray(item?.colorIds) && item.colorIds.length > 0) {
             const colors = item.colorIds.map(colorId => getColorById(colorId)).filter(Boolean);
 
@@ -302,9 +535,7 @@ function Row({ item, index, brands, categories }) {
                     </div>
                 );
             }
-        }
-        // Kiểm tra nếu có colors array trực tiếp
-        else if (Array.isArray(item?.colors) && item.colors.length > 0) {
+        } else if (Array.isArray(item?.colors) && item.colors.length > 0) {
             const colors = item.colors;
             if (colors.length === 1) {
                 return (
@@ -357,9 +588,7 @@ function Row({ item, index, brands, categories }) {
                     </div>
                 );
             }
-        }
-        // Fallback cho single color (data cũ)
-        else if (item?.color) {
+        } else if (item?.color) {
             return (
                 <div className="flex items-center gap-2">
                     <div
@@ -370,43 +599,36 @@ function Row({ item, index, brands, categories }) {
                     <span className="text-xs">{item.color}</span>
                 </div>
             );
-        }
-        // Không có màu sắc
-        else {
+        } else {
             return <span className="text-gray-400 text-xs">Chưa có</span>;
         }
     };
 
     return (
-        <tr>
-            {/* stt */}
-            <td className="border-y bg-white px-3 py-2 border-l rounded-l-lg text-center">
+        <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td className="py-3 px-4 text-gray-700">
                 {index + 1}
             </td>
-            {/* ảnh sản phẩm */}
-            <td className="border-y bg-white px-3 py-2 text-center">
+            <td className="py-3 px-4">
                 <div className="flex justify-center">
                     <img
-                        className="h-10 w-10 object-cover"
+                        className="h-10 w-10 object-cover rounded"
                         src={item?.featureImageURL}
-                        alt=""
+                        alt={`Ảnh sản phẩm ${item?.title}`}
                     />
                 </div>
             </td>
-            {/* tên sản phẩm - Fixed width with ellipsis */}
-            <td className="border-y bg-white px-3 py-2 max-w-64">
-                <div className="truncate" title={item?.title}>
+            <td className="py-3 px-4 max-w-64">
+                <div className="truncate font-medium text-gray-900" title={item?.title}>
                     {item?.title}
                 </div>
-                {/* sản phẩm nổi bật */}
                 {item?.isFeatured === true && (
                     <span className="mt-1 inline-block bg-gradient-to-tr from-blue-500 to-indigo-400 text-white text-[10px] rounded-full px-3 py-1">
                         Nổi bật
                     </span>
                 )}
             </td>
-            {/* giá sản phẩm */}
-            <td className="border-y bg-white px-3 py-2">
+            <td className="py-3 px-4">
                 <div className="whitespace-nowrap">
                     {item?.salePrice < item?.price && (
                         <div className="text-xs text-gray-500 line-through">
@@ -418,59 +640,62 @@ function Row({ item, index, brands, categories }) {
                     </div>
                 </div>
             </td>
-            {/* dung lượng - hiển thị nhiều dung lượng */}
-            <td className="border-y bg-white px-3 py-2">
+            <td className="py-3 px-4">
                 <div className="min-w-[120px]">
                     {renderStorages()}
                 </div>
             </td>
-            {/* màu sắc - hiển thị nhiều màu */}
-            <td className="border-y bg-white px-3 py-2">
+            <td className="py-3 px-4">
                 <div className="min-w-[140px]">
                     {renderColors()}
                 </div>
             </td>
-            {/* số lượng sản phẩm */}
-            <td className="border-y bg-white px-3 py-2 text-center">{item?.stock}</td>
-            {/* số lượng đơn hàng */}
-            <td className="border-y bg-white px-3 py-2 text-center">{item?.orders ?? 0}</td>
-            {/* trạng thái sản phẩm */}
-            <td className="border-y bg-white px-3 py-2">
+            <td className="py-3 px-4 text-center">
+                <span className="font-medium">{item?.stock}</span>
+            </td>
+            <td className="py-3 px-4 text-center">
+                <span className={`font-medium ${remainingStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {remainingStock}
+                </span>
+            </td>
+            <td className="py-3 px-4">
                 <div className="flex justify-center">
-                    {/* sản phẩm còn hàng */}
-                    {item?.stock - (item?.orders ?? 0) > 0 && (
+                    {remainingStock > 0 ? (
                         <div className="px-2 py-1 text-xs text-green-600 bg-green-100 rounded-md whitespace-nowrap">
                             Còn hàng
                         </div>
-                    )}
-                    {/* sản phẩm hết hàng */}
-                    {item?.stock - (item?.orders ?? 0) <= 0 && (
+                    ) : (
                         <div className="px-2 py-1 text-xs text-red-500 bg-red-100 rounded-md whitespace-nowrap">
                             Hết hàng
                         </div>
                     )}
                 </div>
             </td>
-
-            <td className="border-y bg-white px-3 py-2 border-r rounded-r-lg">
+            <td className="py-3 px-4">
                 <div className="flex gap-2 items-center justify-center">
                     <Button
-                        onClick={handleUpdate}
-                        isDisabled={isDeleting}
                         isIconOnly
                         size="sm"
+                        variant="flat"
+                        color="primary"
+                        onPress={handleUpdate}
+                        className="hover:bg-blue-100"
+                        aria-label={`Chỉnh sửa sản phẩm ${item?.title}`}
                     >
-                        <Edit2 size={13} />
+                        <Edit2 size={14} />
                     </Button>
                     <Button
-                        onClick={handleDelete}
-                        isLoading={isDeleting}
-                        isDisabled={isDeleting}
                         isIconOnly
                         size="sm"
+                        variant="flat"
                         color="danger"
+                        isLoading={isDeleting}
+                        isDisabled={isDeleting}
+                        onPress={handleDelete}
+                        className="hover:bg-red-100"
+                        aria-label={`Xóa sản phẩm ${item?.title}`}
                     >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} />
                     </Button>
                 </div>
             </td>

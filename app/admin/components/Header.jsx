@@ -4,61 +4,74 @@ import { Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/lib/firestore/admins/read";
 import { Avatar } from "@nextui-org/react";
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-export default function Header({ toggleSidebar }) {
+export default function Header({ toggleSidebar, isCollapsed }) {
     const { user } = useAuth();
     const { data: admin } = useAdmin({ email: user?.email });
-    
-    // Disable pull-to-refresh
+
+    // Ngăn overscroll (trên mobile)
     useEffect(() => {
         const preventDefault = (e) => {
             if (e.touches.length > 1) return;
-            if (window.scrollY === 0) {
-                e.preventDefault();
-            }
+            if (window.scrollY === 0) e.preventDefault();
         };
-        
-        document.addEventListener('touchstart', preventDefault, { passive: false });
-        document.addEventListener('touchmove', preventDefault, { passive: false });
-        
-        // Add CSS to prevent overscroll
-        document.documentElement.style.overscrollBehavior = 'contain';
-        document.body.style.overscrollBehaviorY = 'contain';
-        
+
+        document.addEventListener("touchstart", preventDefault, { passive: false });
+        document.addEventListener("touchmove", preventDefault, { passive: false });
+
+        document.documentElement.style.overscrollBehavior = "contain";
+        document.body.style.overscrollBehaviorY = "contain";
+
         return () => {
-            document.removeEventListener('touchstart', preventDefault);
-            document.removeEventListener('touchmove', preventDefault);
-            document.documentElement.style.overscrollBehavior = 'auto';
-            document.body.style.overscrollBehaviorY = 'auto';
+            document.removeEventListener("touchstart", preventDefault);
+            document.removeEventListener("touchmove", preventDefault);
+            document.documentElement.style.overscrollBehavior = "auto";
+            document.body.style.overscrollBehaviorY = "auto";
         };
     }, []);
 
     return (
-        <section className="fixed w-full top-0 z-50 flex items-center gap-3 bg-white border-b px-4 py-3">
+        <section
+            className={`fixed w-full top-0 z-50 flex items-center gap-3 bg-white border-b px-4 py-3 transition-all duration-300 ease-in-out
+                ${isCollapsed ? "pr-[90px]" : "pr-[240px]"}`}
+        >
+            {/* Nút toggle menu (chỉ hiện ở mobile) */}
             <div className="flex justify-center items-center md:hidden">
-                {/* nút nhấn vào menu để hoạt động */}
-                <button onClick={toggleSidebar}>
-                    <Menu />
+                <button
+                    onClick={toggleSidebar}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                >
+                    <Menu className="h-5 w-5" />
                 </button>
             </div>
-            {/* header */}
-            <div className="w-full flex justify-between items-center pr-0 md:pr-[260px]">
-                {/* tên trang */}
-                <h1 className="text-xl font-semibold">Trang chủ</h1>
-                {/* thông tin admin */}
+
+            {/* Nội dung header */}
+            <div className="w-full flex justify-between items-center">
+                {/* Tên trang */}
+                <h1 className="text-xl font-semibold text-gray-800">Trang chủ</h1>
+
+                {/* Thông tin admin */}
                 <div className="flex gap-2 items-center">
-                    {/* thông tin chi tiết */}
+                    {/* Ẩn info khi mobile, chỉ hiện trên md trở lên */}
                     <div className="md:flex flex-col items-end hidden">
-                        {/* tên admin */}
-                        <h1 className="text-sm font-semibold">{admin?.name}</h1>
-                        {/* email admin */}
-                        <h1 className="text-xs text-gray-600">{admin?.email}</h1>
+                        <h1 className="text-sm font-semibold text-gray-800">
+                            {admin?.name || "Admin"}
+                        </h1>
+                        <h1 className="text-xs text-gray-600">
+                            {admin?.email || "admin@example.com"}
+                        </h1>
                     </div>
-                    {/* avatar admin */}
-                    <Avatar size="sm" src={admin?.imageURL} />
+
+                    {/* Avatar admin */}
+                    <Avatar
+                        size="sm"
+                        src={admin?.imageURL}
+                        name={admin?.name || "Admin"}
+                        className="cursor-pointer hover:scale-105 transition-transform duration-200"
+                    />
                 </div>
             </div>
         </section>
-    )
+    );
 }

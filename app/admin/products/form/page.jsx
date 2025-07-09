@@ -37,6 +37,7 @@ export default function Page() {
             fetchData();
         }
     }, [id])
+    
     // handle data
     const handleData = (key, value) => {
         setData((prevData) => ({
@@ -97,13 +98,21 @@ export default function Page() {
         }} className=" flex flex-col gap-4 p-5">
             <div className="flex justify-between items-center w-full" >
                 <h1 className="text-semibold">{id ? "Cập nhật sản phẩm" : "Tạo sản phẩm mới"}</h1>
-                <Button isLoading={isLoading} isDisabled={isLoading} type="submit">{id ? "Cập nhật" : "Tạo"}</Button>
+                <Button 
+                    isLoading={isLoading} 
+                    isDisabled={isLoading} 
+                    type="submit"
+                    color={id ? "warning" : "success"}
+                    variant="solid"
+                    className={id ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"}
+                >
+                    {id ? "Cập nhật" : "Tạo"}
+                </Button>
             </div>
 
             <div className="flex flex-col md:flex-row gap-5">
                 <div className="flex-1 flex h-full">
                     <BasicDetail data={data} handleData={handleData} />
-
                 </div>
                 <div className="flex-1 flex flex-col gap-5 h-full">
                     <Image
@@ -111,10 +120,10 @@ export default function Page() {
                         featureImage={featureImage}
                         setFeatureImage={setFeatureImage}
                         imageList={imageList}
-                        setImageList={setImageList} />
+                        setImageList={setImageList} 
+                    />
                     <Des data={data} handleData={handleData} />
                 </div>
-
             </div>
         </form>
     )

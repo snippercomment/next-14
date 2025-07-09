@@ -76,7 +76,7 @@ export default function ListView() {
         return (
             <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full">
                 <div className="flex items-center justify-center py-20">
-                    <CircularProgress size="lg" />
+                    <CircularProgress size="lg" aria-label="Đang tải dữ liệu" />
                 </div>
             </div>
         );
@@ -119,6 +119,7 @@ export default function ListView() {
                             handleFilterChange('category', selected === "all" ? "" : selected || "");
                         }}
                         className="w-full"
+                        aria-label="Lọc theo danh mục thương hiệu"
                     >
                         <SelectItem key="all" value="all">
                             Tất cả danh mục
@@ -146,6 +147,7 @@ export default function ListView() {
                             handleFilterChange('status', selected === "all" ? "" : selected || "");
                         }}
                         className="w-full"
+                        aria-label="Lọc theo trạng thái thương hiệu"
                     >
                         <SelectItem key="all" value="all">
                             Tất cả trạng thái
@@ -162,7 +164,7 @@ export default function ListView() {
 
             {/* Bảng dữ liệu */}
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+                <table className="w-full border-collapse" role="table" aria-label="Danh sách thương hiệu">
                     <thead>
                         <tr className="border-b border-gray-200 bg-gray-50">
                             <th className="text-left py-3 px-4 font-medium text-gray-700">
@@ -215,7 +217,7 @@ export default function ListView() {
                         Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBrands.length)} của {filteredBrands.length} kết quả
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" role="navigation" aria-label="Phân trang">
                         {/* Previous Button */}
                         <Button
                             isIconOnly
@@ -224,6 +226,7 @@ export default function ListView() {
                             onPress={() => handlePageChange(currentPage - 1)}
                             isDisabled={currentPage === 1}
                             className="min-w-8 h-8"
+                            aria-label="Trang trước"
                         >
                             <ChevronLeft size={16} />
                         </Button>
@@ -253,6 +256,7 @@ export default function ListView() {
                                                     ? "bg-blue-600 text-white"
                                                     : "hover:bg-gray-100"
                                                 }`}
+                                            aria-label="Trang 1"
                                         >
                                             1
                                         </Button>
@@ -280,6 +284,7 @@ export default function ListView() {
                                                         ? "bg-blue-600 text-white"
                                                         : "hover:bg-gray-100"
                                                     }`}
+                                                aria-label={`Trang ${i}`}
                                             >
                                                 {i}
                                             </Button>
@@ -307,6 +312,7 @@ export default function ListView() {
                                                     ? "bg-blue-600 text-white"
                                                     : "hover:bg-gray-100"
                                                 }`}
+                                            aria-label={`Trang ${totalPages}`}
                                         >
                                             {totalPages}
                                         </Button>
@@ -325,6 +331,7 @@ export default function ListView() {
                             onPress={() => handlePageChange(currentPage + 1)}
                             isDisabled={currentPage === totalPages}
                             className="min-w-8 h-8"
+                            aria-label="Trang tiếp theo"
                         >
                             <ChevronRight size={16} />
                         </Button>
@@ -371,7 +378,7 @@ function Row({ item, index }) {
                     {item?.imageURL ? (
                         <img
                             src={item.imageURL}
-                            alt={item?.name}
+                            alt={`Logo thương hiệu ${item?.name}`}
                             className="w-full h-full object-contain"
                         />
                     ) : (
@@ -406,6 +413,7 @@ function Row({ item, index }) {
                         color="primary"
                         onPress={handleUpdate}
                         className="hover:bg-blue-100"
+                        aria-label={`Chỉnh sửa thương hiệu ${item?.name}`}
                     >
                         <Edit2 size={14} />
                     </Button>
@@ -418,6 +426,7 @@ function Row({ item, index }) {
                         isDisabled={isDeleting}
                         onPress={handleDelete}
                         className="hover:bg-red-100"
+                        aria-label={`Xóa thương hiệu ${item?.name}`}
                     >
                         <Trash size={14} />
                     </Button>
