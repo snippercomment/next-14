@@ -348,12 +348,12 @@ function Row({ item, index }) {
 
     // Xóa thương hiệu
     const handleDelete = async () => {
-        if (!confirm("Bạn có chắc chắn muốn xóa thương hiệu này không?")) return;
+        if (!confirm("Bạn có chắc chắn muốn xóa thương hiệu này không? Các sản phẩm thuộc thương hiệu này sẽ bị ẩn tạm thời.")) return;
 
         setIsDeleting(true);
         try {
             await deleteBrand({ id: item?.id });
-            toast.success("Xóa thương hiệu thành công");
+            toast.success("Xóa thương hiệu thành công. Các sản phẩm thuộc thương hiệu này đã được ẩn tạm thời.");
         } catch (error) {
             toast.error(error?.message || "Có lỗi xảy ra khi xóa thương hiệu");
         }

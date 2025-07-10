@@ -1,14 +1,18 @@
 "use client";
+
 import Link from "next/link";
-import { Search, UserCircle2, ShoppingBag, Menu, X} from "lucide-react";
+import { Search, UserCircle2, ShoppingBag, Menu, X,LogIn,
+  UserPlus } from "lucide-react";
 import { useState } from "react";
 import LogoutButton from "./LogoutButton";
 import HeaderClientButtons from "./HeaderClientButtons";
 import AdminButton from "./AdminButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isLoading } = useAuth();
 
   const menuList = [
     { name: "Trang chủ", link: "/" },
@@ -61,50 +65,77 @@ export default function Header() {
 
         <HeaderClientButtons />
 
-        {/* User Dropdown */}
-        <div className="relative">
-          <button
-            onClick={toggleUserDropdown}
-            title="Tài khoản"
-            className="h-8 w-8 flex justify-center items-center rounded-full hover:bg-gray-50"
-          >
-            <UserCircle2 size={14} />
-          </button>
+        {/* Icon user dropdown dùng chung cho cả đã và chưa đăng nhập */}
+        {!isLoading && (
+          <div className="relative">
+            <button
+              onClick={toggleUserDropdown}
+              title="Tài khoản"
+              className="h-8 w-8 flex justify-center items-center rounded-full hover:bg-gray-50"
+            >
+              <UserCircle2 size={14} />
+            </button>
 
-          {/* Dropdown Menu */}
-          {isUserDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-              <div className="py-1">
-                <Link href="/account">
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    onClick={() => setIsUserDropdownOpen(false)}
-                  >
-                    <UserCircle2 size={16} />
-                    Tài khoản của tôi
-                  </button>
-                </Link>
-                <Link href="/orders">
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    onClick={() => setIsUserDropdownOpen(false)}
-                  >
-                    <ShoppingBag size={16} />
-                    Đơn hàng của tôi
-                  </button>
-                </Link>
-                <div className="border-t border-gray-100">
-                  <div
-                    onClick={() => setIsUserDropdownOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                  >
-                    <LogoutButton />
-                  </div>
+            {isUserDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="py-1">
+                  {user ? (
+                    <>
+                      <Link href="/account">
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <UserCircle2 size={16} />
+                          Tài khoản của tôi
+                        </button>
+                      </Link>
+                      <Link href="/orders">
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <ShoppingBag size={16} />
+                          Đơn hàng của tôi
+                        </button>
+                      </Link>
+                      <div className="border-t border-gray-100">
+                        <div
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        >
+                          <LogoutButton />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login">
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <LogIn size={16} />
+                          Đăng nhập
+                        </button>
+                      </Link>
+                      <Link href="/sign-up">
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <UserPlus size={16} />
+                          Đăng ký
+                        </button>
+                      </Link>
+                    </>
+
+                  )}
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Mobile Menu Button */}
         <button
@@ -131,7 +162,7 @@ export default function Header() {
         </div>
       )}
 
-      {/* Overlay to close dropdowns when clicking outside */}
+      {/* Overlay để đóng dropdown/menu khi click ra ngoài */}
       {(isUserDropdownOpen || isMobileMenuOpen) && (
         <div
           className="fixed inset-0 z-40"

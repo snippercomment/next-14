@@ -22,6 +22,17 @@ export default function ProductCard({ product, brands, categories, allowedProduc
 
     const categoryInfo = getProductCategoryInfo(productType);
 
+    // Kiểm tra sản phẩm có mới không (trong vòng 30 ngày)
+    const isNewProduct = () => {
+        if (!product?.createdAt) return false;
+        
+        const createdDate = new Date(product.createdAt);
+        const now = new Date();
+        const daysDiff = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+        
+        return daysDiff <= 30; // Sản phẩm mới trong 30 ngày
+    };
+
     // Tính phần trăm giảm giá
     const discountPercent = product?.price > product?.salePrice
         ? Math.round(((product.price - product.salePrice) / product.price) * 100)
@@ -96,11 +107,21 @@ export default function ProductCard({ product, brands, categories, allowedProduc
                 <div className="relative aspect-square p-4 bg-gray-50">
                     {/* Badge */}
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                        {/* Badge sản phẩm nổi bật */}
                         {product?.isFeatured && (
+                            <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                                Nổi bật
+                            </span>
+                        )}
+                        
+                        {/* Badge sản phẩm mới (tự động ẩn sau 30 ngày) */}
+                        {isNewProduct() && (
                             <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
                                 Mới
                             </span>
                         )}
+                        
+                        {/* Badge giảm giá */}
                         {discountPercent > 0 && (
                             <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
                                 -{discountPercent}%

@@ -1,8 +1,8 @@
+// ProductInfo.jsx - Server Components (không có 'use client')
 import MyRating from "@/app/components/MyRating";
 import { getBrand } from "@/lib/firestore/brands/read_server";
 import { getCategory } from "@/lib/firestore/categories/read_server";
 import { getProductReviewCounts } from "@/lib/firestore/products/count/read";
-
 
 // Server Components - có thể sử dụng async/await
 async function Category({ categoryId }) {
@@ -13,10 +13,10 @@ async function Category({ categoryId }) {
   if (!category) return null;
   
   return (
-     <div className="flex items-center gap-1 border px-3 py-1 rounded-full hover:bg-gray-50 transition-colors">
-        <img className="h-4" src={category?.imageURL} alt={category?.name} />
-        <h4 className="text-xs font-semibold">{category?.name}</h4>
-      </div>
+    <div className="flex items-center gap-1 border px-3 py-1 rounded-full hover:bg-gray-50 transition-colors">
+      <img className="h-4" src={category?.imageURL} alt={category?.name} />
+      <h4 className="text-xs font-semibold">{category?.name}</h4>
+    </div>
   );
 }
 
