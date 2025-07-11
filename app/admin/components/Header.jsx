@@ -1,5 +1,4 @@
 "use client";
-
 import { Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/lib/firestore/admins/read";
@@ -40,6 +39,7 @@ export default function Header({ toggleSidebar, isCollapsed }) {
             <div className="flex justify-center items-center md:hidden">
                 <button
                     onClick={toggleSidebar}
+                    data-menu-toggle="true"
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                 >
                     <Menu className="h-5 w-5" />

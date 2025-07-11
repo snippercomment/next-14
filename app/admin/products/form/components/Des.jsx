@@ -25,12 +25,12 @@ export default function Des({ data, handleData }) {
     };
     return (
         <section className="flex flex-col gap-3 bg-white border p-4 rounded-xl h-full">
-            <h1 className="font-semibold">Mô tả sản phẩm</h1>
+            <h1 className="font-semibold">Thông tin sản phẩm</h1>
             <ReactQuill
                 value={data?.description}
                 onChange={handleChange}
                 modules={modules}
-                placeholder="Mô tả sản phẩm"
+                placeholder="Thông tin sản phẩm"
             />
         </section>
     );

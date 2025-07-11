@@ -2,13 +2,13 @@
 
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
-import { useState, useEffect, useMemo } from "react";
+import {  useMemo } from "react";
 import {
     getColorsByProductType,
     getStorageOptionsByProductType,
     getProductCategoryInfo,
     detectProductType,
-    getColorById
+
 } from "./Colors";
 
 // Định nghĩa các danh mục thương hiệu
@@ -63,11 +63,15 @@ export default function BasicDetails({ data, handleData }) {
         handleData(productInfo.categoryInfo.storageField, updatedStorages);
     };
 
-    // Reset dữ liệu khi thay đổi danh mục
+    // Reset dữ liệu khi thay đổi danh mục - FIX: Reset tất cả các trường liên quan
     const resetProductData = () => {
         handleData("colorIds", []);
-        handleData("storages", []);
-        handleData("specifications", []);
+        // Reset tất cả các trường storage có thể có
+        handleData("storageOptions", []);
+        handleData("storageCapacity", []);
+        handleData("ramOptions", []);
+        handleData("diskOptions", []);
+        handleData("configOptions", []);
     };
 
     const handleBrandCategoryChange = (categoryValue) => {
@@ -332,8 +336,7 @@ export default function BasicDetails({ data, handleData }) {
             {/* Thông báo nếu chưa chọn brand/category */}
             {!productInfo.selectedBrand && !productInfo.selectedCategory && (
                 <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-                    <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 text-yellow-600">⚠️</div>
+                    <div className="flex items-center gap-2">   
                         <span className="text-sm text-yellow-700">
                             Vui lòng chọn thương hiệu và danh mục để hiển thị màu sắc và cấu hình phù hợp.
                         </span>

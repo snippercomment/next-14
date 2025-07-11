@@ -2,12 +2,14 @@
 import BasicDetail from "./components/BasicDetail"
 import Des from "./components/Des"
 import Image from "./components/Image"
+
 import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
 import { createNewProduct, updateProduct } from "@/lib/firestore/products/write";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getProduct } from "@/lib/firestore/products/read_server";
+import TechnicalSpecifications from "./components/TechnicalSpecifications";
 
 export default function Page() {
     const [data, setData] = useState(null);
@@ -123,6 +125,7 @@ export default function Page() {
                         setImageList={setImageList} 
                     />
                     <Des data={data} handleData={handleData} />
+                    <TechnicalSpecifications data={data} handleData={handleData} />
                 </div>
             </div>
         </form>

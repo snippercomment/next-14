@@ -8,6 +8,8 @@ import {
 import AddToCartButton from "@/app/components/AddToCartButton";
 import FavoriteButton from "@/app/components/FavoriteButton";
 import AuthContextProvider from "@/contexts/AuthContext";
+import ProductDescription from "./Des";
+import TechnicalSpecificationsDisplay from "./TechnicalSpecificationsDisplay";
 
 import Link from "next/link";
 import { Suspense, useState, useEffect } from "react";
@@ -18,7 +20,6 @@ import { Brand, Category, RatingReview } from "./ProductInfo";
 export default function Details({ product, brands, categories }) {
     const [selectedStorage, setSelectedStorage] = useState("");
     const [selectedColor, setSelectedColor] = useState("");
-    const [showFullDescription, setShowFullDescription] = useState(false);
 
     const selectedBrand = brands?.find(brand => brand.id === product?.brandId);
     const selectedCategory = categories?.find(category => category.id === product?.categoryId);
@@ -281,117 +282,18 @@ export default function Details({ product, brands, categories }) {
                 </AuthContextProvider>
             </div>
 
-            {/* Phần mô tả sản phẩm chi tiết */}
-            <div className="border-t pt-6 mt-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Mô tả sản phẩm</h3>
-                
-                {product?.description ? (
-                    <div className="bg-gray-50 rounded-lg p-6">
-                        <div
-                            className={`text-gray-700 leading-relaxed prose prose-sm max-w-none ${
-                                !showFullDescription ? 'line-clamp-6' : ''
-                            }`}
-                            dangerouslySetInnerHTML={{ __html: product.description }}
-                        />
-                        
-                        {/* Nút xem thêm/thu gọn */}
-                        <button
-                            onClick={() => setShowFullDescription(!showFullDescription)}
-                            className="mt-4 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
-                        >
-                            {showFullDescription ? 'Thu gọn' : 'Xem thêm'}
-                        </button>
-                    </div>
-                ) : (
-                    /* Nếu không có mô tả chi tiết, hiển thị thông tin cơ bản */
-                    <div className="bg-gray-50 rounded-lg p-6">
-                        <div className="text-gray-700 leading-relaxed">
-                            <p className="mb-4 text-base">{product?.shortDescription}</p>
-                            
-                            {/* Hiển thị thông số kỹ thuật từ các trường có sẵn */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                                <h4 className="col-span-full font-semibold text-gray-800 text-lg mb-2">
-                                    Thông số kỹ thuật
-                                </h4>
-                                
-                                {selectedBrand && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200">
-                                        <span className="font-medium text-gray-600">Thương hiệu:</span>
-                                        <span className="text-gray-800 font-medium">{selectedBrand.name}</span>
-                                    </div>
-                                )}
-                                
-                                {selectedCategory && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200">
-                                        <span className="font-medium text-gray-600">Danh mục:</span>
-                                        <span className="text-gray-800 font-medium">{selectedCategory.name}</span>
-                                    </div>
-                                )}
-                                
-                                {storageOptions.length > 0 && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200">
-                                        <span className="font-medium text-gray-600">
-                                            {categoryInfo?.storageLabel || 'Dung lượng'}:
-                                        </span>
-                                        <span className="text-gray-800 font-medium">
-                                            {storageOptions.join(', ')}
-                                        </span>
-                                    </div>
-                                )}
-                                
-                                {availableColors.length > 0 && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200">
-                                        <span className="font-medium text-gray-600">Màu sắc:</span>
-                                        <div className="flex gap-2">
-                                            {availableColors.map((color, index) => (
-                                                <div key={color.id} className="flex items-center gap-1">
-                                                    <div
-                                                        className="w-4 h-4 rounded-full border border-gray-300"
-                                                        style={{ backgroundColor: color.hexColor || '#000000' }}
-                                                    />
-                                                    <span className="text-gray-800 text-sm font-medium">
-                                                        {color.title}
-                                                        {index < availableColors.length - 1 && ','}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {/* Hiển thị thông tin tồn kho */}
-                                <div className="flex justify-between py-2 border-b border-gray-200">
-                                    <span className="font-medium text-gray-600">Tình trạng:</span>
-                                    <span className={`font-medium ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
-                                        {isOutOfStock ? 'Hết hàng' : `Còn ${remainingStock} sản phẩm`}
-                                    </span>
-                                </div>
-                                
-                                {product?.weight && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200">
-                                        <span className="font-medium text-gray-600">Trọng lượng:</span>
-                                        <span className="text-gray-800 font-medium">{product.weight}</span>
-                                    </div>
-                                )}
-                                
-                                {product?.dimensions && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200">
-                                        <span className="font-medium text-gray-600">Kích thước:</span>
-                                        <span className="text-gray-800 font-medium">{product.dimensions}</span>
-                                    </div>
-                                )}
-                                
-                                {product?.warranty && (
-                                    <div className="flex justify-between py-2 border-b border-gray-200">
-                                        <span className="font-medium text-gray-600">Bảo hành:</span>
-                                        <span className="text-gray-800 font-medium">{product.warranty}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+            {/* Component mô tả sản phẩm */}
+            <ProductDescription product={product} />
+
+            {/* Component thông số kỹ thuật */}
+            <TechnicalSpecificationsDisplay 
+                product={product} 
+                brands={brands} 
+                categories={categories}
+                availableColors={availableColors}
+                storageOptions={storageOptions}
+                categoryInfo={categoryInfo}
+            />
 
             {/* Thông tin vận chuyển và chính sách */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
