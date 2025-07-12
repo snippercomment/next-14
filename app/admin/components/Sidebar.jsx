@@ -14,6 +14,7 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
+  MessageCircle,
 } from "lucide-react";
 
 export default function CollapsibleSidebar() {
@@ -38,6 +39,7 @@ export default function CollapsibleSidebar() {
     { name: "Đơn hàng", link: "/admin/orders", icon: <ShoppingCart className="h-5 w-5" /> },
     { name: "Khách hàng", link: "/admin/customers", icon: <User className="h-5 w-5" /> },
     { name: "Đánh giá", link: "/admin/reviews", icon: <Star className="h-5 w-5" /> },
+    { name: "Bình luận", link: "/admin/comments", icon: <MessageCircle className="h-5 w-5" /> },
     { name: "Bộ sưu tập", link: "/admin/collections", icon: <LibraryBig className="h-5 w-5" /> },
     { name: "Quản trị viên", link: "/admin/admins", icon: <ShieldCheck className="h-5 w-5" /> },
   ];

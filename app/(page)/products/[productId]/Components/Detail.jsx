@@ -282,18 +282,21 @@ export default function Details({ product, brands, categories }) {
                 </AuthContextProvider>
             </div>
 
-            {/* Component mô tả sản phẩm */}
-            <ProductDescription product={product} />
-
-            {/* Component thông số kỹ thuật */}
-            <TechnicalSpecificationsDisplay 
-                product={product} 
-                brands={brands} 
-                categories={categories}
-                availableColors={availableColors}
-                storageOptions={storageOptions}
-                categoryInfo={categoryInfo}
-            />
+            <div className="flex flex-col md:flex-row gap-6 mt-6">
+                <div className="w-full md:w-1/2">
+                    <ProductDescription product={product} />
+                </div>
+                <div className="w-full md:w-1/2">
+                    <TechnicalSpecificationsDisplay 
+                    product={product} 
+                    brands={brands} 
+                    categories={categories}
+                    availableColors={availableColors}
+                    storageOptions={storageOptions}
+                    categoryInfo={categoryInfo}
+                    />
+                </div>
+                </div>
 
             {/* Thông tin vận chuyển và chính sách */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">

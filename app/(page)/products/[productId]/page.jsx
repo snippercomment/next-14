@@ -5,7 +5,7 @@ import Review from "./Components/Review";
 import RelatedProducts from "./Components/RalatedProduct";
 import AddReview from "./Components/AddReview";
 import AuthContextProvider from "@/contexts/AuthContext";
-
+import CommentsSection from "./Components/CommentsSection";
 
 
 export async function generateMetadata({ params }) {
@@ -26,10 +26,15 @@ export default async function Page({ params }) {
     return (
         <main className="p-5 md:p-10">
             {/* ảnh */}
-            <section className="flex gap-3 flex-col md:flex-row">
-                <Photo imageList={[product?.featureImageURL, ...(product?.imageList ?? [])]} />
-                <Detail product={product} />
-            </section>
+           <section className="flex gap-6 flex-col md:flex-row">
+  <div className="md:w-1/3 w-full">
+    <Photo imageList={[product?.featureImageURL, ...(product?.imageList ?? [])]} />
+  </div>
+  <div className="md:w-2/3 w-full">
+    <Detail product={product} />
+  </div>
+</section>
+
             {/* thông tin sản phẩm */}
             <AuthContextProvider>
             <div className="flex flex-col md:flex-row gap-4 md:max-w-[900px] w-full">
@@ -39,6 +44,10 @@ export default async function Page({ params }) {
              </AuthContextProvider>
             <RelatedProducts categoryId={product?.categoryId} />
 
+             {/* Phần bình luận */}
+            <AuthContextProvider>
+              <CommentsSection productId={productId} productTitle={product?.title} />
+            </AuthContextProvider>
         </main>
 
 
