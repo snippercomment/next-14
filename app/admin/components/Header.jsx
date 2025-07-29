@@ -1,5 +1,5 @@
 "use client";
-import { Menu } from "lucide-react";
+import { Menu, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/lib/firestore/admins/read";
 import { Avatar } from "@nextui-org/react";
@@ -51,25 +51,45 @@ export default function Header({ toggleSidebar, isCollapsed }) {
                 {/* Tên trang */}
                 <h1 className="text-xl font-semibold text-gray-800">Trang chủ</h1>
 
-                {/* Thông tin admin */}
-                <div className="flex gap-2 items-center">
-                    {/* Ẩn info khi mobile, chỉ hiện trên md trở lên */}
-                    <div className="md:flex flex-col items-end hidden">
-                        <h1 className="text-sm font-semibold text-gray-800">
-                            {admin?.name || "Admin"}
-                        </h1>
-                        <h1 className="text-xs text-gray-600">
-                            {admin?.email || "admin@example.com"}
-                        </h1>
+                {/* Thông tin admin và icon thông báo */}
+                <div className="flex gap-3 items-center">
+                    {/* Icon thông báo */}
+                    <div className="relative">
+                        <button
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 relative"
+                            onClick={() => {
+                                // Xử lý click thông báo ở đây
+                                console.log("Notification clicked");
+                            }}
+                        >
+                            <Bell className="h-5 w-5 text-gray-600" />
+                            {/* Badge thông báo - hiện khi có thông báo mới */}
+                            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                3
+                            </span>
+                        </button>
                     </div>
 
-                    {/* Avatar admin */}
-                    <Avatar
-                        size="sm"
-                        src={admin?.imageURL}
-                        name={admin?.name || "Admin"}
-                        className="cursor-pointer hover:scale-105 transition-transform duration-200"
-                    />
+                    {/* Thông tin admin */}
+                    <div className="flex gap-2 items-center">
+                        {/* Ẩn info khi mobile, chỉ hiện trên md trở lên */}
+                        <div className="md:flex flex-col items-end hidden">
+                            <h1 className="text-sm font-semibold text-gray-800">
+                                {admin?.name || "Admin"}
+                            </h1>
+                            <h1 className="text-xs text-gray-600">
+                                {admin?.email || "admin@example.com"}
+                            </h1>
+                        </div>
+
+                        {/* Avatar admin */}
+                        <Avatar
+                            size="sm"
+                            src={admin?.imageURL}
+                            name={admin?.name || "Admin"}
+                            className="cursor-pointer hover:scale-105 transition-transform duration-200"
+                        />
+                    </div>
                 </div>
             </div>
         </section>

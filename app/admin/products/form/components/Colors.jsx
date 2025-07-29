@@ -571,17 +571,21 @@ export const phoneColors = [
     }
 ];
 
-// Phone storage options - Cập nhật theo thị trường hiện tại
-export const phoneStorageOptions = [
-    "64GB",
-    "128GB", 
-    "256GB",
-    "512GB",
-    "1TB"
-];
+// iPhone storage options
+export const iphoneStorageOptions = ["128GB", "256GB", "512GB", "1TB"];
 
-// Laptop specifications - Đã sửa lại các thông số chính xác
-export const laptopSpecOptions = [
+// Samsung storage options  
+export const samsungStorageOptions = ["128GB", "256GB", "512GB"];
+
+// Xiaomi storage options
+export const xiaomiStorageOptions = ["64GB", "128GB", "256GB", "512GB"];
+
+// Vivo storage options
+export const vivoStorageOptions = ["128GB", "256GB", "512GB"];
+
+// OPPO storage options  
+export const oppoStorageOptions = ["128GB", "256GB", "512GB"];
+export const macbookSpecOptions = [
     // MacBook Air M1
     "M1 8-Core CPU - 7-Core GPU 8GB - 256GB SSD",
     "M1 8-Core CPU - 8-Core GPU 8GB - 512GB SSD",
@@ -603,157 +607,279 @@ export const laptopSpecOptions = [
     "M3 Pro 11-Core CPU - 14-Core GPU 18GB - 512GB SSD",
     "M3 Pro 12-Core CPU - 18-Core GPU 18GB - 1TB SSD",
     "M3 Max 14-Core CPU - 30-Core GPU 36GB - 1TB SSD",
-    "M3 Max 16-Core CPU - 40-Core GPU 48GB - 1TB SSD",
-
-    // Intel Core i3 (Entry Level)
-    "Intel i3-1115G4 4GB RAM - 128GB SSD",
+    "M3 Max 16-Core CPU - 40-Core GPU 48GB - 1TB SSD"
+];
+// ASUS Laptop specifications
+export const asusSpecOptions = [
     "Intel i3-1115G4 8GB RAM - 256GB SSD",
+    "Intel i5-1135G7 8GB RAM - 512GB SSD",
+    "Intel i7-1165G7 16GB RAM - 512GB SSD",
+    "AMD Ryzen 5 5500U 8GB RAM - 256GB SSD",
+    "AMD Ryzen 7 5700U 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3050 16GB RAM - 512GB SSD",
+    "Intel i7-13700H + RTX 4060 16GB RAM - 1TB SSD"
+];
+
+// Lenovo Laptop specifications  
+export const lenovoSpecOptions = [
     "Intel i3-1215U 8GB RAM - 256GB SSD",
-    
-    // Intel Core i5 (Mid-range)
+    "Intel i5-1235U 8GB RAM - 512GB SSD",
+    "Intel i7-1255U 16GB RAM - 512GB SSD",
+    "AMD Ryzen 5 7530U 8GB RAM - 512GB SSD",
+    "AMD Ryzen 7 7735HS 16GB RAM - 1TB SSD",
+    "Intel i7-12700H + RTX 3060 16GB RAM - 1TB SSD"
+];
+// Dell Laptop specifications
+export const dellSpecOptions = [
+    // Entry Level
+    "Intel i3-1115G4 8GB RAM - 256GB SSD",
     "Intel i5-1135G7 8GB RAM - 256GB SSD",
     "Intel i5-1135G7 8GB RAM - 512GB SSD",
-    "Intel i5-1235U 8GB RAM - 512GB SSD",
-    "Intel i5-1235U 16GB RAM - 512GB SSD",
-    "Intel i5-12500H 16GB RAM - 512GB SSD",
-    "Intel i5-13500H 16GB RAM - 512GB SSD",
     
-    // Intel Core i7 (High-end)
-    "Intel i7-1165G7 8GB RAM - 512GB SSD",
+    // Mid-range
+    "Intel i5-1235U 16GB RAM - 512GB SSD",
     "Intel i7-1255U 16GB RAM - 512GB SSD",
     "Intel i7-1260P 16GB RAM - 512GB SSD",
     "Intel i7-12700H 16GB RAM - 512GB SSD",
     "Intel i7-12700H 16GB RAM - 1TB SSD",
-    "Intel i7-13700H 16GB RAM - 1TB SSD",
     
-    // Intel Core i7 với GPU rời
+    // Gaming/Workstation
     "Intel i7-12700H + RTX 3050 16GB RAM - 512GB SSD",
     "Intel i7-12700H + RTX 3060 16GB RAM - 1TB SSD",
     "Intel i7-13700H + RTX 4050 16GB RAM - 512GB SSD",
     "Intel i7-13700H + RTX 4060 16GB RAM - 1TB SSD",
-    "Intel i7-13700H + RTX 4070 16GB RAM - 1TB SSD",
+    "Intel i9-12900H + RTX 3070 32GB RAM - 1TB SSD",
     
-    // Intel Core i9 (Gaming/Workstation)
+    // AMD Options
+    "AMD Ryzen 5 5500U 8GB RAM - 256GB SSD",
+    "AMD Ryzen 7 5700U 16GB RAM - 512GB SSD",
+    "AMD Ryzen 7 6800H + RTX 3060 16GB RAM - 1TB SSD"
+];
+
+// HP Laptop specifications
+export const hpSpecOptions = [
+    // Entry Level
+    "Intel i3-1115G4 4GB RAM - 128GB SSD",
+    "Intel i3-1215U 8GB RAM - 256GB SSD",
+    "Intel i5-1135G7 8GB RAM - 256GB SSD",
+    "Intel i5-1235U 8GB RAM - 512GB SSD",
+    
+    // Mid-range
+    "Intel i5-1235U 16GB RAM - 512GB SSD",
+    "Intel i7-1255U 16GB RAM - 512GB SSD",
+    "Intel i7-12700H 16GB RAM - 512GB SSD",
+    "Intel i7-12700H 16GB RAM - 1TB SSD",
+    "Intel i7-13700H 16GB RAM - 1TB SSD",
+    
+    // Gaming
+    "Intel i5-12500H + RTX 3050 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3060 16GB RAM - 1TB SSD",
+    "Intel i7-13700H + RTX 4050 16GB RAM - 512GB SSD",
+    "Intel i7-13700H + RTX 4060 16GB RAM - 1TB SSD",
+    
+    // AMD Options
+    "AMD Ryzen 5 5600H 8GB RAM - 512GB SSD",
+    "AMD Ryzen 7 5800H 16GB RAM - 512GB SSD",
+    "AMD Ryzen 7 7735HS 16GB RAM - 1TB SSD",
+    "AMD Ryzen 7 7840HS 16GB RAM - 1TB SSD"
+];
+
+// MSI Laptop specifications (Gaming focused)
+export const msiSpecOptions = [
+    // Entry Gaming
+    "Intel i5-12500H + RTX 3050 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3050 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3060 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3060 16GB RAM - 1TB SSD",
+    
+    // Mid-range Gaming
+    "Intel i7-12700H + RTX 3070 16GB RAM - 1TB SSD",
+    "Intel i7-13700H + RTX 4050 16GB RAM - 512GB SSD",
+    "Intel i7-13700H + RTX 4060 16GB RAM - 1TB SSD",
+    "Intel i7-13700H + RTX 4070 16GB RAM - 1TB SSD",
+    "Intel i7-13700H + RTX 4070 32GB RAM - 1TB SSD",
+    
+    // High-end Gaming
     "Intel i9-12900H + RTX 3070 32GB RAM - 1TB SSD",
     "Intel i9-13900H + RTX 4070 32GB RAM - 1TB SSD",
     "Intel i9-13900H + RTX 4080 32GB RAM - 2TB SSD",
     
-    // AMD Ryzen 5 (Mid-range)
-    "AMD Ryzen 5 5500U 8GB RAM - 256GB SSD",
-    "AMD Ryzen 5 5600H 8GB RAM - 512GB SSD",
-    "AMD Ryzen 5 7530U 8GB RAM - 512GB SSD",
-    "AMD Ryzen 5 7535HS 16GB RAM - 512GB SSD",
-    
-    // AMD Ryzen 7 (High-end)
-    "AMD Ryzen 7 5700U 16GB RAM - 512GB SSD",
-    "AMD Ryzen 7 5800H 16GB RAM - 512GB SSD",
-    "AMD Ryzen 7 6800H 16GB RAM - 1TB SSD",
-    "AMD Ryzen 7 7735HS 16GB RAM - 1TB SSD",
-    "AMD Ryzen 7 7840HS 16GB RAM - 1TB SSD",
-    
-    // AMD Ryzen 7 với GPU rời
+    // AMD Gaming
     "AMD Ryzen 7 6800H + RTX 3060 16GB RAM - 1TB SSD",
     "AMD Ryzen 7 7735HS + RTX 4050 16GB RAM - 512GB SSD",
     "AMD Ryzen 7 7840HS + RTX 4060 16GB RAM - 1TB SSD",
-    
-    // AMD Ryzen 9 (Gaming/Workstation)
-    "AMD Ryzen 9 5900HX + RTX 3070 32GB RAM - 1TB SSD",
-    "AMD Ryzen 9 6900HX + RTX 3080 32GB RAM - 1TB SSD",
     "AMD Ryzen 9 7940HS + RTX 4070 32GB RAM - 2TB SSD"
 ];
 
-// Headphone specifications - Cập nhật theo thị trường
-export const headphoneSpecOptions = [
-    // Tai nghe không dây cơ bản
+// Acer Laptop specifications
+export const acerSpecOptions = [
+    // Entry Level
+    "Intel i3-1115G4 4GB RAM - 128GB SSD",
+    "Intel i3-1215U 8GB RAM - 256GB SSD",
+    "Intel i5-1135G7 8GB RAM - 256GB SSD",
+    "Intel i5-1235U 8GB RAM - 512GB SSD",
+    
+    // Mid-range
+    "Intel i5-1235U 16GB RAM - 512GB SSD",
+    "Intel i7-1255U 16GB RAM - 512GB SSD",
+    "Intel i7-12700H 16GB RAM - 512GB SSD",
+    "Intel i7-12700H 16GB RAM - 1TB SSD",
+    
+    // Gaming (Acer Predator, Nitro)
+    "Intel i5-12500H + RTX 3050 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3050 16GB RAM - 512GB SSD",
+    "Intel i7-12700H + RTX 3060 16GB RAM - 1TB SSD",
+    "Intel i7-13700H + RTX 4050 16GB RAM - 512GB SSD",
+    "Intel i7-13700H + RTX 4060 16GB RAM - 1TB SSD",
+    "Intel i9-13900H + RTX 4070 32GB RAM - 1TB SSD",
+    
+    // AMD Options
+    "AMD Ryzen 5 7530U 8GB RAM - 512GB SSD",
+    "AMD Ryzen 5 7535HS 16GB RAM - 512GB SSD",
+    "AMD Ryzen 7 7735HS 16GB RAM - 1TB SSD",
+    "AMD Ryzen 7 7840HS + RTX 4060 16GB RAM - 1TB SSD"
+];
+
+
+export const sonyHeadphoneSpecOptions = [
+    // Sony Entry Level
     "Bluetooth 5.0 - 20Hz-20kHz - 20h pin",
     "Bluetooth 5.1 - 20Hz-20kHz - 30h pin",
-    "Bluetooth 5.2 - 20Hz-20kHz - 40h pin",
-    "Bluetooth 5.3 - 20Hz-40kHz - 50h pin",
-    
-    // Tai nghe có dây
     "Wired 3.5mm - 20Hz-20kHz - 40mm Driver",
-    "USB-C - 20Hz-40kHz - 50mm Driver",
-    "USB-A - 20Hz-20kHz - 40mm Driver",
     
-    // Tai nghe chống ồn
+    // Sony Mid-range
+    "Bluetooth 5.2 - 20Hz-20kHz - 40h pin",
     "ANC Bluetooth 5.2 - 20Hz-20kHz - 30h pin",
     "ANC Bluetooth 5.3 - 20Hz-40kHz - 40h pin",
-    "Hybrid ANC - 20Hz-40kHz - 50h pin",
     
-    // Tai nghe Hi-Fi
+    // Sony Premium (WH-1000XM series)
+    "Hybrid ANC - 20Hz-40kHz - 50h pin",
     "Hi-Res Audio - 10Hz-40kHz - 50mm Driver",
     "Hi-Res Audio - 5Hz-50kHz - Planar Driver",
     "Studio Monitor - 15Hz-28kHz - 50mm Driver",
     
-    // Tai nghe gaming
+    // Sony Gaming
     "Gaming 2.4GHz - 20Hz-20kHz - 7.1 Surround",
-    "Gaming RGB - 20Hz-20kHz - 50mm Driver",
-    "Pro Gaming - 15Hz-25kHz - 53mm Driver",
     "Gaming Wireless - 20Hz-20kHz - 7.1 Virtual Surround",
-    
-    // Tai nghe gaming có dây
-    "Gaming Wired - 20Hz-20kHz - 40mm Driver",
-    "Gaming Pro - 12Hz-28kHz - 50mm Driver"
+    "Gaming Wired - 20Hz-20kHz - 40mm Driver"
 ];
 
-// Mouse specifications - Cập nhật theo thị trường
-export const mouseSpecOptions = [
-    // Chuột văn phòng
+// Bose Headphone specifications (nếu có)
+export const boseHeadphoneSpecOptions = [
+    "ANC Bluetooth 5.2 - 20Hz-20kHz - 24h pin",
+    "ANC Bluetooth 5.3 - 20Hz-40kHz - 30h pin", 
+    "Hybrid ANC - 15Hz-40kHz - 45h pin",
+    "Hi-Res Audio - 10Hz-40kHz - 50mm Driver"
+];
+
+// JBL Headphone specifications (nếu có)
+export const jblHeadphoneSpecOptions = [
+    "Bluetooth 5.0 - 20Hz-20kHz - 20h pin",
+    "Bluetooth 5.2 - 20Hz-20kHz - 40h pin",
+    "Gaming RGB - 20Hz-20kHz - 50mm Driver",
+    "Pro Gaming - 15Hz-25kHz - 53mm Driver"
+];
+
+// Logitech Mouse specifications
+export const logitechMouseSpecOptions = [
+    // Office/Productivity
     "Wireless 2.4GHz - 1000 DPI - 12 tháng pin",
     "Wireless 2.4GHz - 1600 DPI - 18 tháng pin",
     "Bluetooth 5.0 - 1200 DPI - 24 tháng pin",
     "Bluetooth 5.1 - 1600 DPI - 12 tháng pin",
     "Bluetooth 5.2 - 2400 DPI - 18 tháng pin",
     
-    // Chuột có dây
-    "USB Wired - 1000 DPI - Quang học",
-    "USB Wired - 1600 DPI - Quang học",
-    "USB Wired - 3200 DPI - Quang học",
+    // Gaming Entry (G series)
+    "Gaming Wired - 6400 DPI - RGB",
+    "Gaming Wired - 8000 DPI - RGB", 
+    "Gaming Wireless - 12000 DPI - RGB",
     
-    // Chuột gaming entry
+    // Gaming Pro (G Pro series)
+    "Gaming Pro - 16000 DPI - RGB - 1000Hz",
+    "Gaming Wireless - 25600 DPI - RGB - 1000Hz",
+    "Gaming Pro - 25600 DPI - RGB - 1000Hz",
+    
+    // Specialty
+    "Ergonomic - 1600 DPI - Thiết kế thẳng đứng",
+    "Ultra Light - 16000 DPI - 60g - Honeycomb"
+];
+
+// Razer Mouse specifications
+export const razerMouseSpecOptions = [
+    // Gaming Entry
     "Gaming Wired - 6400 DPI - RGB",
     "Gaming Wired - 8000 DPI - RGB",
     "Gaming Wireless - 12000 DPI - RGB",
     
-    // Chuột gaming pro
+    // Gaming Pro (DeathAdder, Viper series)
     "Gaming Pro - 16000 DPI - RGB - 1000Hz",
     "Gaming Pro - 20000 DPI - RGB - 1000Hz",
     "Gaming Pro - 25600 DPI - RGB - 8000Hz",
     "Gaming Esports - 30000 DPI - RGB - 8000Hz",
     
-    // Chuột gaming wireless
+    // Wireless Pro
     "Gaming Wireless - 25600 DPI - RGB - 1000Hz",
     "Gaming Wireless Pro - 30000 DPI - RGB - 4000Hz",
     
-    // Chuột đặc biệt
-    "Ergonomic - 1600 DPI - Thiết kế thẳng đứng",
-    "Ultra Light - 16000 DPI - 60g - Honeycomb"
+    // Ultra Light Gaming
+    "Ultra Light - 16000 DPI - 60g - Honeycomb",
+    "Ultra Light Pro - 20000 DPI - 58g - Honeycomb"
 ];
 
+// Corsair Mouse specifications
+export const corsairMouseSpecOptions = [
+    // Gaming Entry
+    "Gaming Wired - 6400 DPI - RGB",
+    "Gaming Wired - 8000 DPI - RGB",
+    "Gaming Wireless - 12000 DPI - RGB",
+    
+    // Gaming Pro (Dark Core, M65 series)
+    "Gaming Pro - 16000 DPI - RGB - 1000Hz",
+    "Gaming Pro - 20000 DPI - RGB - 1000Hz", 
+    "Gaming Pro - 25600 DPI - RGB - 8000Hz",
+    "Gaming Wireless Pro - 30000 DPI - RGB - 4000Hz",
+    
+    // FPS Gaming
+    "FPS Gaming - 18000 DPI - RGB - 1000Hz",
+    "FPS Pro - 26000 DPI - RGB - 8000Hz"
+];
+
+// HyperX Mouse specifications
+export const hyperMouseSpecOptions = [
+    // Gaming Entry
+    "Gaming Wired - 6400 DPI - RGB",
+    "Gaming Wired - 8000 DPI - RGB",
+    "Gaming Wireless - 12000 DPI - RGB",
+    
+    // Gaming Pro (Pulsefire series)
+    "Gaming Pro - 16000 DPI - RGB - 1000Hz",
+    "Gaming Pro - 20000 DPI - RGB - 1000Hz",
+    "Gaming Wireless - 25600 DPI - RGB - 1000Hz",
+    
+    // FPS Gaming
+    "FPS Gaming - 16000 DPI - RGB - 1000Hz",
+    "Ultra Light - 16000 DPI - 59g - Honeycomb"
+];
 // Product categories mapping
-export const productCategories = {
+ export const productCategories = {
     phone: {
         name: "Điện thoại",
         storageField: "storages",
-        storageOptions: phoneStorageOptions,
         storageLabel: "Dung lượng"
     },
     laptop: {
         name: "Laptop",
         storageField: "specifications",
-        storageOptions: laptopSpecOptions,
         storageLabel: "Cấu hình"
     },
     headphone: {
         name: "Tai nghe",
         storageField: "specifications",
-        storageOptions: headphoneSpecOptions,
         storageLabel: "Thông số kỹ thuật"
     },
     mouse: {
         name: "Chuột",
         storageField: "specifications",
-        storageOptions: mouseSpecOptions,
         storageLabel: "Thông số kỹ thuật"
     }
 };
@@ -764,7 +890,6 @@ export const getColorsByCategory = (category) => {
 };
 
 export const getColorsByProductType = (productType) => {
-    // Updated category mappings based on your requirements
     const phoneCategories = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
     const laptopCategories = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer",];
     const headphoneCategories = ["sony"];
@@ -821,6 +946,94 @@ export const detectProductType = (brandName, categoryName) => {
     if (phoneKeywords.some(keyword => searchText.includes(keyword))) {
         return "phone";
     }
-
+    return "phone";
   
+};
+
+
+export const getColorsByBrand = (brandName) => {
+    const category = getBrandCategoryFromName(brandName.toLowerCase());
+    return category ? phoneColors.filter(color => color.category === category) : [];
+};
+
+
+export const getBrandCategoryFromName = (brandName) => {
+    const brandMapping = {
+        // Phone brands
+        'apple': 'iphone',
+        'iphone': 'iphone',
+        'samsung': 'samsung',
+        'vivo': 'vivo',
+        'oppo': 'oppo',
+        'xiaomi': 'xiaomi',
+        
+        // Laptop brands
+        'macbook': 'macbook',
+        'asus': 'asus',
+        'lenovo': 'lenovo',
+        'dell': 'dell',
+        'hp': 'hp',
+        'msi': 'msi',
+        'acer': 'acer',
+        
+        // Headphone brands
+        'sony': 'sony',
+        
+        // Mouse brands
+        'logitech': 'logitech',
+        'hyperx': 'hyper',
+        'hyper': 'hyper',
+        'razer': 'razer',
+        'corsair': 'corsair'
+    };
+    
+    return brandMapping[brandName];
+};
+export const getStorageOptionsByBrand = (brandName) => {
+    const category = getBrandCategoryFromName(brandName.toLowerCase());
+    if (!category) return [];
+    
+    // Map trực tiếp từ category to storage options
+    const storageMapping = {
+        // Phone brands
+        'iphone': iphoneStorageOptions,
+        'samsung': samsungStorageOptions,
+        'xiaomi': xiaomiStorageOptions,
+        'vivo': vivoStorageOptions,
+        'oppo': oppoStorageOptions,
+        
+        // Laptop brands
+        'macbook': macbookSpecOptions,
+        'asus': asusSpecOptions,
+        'lenovo': lenovoSpecOptions,
+        'dell': dellSpecOptions,
+        'hp': hpSpecOptions,
+        'msi': msiSpecOptions,
+        'acer': acerSpecOptions,
+        
+        // Headphone brands
+        'sony': sonyHeadphoneSpecOptions,
+        
+        // Mouse brands
+        'logitech': logitechMouseSpecOptions,
+        'hyper': hyperMouseSpecOptions,
+        'razer': razerMouseSpecOptions,
+        'corsair': corsairMouseSpecOptions
+    };
+    
+    return storageMapping[category] || [];
+};
+
+
+export const detectProductTypeByCategory = (category) => {
+    const phoneCategories = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
+    const laptopCategories = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer"];
+    const headphoneCategories = ["sony"];
+    const mouseCategories = ["logitech", "hyper", "razer", "corsair"];
+
+    if (phoneCategories.includes(category)) return "phone";
+    if (laptopCategories.includes(category)) return "laptop";
+    if (headphoneCategories.includes(category)) return "headphone";
+    if (mouseCategories.includes(category)) return "mouse";
+    return "phone";
 };

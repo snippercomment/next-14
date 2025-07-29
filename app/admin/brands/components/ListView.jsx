@@ -2,7 +2,7 @@
 
 import { Button, CircularProgress, Select, SelectItem } from "@nextui-org/react";
 import { useBrands } from "@/lib/firestore/brands/read";
-import { Edit2, Trash, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Edit2, Trash2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useState, useMemo } from "react";
 import { deleteBrand } from "@/lib/firestore/brands/write";
@@ -428,7 +428,7 @@ function Row({ item, index }) {
                         className="hover:bg-red-100"
                         aria-label={`Xóa thương hiệu ${item?.name}`}
                     >
-                        <Trash size={14} />
+                        <Trash2 size={14} />
                     </Button>
                 </div>
             </td>

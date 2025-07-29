@@ -6,11 +6,36 @@ import {  useMemo } from "react";
 import {
     getColorsByProductType,
     getStorageOptionsByProductType,
+    getColorsByBrand,
+     getStorageOptionsByBrand,
     getProductCategoryInfo,
     detectProductType,
 
 } from "./Colors";
 
+const getBrandDisplayName = (category) => {
+    const brandNames = {
+        'iphone': 'iPhone',
+        'samsung': 'Samsung Galaxy',
+        'vivo': 'Vivo',
+        'oppo': 'OPPO',
+        'xiaomi': 'Xiaomi',
+        'macbook': 'MacBook', 
+        'asus': 'ASUS',
+        'lenovo': 'Lenovo',
+        'dell': 'Dell',
+        'hp': 'HP',
+        'msi': 'MSI',
+        'acer': 'Acer',
+        'sony': 'Sony',
+        'logitech': 'Logitech',
+        'hyper': 'HyperX',
+        'razer': 'Razer',
+        'corsair': 'Corsair'
+    };
+    
+    return brandNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
+};
 // Định nghĩa các danh mục thương hiệu
 const BRAND_CATEGORIES = {
     iphone: { value: "iphone", label: "iPhone", description: "Thương hiệu điện thoại iPhone" },
@@ -30,20 +55,32 @@ export default function BasicDetails({ data, handleData }) {
     }, [brands, data?.brandCategory]);
 
     // Thông tin sản phẩm
+
     const productInfo = useMemo(() => {
-        const selectedBrand = brands?.find(brand => brand.id === data?.brandId);
-        const selectedCategory = categories?.find(category => category.id === data?.categoryId);
-        const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
-        
-        return {
-            selectedBrand,
-            selectedCategory,
-            productType,
-            categoryInfo: getProductCategoryInfo(productType),
-            availableColors: getColorsByProductType(productType),
-            storageOptions: getStorageOptionsByProductType(productType)
-        };
-    }, [brands, categories, data?.brandId, data?.categoryId]);
+    const selectedBrand = brands?.find(brand => brand.id === data?.brandId);
+    const selectedCategory = categories?.find(category => category.id === data?.categoryId);
+    const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
+    
+    let availableColors = [];
+    let storageOptions = [];
+    
+    if (selectedBrand?.name) {
+        availableColors = getColorsByBrand(selectedBrand.name);
+        storageOptions = getStorageOptionsByBrand(selectedBrand.name); 
+    } else if (productType) {
+        availableColors = getColorsByProductType(productType);
+        storageOptions = getStorageOptionsByProductType(productType);
+    }
+
+    return {
+        selectedBrand,
+        selectedCategory,
+        productType,
+        categoryInfo: getProductCategoryInfo(productType),
+        availableColors,
+        storageOptions 
+    };
+}, [brands, categories, data?.brandId, data?.categoryId]);
 
     // Xử lý chọn/bỏ chọn màu
     const handleColorToggle = (colorId) => {
@@ -297,41 +334,62 @@ export default function BasicDetails({ data, handleData }) {
 
             {/* Màu sắc */}
             {productInfo.availableColors.length > 0 && (
-                <div className="flex flex-col gap-2">
-                    <label className="text-gray-700 text-sm font-medium">
-                        Màu sắc <span className="text-red-500">*</span>
-                    </label>
-                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {productInfo.availableColors.map((color) => {
-                                const isSelected = (data?.colorIds || []).includes(color.id);
-                                return (
-                                    <label
-                                        key={color.id}
-                                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer border-2 transition-all ${
-                                            isSelected
-                                                ? 'bg-blue-100 border-blue-400'
-                                                : 'bg-white border-gray-200 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={isSelected}
-                                            onChange={() => handleColorToggle(color.id)}
-                                            className="w-4 h-4 text-blue-600 rounded"
-                                        />
-                                        <div
-                                            className="w-6 h-6 rounded-full border-2 border-gray-300"
-                                            style={{ backgroundColor: color.hexColor }}
-                                        ></div>
-                                        <span className="text-sm font-medium">{color.title}</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
+    <div className="flex flex-col gap-3">
+        <label className="text-gray-700 text-sm font-medium">
+            Màu sắc <span className="text-red-500">*</span>
+        </label>
+        <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+            {/* Nhóm màu theo thương hiệu */}
+            {Object.entries(
+                productInfo.availableColors.reduce((groups, color) => {
+                    const brandKey = getBrandDisplayName(color.category);
+                    if (!groups[brandKey]) groups[brandKey] = [];
+                    groups[brandKey].push(color);
+                    return groups;
+                }, {})
+            ).map(([brandName, colors]) => (
+                <div key={brandName} className="mb-4 last:mb-0">
+                    {/* Tên thương hiệu */}
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3 pb-1 border-b border-gray-200 uppercase tracking-wide">
+                        {brandName}
+                    </h3>
+                    
+                    {/* Grid màu sắc */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {colors.map((color) => {
+                            const isSelected = (data?.colorIds || []).includes(color.id);
+                            return (
+                                <label
+                                    key={color.id}
+                                    className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer border-2 transition-all duration-200 hover:shadow-sm ${
+                                        isSelected
+                                            ? 'bg-blue-50 border-blue-400 shadow-sm'
+                                            : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => handleColorToggle(color.id)}
+                                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <div
+                                        className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 shadow-sm"
+                                        style={{ backgroundColor: color.hexColor }}
+                                        title={color.title}
+                                    ></div>
+                                    <span className="text-xs font-medium text-gray-700 leading-tight truncate">
+                                        {color.name}
+                                    </span>
+                                </label>
+                            );
+                        })}
                     </div>
                 </div>
-            )}
+            ))}
+        </div>
+    </div>
+)}
 
             {/* Thông báo nếu chưa chọn brand/category */}
             {!productInfo.selectedBrand && !productInfo.selectedCategory && (

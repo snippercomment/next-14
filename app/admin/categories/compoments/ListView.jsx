@@ -2,7 +2,7 @@
 
 import { Button, CircularProgress } from "@nextui-org/react";
 import { useCategories } from "@/lib/firestore/categories/read";
-import { Edit2, Trash } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { deleteCategory } from "@/lib/firestore/categories/write";
@@ -85,7 +85,7 @@ function Row({ item, index }) {
                         isLoading={isDeleting}
                         isDisabled={isDeleting}
                         isIconOnly size="sm" color="danger">
-                        <Trash size={13} />
+                        <Trash2 size={13} />
                     </Button>
                 </div>
             </td>

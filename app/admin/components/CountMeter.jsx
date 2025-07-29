@@ -9,9 +9,6 @@ export default function CountMeter() {
   const { data: totalUsers } = useUsersCount();
   const { data: ordersCounts } = useOrdersCounts();
 
-  // Debug: log ra để kiểm tra dữ liệu
-  console.log('ordersCounts:', ordersCounts);
-
   return (
     <section className="grid grid-cols-2 md:grid-cols-4 gap-5">
       <Card imgURL={"/box.png"} title={"Sản phẩm"} value={totalProduct ?? 0} />

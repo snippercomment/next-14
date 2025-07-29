@@ -2,6 +2,7 @@
 import BasicDetail from "./components/BasicDetail"
 import Des from "./components/Des"
 import Image from "./components/Image"
+import Link from "next/link";
 
 import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
@@ -97,7 +98,19 @@ export default function Page() {
             } else {
                 handleCreate();
             }
-        }} className=" flex flex-col gap-4 p-5">
+        }} className="flex flex-col gap-4 p-5">
+            
+            {/* Nút quay lại */}
+            <div className="flex items-center mb-4">
+                <Link 
+                    href="/admin/products"
+                    className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                    aria-label="Quay lại danh sách sản phẩm"
+                >
+                    ← Quay lại
+                </Link>
+            </div>
+
             <div className="flex justify-between items-center w-full" >
                 <h1 className="text-semibold">{id ? "Cập nhật sản phẩm" : "Tạo sản phẩm mới"}</h1>
                 <Button 
