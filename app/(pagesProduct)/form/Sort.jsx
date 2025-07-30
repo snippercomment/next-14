@@ -12,7 +12,6 @@ export default function Sort({ sortBy, onSortChange, data, onDataSorted }) {
     const sortOptions = [
         { value: 'price_low', label: 'Giá thấp đến cao' },
         { value: 'price_high', label: 'Giá cao đến thấp' },
-       
         { value: 'newest', label: 'Mới nhất' },
     ];
 
@@ -49,7 +48,6 @@ export default function Sort({ sortBy, onSortChange, data, onDataSorted }) {
                     const priceB2 = getPrice(b);
                     return priceB2 - priceA2;
 
-                
                 case 'newest':
                     // Sắp xếp theo ngày tạo (mới nhất trước)
                     const dateA = new Date(a.createdAt || a.timestamp || 0);
@@ -123,14 +121,14 @@ export default function Sort({ sortBy, onSortChange, data, onDataSorted }) {
             <div className="relative" ref={sortRef}>
                 <button
                     onClick={() => setShowSortDropdown(!showSortDropdown)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+                    className="flex items-center gap-3 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 w-auto"
                 >
-                    <span className="text-sm font-medium text-gray-700 truncate">{currentSortLabel}</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform text-gray-500 flex-shrink-0 ${showSortDropdown ? 'rotate-180' : ''}`} />
+                    <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{currentSortLabel}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform text-gray-500 ${showSortDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showSortDropdown && (
-                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 min-w-[200px]">
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 min-w-full">
                         {sortOptions.map((option) => (
                             <button
                                 key={option.value}

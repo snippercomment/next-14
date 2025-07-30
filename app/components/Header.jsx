@@ -16,10 +16,10 @@ export default function Header() {
 
   const menuList = [
     { name: "Trang chủ", link: "/" },
-    { name: "Iphone", link: "/iphone" },
-    { name: "Laptop", link: "/laptop" },
-    { name: "Mouse", link: "/mouse" },
-    { name: "Headphone", link: "/headphone" },
+    { name: "Điện thoại", link: "/iphone" },
+    { name: "Máy tính", link: "/laptop" },
+    { name: "Chuột", link: "/mouse" },
+    { name: "Tai nghe", link: "/headphone" },
   ];
 
   const toggleUserDropdown = () => {

@@ -53,23 +53,6 @@ export default function Header({ toggleSidebar, isCollapsed }) {
 
                 {/* Thông tin admin và icon thông báo */}
                 <div className="flex gap-3 items-center">
-                    {/* Icon thông báo */}
-                    <div className="relative">
-                        <button
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 relative"
-                            onClick={() => {
-                                // Xử lý click thông báo ở đây
-                                console.log("Notification clicked");
-                            }}
-                        >
-                            <Bell className="h-5 w-5 text-gray-600" />
-                            {/* Badge thông báo - hiện khi có thông báo mới */}
-                            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                                3
-                            </span>
-                        </button>
-                    </div>
-
                     {/* Thông tin admin */}
                     <div className="flex gap-2 items-center">
                         {/* Ẩn info khi mobile, chỉ hiện trên md trở lên */}
