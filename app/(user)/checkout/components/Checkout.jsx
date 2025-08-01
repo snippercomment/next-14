@@ -45,9 +45,9 @@ export default function Checkout({ productList }) {
   const router = useRouter();
   const { data: currentUser, isLoading: isUserLoading } = useUser({ uid: user?.uid });
 
-  // Auto-fill address from user profile
+  // Auto-fill address from user profile - chỉ chạy lần đầu khi load
   useEffect(() => {
-    if (currentUser && !useCustomAddress) {
+    if (currentUser && Object.keys(address).length === 0) {
       const defaultAddress = currentUser.addresses?.find(addr => addr.isDefault);
       
       if (defaultAddress) {
@@ -56,12 +56,13 @@ export default function Checkout({ productList }) {
           fullName: defaultAddress.recipientName || currentUser.displayName || "",
           mobile: defaultAddress.phoneNumber || currentUser.phoneNumber || "",
           email: user?.email || "",
-          addressLine1: defaultAddress.addressLine1 || defaultAddress.fullAddress || "",
+          addressLine1: defaultAddress.address || defaultAddress.addressLine1 || defaultAddress.fullAddress || "",
           district: defaultAddress.district || "",
           city: defaultAddress.city || "",
           notes: defaultAddress.notes || "",
         });
       } else {
+        // Nếu không có địa chỉ mặc định, chỉ fill thông tin cơ bản
         setAddress({
           fullName: currentUser.displayName || "",
           mobile: currentUser.phoneNumber || "",
@@ -71,9 +72,10 @@ export default function Checkout({ productList }) {
           city: "",
           notes: "",
         });
+        setUseCustomAddress(true); 
       }
     }
-  }, [currentUser, user, useCustomAddress]);
+  }, [currentUser, user]);
 
   const handleAddressChange = (key, value) => {
     setAddress(prev => ({ ...prev, [key]: value }));
@@ -81,15 +83,62 @@ export default function Checkout({ productList }) {
 
   const handleSelectUserAddress = (userAddress) => {
     setSelectedUserAddress(userAddress);
+    setUseCustomAddress(false);
     setAddress({
       fullName: userAddress.recipientName || currentUser?.displayName || "",
       mobile: userAddress.phoneNumber || currentUser?.phoneNumber || "",
       email: user?.email || "",
-      addressLine1: userAddress.addressLine1 || userAddress.fullAddress || "",
+      addressLine1: userAddress.address || userAddress.addressLine1 || userAddress.fullAddress || "",
       district: userAddress.district || "",
       city: userAddress.city || "",
       notes: userAddress.notes || "",
     });
+  };
+
+  const handleUseCustomAddress = () => {
+    setUseCustomAddress(true);
+    setSelectedUserAddress(null);
+   
+    if (selectedUserAddress) {
+      setAddress(prev => ({
+        ...prev,
+        addressLine1: "",
+        district: "",
+        city: "",
+        notes: "",
+      }));
+    }
+  };
+
+  const handleBackToSavedAddresses = () => {
+    setUseCustomAddress(false);
+    // Không reset toàn bộ, giữ lại thông tin cơ bản
+    const basicInfo = {
+      fullName: address.fullName || currentUser?.displayName || "",
+      mobile: address.mobile || currentUser?.phoneNumber || "",
+      email: address.email || user?.email || "",
+    };
+    
+    // Tìm địa chỉ mặc định để hiển thị
+    const defaultAddress = currentUser?.addresses?.find(addr => addr.isDefault);
+    if (defaultAddress) {
+      setSelectedUserAddress(defaultAddress);
+      setAddress({
+        ...basicInfo,
+        addressLine1: defaultAddress.addressLine1 || defaultAddress.fullAddress || "",
+        district: defaultAddress.district || "",
+        city: defaultAddress.city || "",
+        notes: defaultAddress.notes || "",
+      });
+    } else {
+      setAddress({
+        ...basicInfo,
+        addressLine1: "",
+        district: "",
+        city: "",
+        notes: "",
+      });
+    }
   };
 
   const totalPrice = productList?.reduce((sum, item) => 
@@ -152,7 +201,7 @@ export default function Checkout({ productList }) {
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium">Chọn từ địa chỉ đã lưu:</h3>
               <button
-                onClick={() => setUseCustomAddress(true)}
+                onClick={handleUseCustomAddress}
                 className="text-sm text-blue-600 underline"
               >
                 Nhập địa chỉ mới
@@ -195,7 +244,7 @@ export default function Checkout({ productList }) {
           <div className="space-y-4">
             {currentUser?.addresses?.length > 0 && (
               <button
-                onClick={() => setUseCustomAddress(false)}
+                onClick={handleBackToSavedAddresses}
                 className="text-sm text-blue-600 underline"
               >
                 Chọn từ địa chỉ đã lưu

@@ -68,11 +68,7 @@ export default function Page() {
             <p className="text-gray-500 mb-8">
               Khám phá những sản phẩm tuyệt vời của chúng tôi
             </p>
-            <Link href="/products">
-              <button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-colors">
-                Tiếp tục mua sắm
-              </button>
-            </Link>
+            
           </div>
         )}
 

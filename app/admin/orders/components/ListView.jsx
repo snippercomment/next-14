@@ -76,7 +76,7 @@ export default function ListView() {
     error,
     isLoading,
   } = useAllOrders({
-    pageLimit: 1000, // Load nhiều để có tất cả orders
+    pageLimit: 1000, 
     lastSnapDoc: null,
   });
 
@@ -193,94 +193,96 @@ export default function ListView() {
             </Button>
 
             {/* Page Numbers */}
-            <div className="flex items-center gap-1">
-              {(() => {
-                const pageNumbers = [];
-                const maxVisiblePages = 5;
-                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+     <div className="flex items-center gap-1">
+  {(() => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-                // Điều chỉnh startPage nếu endPage đã tới maximum
-                if (endPage === totalPages) {
-                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                }
+    // Điều chỉnh startPage nếu endPage đã tới maximum
+    if (endPage === totalPages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
 
-                // Hiển thị trang đầu và dấu ...
-                if (startPage > 1) {
-                  pageNumbers.push(
-                    <Button
-                      key={1}
-                      variant={currentPage === 1 ? "solid" : "flat"}
-                      size="sm"
-                      onPress={() => handlePageChange(1)}
-                      className={`min-w-8 h-8 ${currentPage === 1
-                          ? "bg-blue-600 text-white"
-                          : "hover:bg-gray-100"
-                        }`}
-                    >
-                      1
-                    </Button>
-                  );
+    // Hiển thị trang đầu và dấu ...
+    if (startPage > 1) {
+      pageNumbers.push(
+        <Button
+          key={1}
+          variant={currentPage === 1 ? "solid" : "flat"}
+          size="sm"
+          onPress={() => handlePageChange(1)}
+          className={`min-w-8 h-8 ${currentPage === 1
+              ? "bg-blue-600 text-white"
+              : "hover:bg-gray-100"
+            }`}
+        >
+          1
+        </Button>
+      );
 
-                  if (startPage > 2) {
-                    pageNumbers.push(
-                      <span key="start-ellipsis" className="px-2 text-gray-400">
-                        ...
-                      </span>
-                    );
-                  }
-                }
+      if (startPage > 2) {
+        pageNumbers.push(
+          <span key="start-ellipsis" className="px-2 text-gray-400">
+            ...
+          </span>
+        );
+      }
+    }
 
-                // Hiển thị các trang ở giữa
-                for (let i = startPage; i <= endPage; i++) {
-                  if (i !== 1 && i !== totalPages) {
-                    pageNumbers.push(
-                      <Button
-                        key={i}
-                        variant={currentPage === i ? "solid" : "flat"}
-                        size="sm"
-                        onPress={() => handlePageChange(i)}
-                        className={`min-w-8 h-8 ${currentPage === i
-                            ? "bg-blue-600 text-white"
-                            : "hover:bg-gray-100"
-                          }`}
-                      >
-                        {i}
-                      </Button>
-                    );
-                  }
-                }
+    // Hiển thị các trang ở giữa (bao gồm cả trang đầu và cuối nếu chúng nằm trong khoảng)
+    for (let i = startPage; i <= endPage; i++) {
+      // Chỉ thêm trang nếu chưa được thêm ở trên hoặc dưới
+      if ((i === 1 && startPage > 1) || (i === totalPages && endPage < totalPages)) {
+        continue;
+      }
+      
+      pageNumbers.push(
+        <Button
+          key={i}
+          variant={currentPage === i ? "solid" : "flat"}
+          size="sm"
+          onPress={() => handlePageChange(i)}
+          className={`min-w-8 h-8 ${currentPage === i
+              ? "bg-blue-600 text-white"
+              : "hover:bg-gray-100"
+            }`}
+        >
+          {i}
+        </Button>
+      );
+    }
 
-                // Hiển thị dấu ... và trang cuối
-                if (endPage < totalPages) {
-                  if (endPage < totalPages - 1) {
-                    pageNumbers.push(
-                      <span key="end-ellipsis" className="px-2 text-gray-400">
-                        ...
-                      </span>
-                    );
-                  }
+    // Hiển thị dấu ... và trang cuối
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pageNumbers.push(
+          <span key="end-ellipsis" className="px-2 text-gray-400">
+            ...
+          </span>
+        );
+      }
 
-                  pageNumbers.push(
-                    <Button
-                      key={totalPages}
-                      variant={currentPage === totalPages ? "solid" : "flat"}
-                      size="sm"
-                      onPress={() => handlePageChange(totalPages)}
-                      className={`min-w-8 h-8 ${currentPage === totalPages
-                          ? "bg-blue-600 text-white"
-                          : "hover:bg-gray-100"
-                        }`}
-                    >
-                      {totalPages}
-                    </Button>
-                  );
-                }
+      pageNumbers.push(
+        <Button
+          key={totalPages}
+          variant={currentPage === totalPages ? "solid" : "flat"}
+          size="sm"
+          onPress={() => handlePageChange(totalPages)}
+          className={`min-w-8 h-8 ${currentPage === totalPages
+              ? "bg-blue-600 text-white"
+              : "hover:bg-gray-100"
+            }`}
+        >
+          {totalPages}
+        </Button>
+      );
+    }
 
-                return pageNumbers;
-              })()}
-            </div>
-
+    return pageNumbers;
+  })()}
+</div>
             {/* Next Button */}
             <Button
               isIconOnly

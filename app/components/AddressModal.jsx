@@ -14,7 +14,7 @@ import {
   Textarea,
   Checkbox,
 } from "@nextui-org/react";
-import { VIETNAM_PROVINCES, getDistrictsByProvince, getWardsByDistrict } from "@/lib/data/vietnamAddress";
+import { VIETNAM_PROVINCES, getDistrictsByProvince } from "@/lib/data/vietnamAddress";
 
 const addressTypes = [
   { key: "home", label: "Nhà riêng" },
@@ -36,10 +36,9 @@ export default function AddressModal({
   const [addressForm, setAddressForm] = useState({
     recipientName: "",
     phoneNumber: "",
-    city: "", // Tỉnh/Thành phố
-    district: "", // Quận/Huyện  
-    ward: "", // Phường/Xã
-    address: "", // Địa chỉ cụ thể
+    city: "", 
+    district: "", 
+    addressLine1: "", 
     label: "",
     type: "",
     isDefault: false,
@@ -47,9 +46,6 @@ export default function AddressModal({
 
   // Lấy danh sách quận/huyện theo tỉnh được chọn
   const availableDistricts = getDistrictsByProvince(addressForm.city);
-  
-  // Lấy danh sách phường/xã theo quận được chọn
-  const availableWards = getWardsByDistrict(addressForm.city, addressForm.district);
 
   // Effect để load dữ liệu khi editingAddress thay đổi
   useEffect(() => {
@@ -62,8 +58,7 @@ export default function AddressModal({
         phoneNumber: editingAddress.phoneNumber || "",
         city: province?.code || editingAddress.city || "",
         district: editingAddress.district || "",
-        ward: editingAddress.ward || "",
-        address: editingAddress.address || "",
+        address: editingAddress.addressLine1 || editingAddress.address || "",
         label: editingAddress.label || "",
         type: editingAddress.type || "home",
         isDefault: editingAddress.isDefault || false,
@@ -77,15 +72,9 @@ export default function AddressModal({
     setAddressForm(prev => {
       const newForm = { ...prev, [field]: value };
       
-      // Reset district và ward khi đổi tỉnh
+      // Reset district khi đổi tỉnh
       if (field === "city") {
         newForm.district = "";
-        newForm.ward = "";
-      }
-      
-      // Reset ward khi đổi quận
-      if (field === "district") {
-        newForm.ward = "";
       }
       
       return newForm;
@@ -98,7 +87,6 @@ export default function AddressModal({
       phoneNumber: "",
       city: "",
       district: "",
-      ward: "",
       address: "",
       label: "",
       type: "",
@@ -137,8 +125,8 @@ export default function AddressModal({
         throw new Error("Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại Việt Nam (ví dụ: 0901234567, 0987654321)");
       }
 
-      if (!addressForm.city || !addressForm.district || !addressForm.ward) {
-        throw new Error("Vui lòng chọn đầy đủ Tỉnh/Thành phố, Quận/Huyện, Phường/Xã!");
+      if (!addressForm.city || !addressForm.district) {
+        throw new Error("Vui lòng chọn đầy đủ Tỉnh/Thành phố và Quận/Huyện!");
       }
 
       if (!addressForm.address.trim()) {
@@ -152,9 +140,8 @@ export default function AddressModal({
         city: addressForm.city,
         cityName: VIETNAM_PROVINCES.find(p => p.code === addressForm.city)?.name || "",
         district: addressForm.district,
-        ward: addressForm.ward,
-        address: addressForm.address.trim(),
-        fullAddress: `${addressForm.address.trim()}, ${addressForm.ward}, ${addressForm.district}, ${VIETNAM_PROVINCES.find(p => p.code === addressForm.city)?.name || ""}`,
+        addressLine1: addressForm.address.trim(),
+        fullAddress: `${addressForm.address.trim()}, ${addressForm.district}, ${VIETNAM_PROVINCES.find(p => p.code === addressForm.city)?.name || ""}`,
         label: addressForm.label.trim() || (editingAddress ? editingAddress.label : "Địa chỉ mới"),
         type: addressForm.type || "home",
         isDefault: addressForm.isDefault,
@@ -287,28 +274,6 @@ export default function AddressModal({
                   </Select>
                 </div>
 
-                {/* Phường/Xã */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phường/Xã <span className="text-red-500">*</span>
-                  </label>
-                  <Select
-                    placeholder={addressForm.district ? "Chọn Phường/Xã" : "Vui lòng chọn Quận/Huyện trước"}
-                    selectedKeys={addressForm.ward ? [addressForm.ward] : []}
-                    onSelectionChange={(keys) => handleInputChange("ward", Array.from(keys)[0] || "")}
-                    variant="bordered"
-                    fullWidth
-                    isDisabled={!addressForm.district}
-                    aria-label="Phường/Xã"
-                  >
-                    {availableWards.map((ward) => (
-                      <SelectItem key={ward} value={ward}>
-                        {ward}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                </div>
-
                 {/* Địa chỉ cụ thể */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -340,26 +305,7 @@ export default function AddressModal({
                   />
                 </div>
 
-                {/* Loại địa chỉ */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Loại địa chỉ
-                  </label>
-                  <Select
-                    placeholder="Chọn loại địa chỉ"
-                    selectedKeys={addressForm.type ? [addressForm.type] : []}
-                    onSelectionChange={(keys) => handleInputChange("type", Array.from(keys)[0] || "")}
-                    variant="bordered"
-                    fullWidth
-                    aria-label="Loại địa chỉ"
-                  >
-                    {addressTypes.map((type) => (
-                      <SelectItem key={type.key} value={type.key}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                </div>
+              
 
                 {/* Đặt làm địa chỉ mặc định */}
                 <div className="flex items-center space-x-2">

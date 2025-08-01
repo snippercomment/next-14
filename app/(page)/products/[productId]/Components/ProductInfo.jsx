@@ -1,10 +1,10 @@
-// ProductInfo.jsx - Server Components (không có 'use client')
+
 import MyRating from "@/app/components/MyRating";
 import { getBrand } from "@/lib/firestore/brands/read_server";
 import { getCategory } from "@/lib/firestore/categories/read_server";
 import { getProductReviewCounts } from "@/lib/firestore/products/count/read";
 
-// Server Components - có thể sử dụng async/await
+
 async function Category({ categoryId }) {
   if (!categoryId) return null;
   

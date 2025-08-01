@@ -1,8 +1,9 @@
 "use client";
 
 import { useOrder } from "@/lib/firestore/orders/read";
-import { CircularProgress } from "@nextui-org/react";
-import { useParams } from "next/navigation";
+import { CircularProgress, Button } from "@nextui-org/react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import ChangeOrderStatus from "./components/ChangeStatus";
 
 // Format tiền tệ VND
@@ -72,7 +73,13 @@ const calculateProductPrice = (product, isOnlinePayment) => {
 
 export default function Page() {
   const { orderId } = useParams();
+  const router = useRouter();
   const { data: order, error, isLoading } = useOrder({ id: orderId });
+
+  const handleGoBack = () => {
+    router.back(); 
+   
+  };
 
   if (isLoading) {
     return (
@@ -93,7 +100,8 @@ export default function Page() {
                          order?.payment_method === 'card';
   
   const lineItems = order?.line_items || order?.checkout?.line_items || [];
-// phuong thức thanh toán
+  
+  // phương thức thanh toán
   const getPaymentModeLabel = (mode) => {
     const labels = {
       'prepaid': 'Thanh toán trực tuyến',
@@ -130,8 +138,22 @@ export default function Page() {
 
   return (
     <main className="flex flex-col gap-4 p-5">
-      <div className="flex justify-between items-center">
+      {/* Header với nút quay lại */}
+      <div className="flex items-center gap-3 mb-2">
+        <Button
+          isIconOnly
+          variant="light"
+          onPress={handleGoBack}
+          className="min-w-10 h-10"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <h1 className="text-2xl font-semibold">Chi tiết đơn hàng</h1>
+      </div>
+
+      {/* Header actions */}
+      <div className="flex justify-between items-center">
+        <div></div> {/* Spacer */}
         <ChangeOrderStatus order={order} />
       </div>
       
@@ -194,11 +216,11 @@ export default function Page() {
           <tbody>
             <tr className="border-b">
               <td className="py-2 font-medium text-gray-700 w-1/3">Họ và tên:</td>
-              <td className="py-2">{address?.fullName || address?.name || address?.customer_name || 'Chưa cập nhật'}</td>
+              <td className="py-2">{address?.fullName || 'Chưa cập nhật'}</td>
             </tr>
             <tr className="border-b">
               <td className="py-2 font-medium text-gray-700">Số điện thoại:</td>
-              <td className="py-2">{address?.mobile || address?.phone || address?.phoneNumber || 'Chưa cập nhật'}</td>
+              <td className="py-2">{address?.mobile || 'Chưa cập nhật'}</td>
             </tr>
             <tr className="border-b">
               <td className="py-2 font-medium text-gray-700">Email:</td>
@@ -206,21 +228,19 @@ export default function Page() {
             </tr>
             <tr className="border-b">
               <td className="py-2 font-medium text-gray-700">Địa chỉ:</td>
-              <td className="py-2">{address?.addressLine1 || address?.address || address?.street || 'Chưa cập nhật'}</td>
+              <td className="py-2">{address?.addressLine1 || 'Chưa cập nhật'}</td>
             </tr>
-            
-           
             <tr className="border-b">
               <td className="py-2 font-medium text-gray-700">Quận/Huyện:</td>
-              <td className="py-2">{address?.city || address?.district || 'Chưa cập nhật'}</td>
+              <td className="py-2">{address?.district || 'Chưa cập nhật'}</td>
             </tr>
             <tr className="border-b">
               <td className="py-2 font-medium text-gray-700">Tỉnh/Thành phố:</td>
-              <td className="py-2">{address?.state || address?.province || 'Chưa cập nhật'}</td>
+              <td className="py-2">{address?.city || 'Chưa cập nhật'}</td>
             </tr>
             <tr>
               <td className="py-2 font-medium text-gray-700">Ghi chú:</td>
-              <td className="py-2">{address?.orderNote || address?.note || order?.notes || 'Không có ghi chú'}</td>
+              <td className="py-2">{address?.notes || 'Không có ghi chú'}</td>
             </tr>
           </tbody>
         </table>

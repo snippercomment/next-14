@@ -5,7 +5,7 @@ import { Avatar, CircularProgress, Chip, Button } from "@nextui-org/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 4;
 
 export default function ListView() {
   const { data: users, error, isLoading } = useUsers();
