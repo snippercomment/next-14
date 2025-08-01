@@ -6,12 +6,13 @@ import RelatedProducts from "./Components/RalatedProduct";
 import AddReview from "./Components/AddReview";
 import AuthContextProvider from "@/contexts/AuthContext";
 import CommentsSection from "./Components/CommentsSection";
-
+import ScrollToTop from "./Components/ScrollToTop";
+import ContactButton from "./Components/ContactButton";
 
 export async function generateMetadata({ params }) {
   const { productId } = params;
   const product = await getProduct({ id: productId });
-
+ 
   return {
     title: `${product?.title} | Product`,
     description: product?.shortDescription ?? "",
@@ -20,9 +21,11 @@ export async function generateMetadata({ params }) {
     },
   };
 }
+
 export default async function Page({ params }) {
     const { productId } = params;
     const product = await getProduct({ id: productId });
+    
     return (
         <main className="p-5 md:p-10">
             {/* ảnh */}
@@ -34,22 +37,30 @@ export default async function Page({ params }) {
     <Detail product={product} />
   </div>
 </section>
-
+             
             {/* thông tin sản phẩm */}
             <AuthContextProvider>
             <div className="flex flex-col md:flex-row gap-4 md:max-w-[900px] w-full">
             <AddReview productId={productId} />
             <Review productId={productId} />
             </div>
-             </AuthContextProvider>
-            <RelatedProducts categoryId={product?.categoryId} />
-
-             {/* Phần bình luận */}
+             
+            </AuthContextProvider>
+             
+            <RelatedProducts
+                 categoryId={product?.categoryId}
+                brandId={product?.brandId}
+                currentProductId={product?.id}
+            />
+              
+            {/* Phần bình luận */}
             <AuthContextProvider>
               <CommentsSection productId={productId} productTitle={product?.title} />
             </AuthContextProvider>
+
+            {/* Floating Navigation Buttons */}
+            <ScrollToTop />
+            <ContactButton />
         </main>
-
-
-    );
+      );
 }

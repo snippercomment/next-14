@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useProducts } from "@/lib/firestore/products/read";
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
-
 import ProductCard from '../form/ProductCard';
 import Sort from '../form/Sort';
 import Paginate from '../form/Panigation';
@@ -15,36 +14,37 @@ export default function Page({ categoryFilter = null }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageLimit, setPageLimit] = useState(15);
     const [selectedPriceRanges, setSelectedPriceRanges] = useState([]);
+    const [selectedStorageOptions, setSelectedStorageOptions] = useState([]);
 
     // Lấy data từ Firestore
     const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
     const { data: brands } = useBrands();
     const { data: categories } = useCategories();
 
-    // Lọc chỉ lấy sản phẩm chuột
+    // Lọc chỉ lấy sản phẩm mouse
     const products = allProducts?.filter(product => {
-        // Kiểm tra xem sản phẩm có phải là chuột không
+        // Kiểm tra xem sản phẩm có phải là mouse không
         const category = categories?.find(c => c.id === product.categoryId);
         return category?.name?.toLowerCase().includes('chuột') || 
                category?.name?.toLowerCase().includes('mouse') ||
-               product.type === 'chuột' ||
-               product.productType === 'chuột';
+               product.type === 'mouse' ||
+               product.productType === 'mouse';
     }) || [];
 
     // Hàm lấy giá từ sản phẩm
     const getProductPrice = (product) => {
         return parseFloat(product.salePrice || product.price || 0);
     };
-
     // Các mức giá định sẵn
     const priceRanges = [
         { value: 'all', label: 'Tất cả', min: 0, max: Infinity },
         { value: 'under_2m', label: 'Dưới 2 triệu', min: 0, max: 2000000 },
         { value: '2m_4m', label: 'Từ 2 - 4 triệu', min: 2000000, max: 4000000 },
         { value: '4m_7m', label: 'Từ 4 - 7 triệu', min: 4000000, max: 7000000 },
-       
+        { value: '7m_13m', label: 'Từ 7 - 13 triệu', min: 7000000, max: 13000000 },
+        { value: '13m_20m', label: 'Từ 13 - 20 triệu', min: 13000000, max: 20000000 },
+        { value: 'over_20m', label: 'Trên 20 triệu', min: 20000000, max: Infinity },
     ];
-
     // Lọc sản phẩm theo danh mục trước (chỉ trong phạm vi chuột)
     const getProductsByCategory = () => {
         if (!products || !categories) return [];
@@ -55,7 +55,7 @@ export default function Page({ categoryFilter = null }) {
                 return category?.name === categoryFilter;
             });
         }
-        return products; // Đã được lọc chỉ lấy chuột ở trên
+        return products; 
     };
 
     // Lọc brands chỉ có sản phẩm chuột trong danh mục hiện tại
@@ -94,7 +94,18 @@ export default function Page({ categoryFilter = null }) {
             });
         }
 
-        // Bước 3: Sắp xếp
+        // Bước 3: Lọc theo dung lượng lưu trữ
+        // if (selectedStorageOptions.length > 0 && !selectedStorageOptions.includes('all')) {
+        //     filtered = filtered.filter(product => {
+        //         const productStorage = extractStorageFromProduct(product);
+        //         return selectedStorageOptions.some(storageValue => {
+        //             const storage = storageOptions.find(s => s.value === storageValue);
+        //             return storage && productStorage >= storage.min && productStorage <= storage.max;
+        //         });
+        //     });
+        // }
+
+        // Bước 4: Sắp xếp
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case 'price_low':
@@ -105,6 +116,10 @@ export default function Page({ categoryFilter = null }) {
                     return (a.name || '').localeCompare(b.name || '', 'vi');
                 case 'name_desc':
                     return (b.name || '').localeCompare(a.name || '', 'vi');
+                case 'storage_low':
+                    return extractStorageFromProduct(a) - extractStorageFromProduct(b);
+                case 'storage_high':
+                    return extractStorageFromProduct(b) - extractStorageFromProduct(a);
                 case 'newest':
                 default:
                     return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
@@ -120,12 +135,13 @@ export default function Page({ categoryFilter = null }) {
     // Reset trang khi filter thay đổi
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedBrand, selectedPriceRanges, sortBy]);
+    }, [selectedBrand, selectedPriceRanges, selectedStorageOptions, sortBy]);
 
     // Reset brand khi thay đổi category
     useEffect(() => {
         setSelectedBrand('');
         setSelectedPriceRanges([]);
+        setSelectedStorageOptions([]);
     }, [categoryFilter]);
 
     // Sản phẩm hiển thị trên trang hiện tại
@@ -149,12 +165,27 @@ export default function Page({ categoryFilter = null }) {
         }
     };
 
+    // Xử lý chọn dung lượng lưu trữ
+    const handleStorageSelect = (storageValue) => {
+        if (storageValue === 'all') {
+            setSelectedStorageOptions([]);
+        } else {
+            setSelectedStorageOptions(prev => {
+                if (prev.includes(storageValue)) {
+                    return prev.filter(s => s !== storageValue);
+                } else {
+                    return [...prev.filter(s => s !== 'all'), storageValue];
+                }
+            });
+        }
+    };
+
     // Lấy tên category hiện tại
     const getCurrentCategoryName = () => {
         if (categoryFilter) {
             return categoryFilter;
         }
-        return 'Chuột'; 
+        return 'chuột'; 
     };
 
     if (isLoading) {
@@ -178,7 +209,7 @@ export default function Page({ categoryFilter = null }) {
                     {getCurrentCategoryName()}
                 </h1>
                 <p className="text-gray-600">
-                    Khám phá các dòng {getCurrentCategoryName()} mới
+                    Khám phá các dòng {getCurrentCategoryName()} mới nhất với đa dạng cấu hình 
                 </p>
             </div>
 
@@ -187,8 +218,9 @@ export default function Page({ categoryFilter = null }) {
                 <div className="w-80 shrink-0">
                     <div className="sticky top-4 space-y-6">
                         {/* Brand Filter */}
-                        <div className="bg-white p-4 rounded-lg border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                               
                                 Thương hiệu
                                 {categoryFilter && (
                                     <span className="text-sm font-normal text-gray-500 ml-2">
@@ -196,21 +228,21 @@ export default function Page({ categoryFilter = null }) {
                                     </span>
                                 )}
                             </h3>
-                            <div className="space-y-2">
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
                                 <button
                                     onClick={() => setSelectedBrand('')}
-                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm ${
+                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                                         !selectedBrand 
-                                            ? 'bg-blue-500 text-white' 
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            ? 'bg-blue-500 text-white shadow-sm' 
+                                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                     }`}
                                 >
                                     <span className="w-6 h-6 bg-gray-300 rounded flex items-center justify-center text-xs font-medium">
                                         All
                                     </span>
                                     Tất cả
-                                    <span className="ml-auto text-xs">
-                                        ({getProductsByCategory().length})
+                                    <span className="ml-auto text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
+                                        {getProductsByCategory().length}
                                     </span>
                                 </button>
                                 {availableBrands.map((brand) => {
@@ -222,10 +254,10 @@ export default function Page({ categoryFilter = null }) {
                                         <button
                                             key={brand.id}
                                             onClick={() => setSelectedBrand(brand.name)}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm ${
+                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                                                 selectedBrand === brand.name 
-                                                    ? 'bg-blue-500 text-white' 
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    ? 'bg-blue-500 text-white shadow-sm' 
+                                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                             }`}
                                         >
                                             {brand.imageURL ? (
@@ -240,8 +272,8 @@ export default function Page({ categoryFilter = null }) {
                                                 </span>
                                             )}
                                             <span className="flex-1 text-left">{brand.name}</span>
-                                            <span className="text-xs">
-                                                ({brandProductCount})
+                                            <span className="text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
+                                                {brandProductCount}
                                             </span>
                                         </button>
                                     );
@@ -254,9 +286,13 @@ export default function Page({ categoryFilter = null }) {
                             )}
                         </div>
 
+                        
                         {/* Price Filter */}
-                        <div className="bg-white p-4 rounded-lg border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Mức giá</h3>
+                        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                
+                                Mức giá
+                            </h3>
                             
                             <div className="space-y-2 mb-4">
                                 {priceRanges.map((range) => {
@@ -266,55 +302,32 @@ export default function Page({ categoryFilter = null }) {
                                     }).length;
                                     
                                     return (
-                                        <label key={range.value} className="flex items-center gap-2 cursor-pointer">
+                                        <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
                                             <input
                                                 type="checkbox"
                                                 checked={range.value === 'all' ? selectedPriceRanges.length === 0 : selectedPriceRanges.includes(range.value)}
                                                 onChange={() => handlePriceRangeSelect(range.value)}
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus:ring-2"
                                             />
-                                            <span className="text-sm text-gray-700 flex-1">{range.label}</span>
-                                            <span className="text-xs text-gray-500">
-                                                ({range.value === 'all' ? getProductsByCategory().length : productsInRange})
+                                            <span className="text-sm text-gray-700 flex-1 group-hover:text-gray-900 transition-colors">
+                                                {range.label}
+                                            </span>
+                                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                                {range.value === 'all' ? getProductsByCategory().length : productsInRange}
                                             </span>
                                         </label>
                                     );
                                 })}
                             </div>
 
-                            {/* Active Filters */}
-                            {selectedPriceRanges.length > 0 && (
-                                <div className="space-y-2 mb-4">
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedPriceRanges.map(rangeValue => {
-                                            const range = priceRanges.find(r => r.value === rangeValue);
-                                            return (
-                                                <span
-                                                    key={rangeValue}
-                                                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                                                >
-                                                    {range?.label}
-                                                    <button
-                                                        onClick={() => handlePriceRangeSelect(rangeValue)}
-                                                        className="text-blue-600 hover:text-blue-800"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            );
-                                        })}
-                                    </div>
-                                    <button
-                                        onClick={() => setSelectedPriceRanges([])}
-                                        className="text-sm text-red-600 hover:text-red-800"
-                                    >
-                                        Xóa tất cả
-                                    </button>
+                            
+                            <div className="text-sm text-gray-600 border-t pt-3 bg-gray-50 -mx-4 -mb-4 px-4 pb-4 rounded-b-lg">
+                                <div className="flex items-center justify-between">
+                                    <span>Tìm thấy</span>
+                                    <span className="font-semibold  text-base">
+                                        {filteredProducts.length} chuột
+                                    </span>
                                 </div>
-                            )}
-
-                            <div className="text-sm text-gray-600 border-t pt-3">
-                                Tìm thấy <span className="font-medium text-blue-600">{filteredProducts.length}</span> chuột
                             </div>
                         </div>
                     </div>
@@ -325,9 +338,12 @@ export default function Page({ categoryFilter = null }) {
                     {/* Sort and Results Info */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                         <div className="text-sm text-gray-600">
-                            Hiển thị {currentProducts.length} / {filteredProducts.length}   
-                            {categoryFilter && <span className="font-medium"> · {categoryFilter}</span>}
-                            {selectedBrand && <span className="font-medium"> · {selectedBrand}</span>}
+                            Hiển thị <span className="font-medium">{currentProducts.length}</span> / <span className="font-medium">{filteredProducts.length}</span> sản phẩm
+                            {categoryFilter && <span className="font-medium text-blue-600"> · {categoryFilter}</span>}
+                            {selectedBrand && <span className="font-medium text-green-600"> · {selectedBrand}</span>}
+                            {selectedStorageOptions.length > 0 && (
+                                <span className="font-medium text-purple-600"> · {selectedStorageOptions.length} dung lượng</span>
+                            )}
                         </div>
 
                         <Sort
@@ -337,6 +353,47 @@ export default function Page({ categoryFilter = null }) {
                             onDataSorted={() => {}}
                         />
                     </div>
+
+                    {/* Active Filters Summary */}
+                    {(selectedBrand || selectedPriceRanges.length > 0 || selectedStorageOptions.length > 0) && (
+                        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <h4 className="text-sm font-medium text-blue-800 mb-2">Bộ lọc đang áp dụng:</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedBrand && (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-white text-blue-800 rounded-full text-sm border border-blue-200">
+                                                Thương hiệu: {selectedBrand}
+                                                <button onClick={() => setSelectedBrand('')} className="text-blue-600 hover:text-blue-800 ml-1">×</button>
+                                            </span>
+                                        )}
+                                        {selectedStorageOptions.map(storage => (
+                                            <span key={storage} className="inline-flex items-center gap-1 px-3 py-1 bg-white text-blue-800 rounded-full text-sm border border-blue-200">
+                                                {storageOptions.find(s => s.value === storage)?.label}
+                                                <button onClick={() => handleStorageSelect(storage)} className="text-blue-600 hover:text-blue-800 ml-1">×</button>
+                                            </span>
+                                        ))}
+                                        {selectedPriceRanges.map(price => (
+                                            <span key={price} className="inline-flex items-center gap-1 px-3 py-1 bg-white text-blue-800 rounded-full text-sm border border-blue-200">
+                                                {priceRanges.find(p => p.value === price)?.label}
+                                                <button onClick={() => handlePriceRangeSelect(price)} className="text-blue-600 hover:text-blue-800 ml-1">×</button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setSelectedBrand('');
+                                        setSelectedPriceRanges([]);
+                                        setSelectedStorageOptions([]);
+                                    }}
+                                    className="text-sm text-blue-600 hover:text-blue-800 font-medium whitespace-nowrap"
+                                >
+                                    Xóa tất cả
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Products Grid */}
                     {currentProducts.length > 0 ? (
@@ -354,27 +411,18 @@ export default function Page({ categoryFilter = null }) {
                     ) : (
                         <div className="text-center py-12">
                             <div className="max-w-md mx-auto">
-                                <div className="text-gray-400 text-6xl mb-4">📦</div>
+                                
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                    Không tìm thấy sản phẩm
+                                    Không tìm thấy chuột phù hợp
                                 </h3>
                                 <p className="text-gray-500 mb-4">
-                                    {selectedBrand || selectedPriceRanges.length > 0
+                                    {selectedBrand || selectedPriceRanges.length > 0 || selectedStorageOptions.length > 0
                                         ? `Không có chuột nào phù hợp với bộ lọc đã chọn trong danh mục "${getCurrentCategoryName()}"`
                                         : `Không có chuột nào trong danh mục "${getCurrentCategoryName()}"`
                                     }
                                 </p>
-                                {(selectedBrand || selectedPriceRanges.length > 0) && (
-                                    <button
-                                        onClick={() => {
-                                            setSelectedBrand('');
-                                            setSelectedPriceRanges([]);
-                                        }}
-                                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    >
-                                        Xóa bộ lọc
-                                    </button>
-                                )}
+                               
+                              
                             </div>
                         </div>
                     )}
@@ -389,6 +437,8 @@ export default function Page({ categoryFilter = null }) {
                             />
                         </div>
                     )}
+
+                    
                 </div>
             </div>
         </div>
