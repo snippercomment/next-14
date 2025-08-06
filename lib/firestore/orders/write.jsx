@@ -7,3 +7,8 @@ export const updateOrderStatus = async ({ id, status }) => {
     timestampStatusUpdate: Timestamp.now(),
   });
 };
+
+export const updateOrder = async (orderId, data) => {
+  const orderRef = doc(db, "orders", orderId);
+  await updateDoc(orderRef, data);
+};

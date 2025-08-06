@@ -59,22 +59,21 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
     createdAt: Timestamp.now(),
   });
 
-  // ✅ THÊM: Tạo payment record cho COD giống như Stripe
+
   const paymentRef = doc(db, `users/${uid}/payments/${checkoutId}`);
   await setDoc(paymentRef, {
     id: checkoutId,
     checkoutId: checkoutId,
     uid: uid,
-    status: 'pending', // COD bắt đầu là pending
+    status: 'pending',
     
-    // ✅ QUAN TRỌNG: Thêm amount để có thể aggregate
     amount: totalAmount,
     amount_total: totalAmount,
     currency: 'vnd',
     
     customer_email: address.email,
     
-    payment_status: 'pending', // COD chưa thanh toán
+    payment_status: 'pending',
     payment_method: 'cod',
     payment_method_types: ["cod"],
     mode: "payment",
@@ -94,11 +93,9 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
       mobile: address.mobile,
       email: address.email,
       addressLine1: address.addressLine1,
-      addressLine2: address.addressLine2 || '',
-      pincode: address.pincode || '',
+      district: address.district || '',
       city: address.city || '',
-      state: address.state || '',
-      orderNote: address.orderNote || '',
+      notes: address.notes || '', 
     },
     line_items: line_items,
     
@@ -127,11 +124,9 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
       mobile: address.mobile,
       email: address.email,
       addressLine1: address.addressLine1,
-      addressLine2: address.addressLine2 || '',
-      pincode: address.pincode || '',
+      district: address.district || '', 
       city: address.city || '',
-      state: address.state || '',
-      orderNote: address.orderNote || '',
+      notes: address.notes || '',
     },
     status: 'pending',              
     payment_status: 'pending',     
@@ -142,7 +137,6 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
     createdAt: Timestamp.now(),
     timestampCreate: Timestamp.now(),
     
-    // ✅ THÊM: Tạo cấu trúc payment giống Stripe để có thể aggregate
     payment: {
       id: checkoutId,
       amount: totalAmount,
@@ -179,11 +173,9 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
       mobile: address.mobile,
       email: address.email,
       addressLine1: address.addressLine1,
-      addressLine2: address.addressLine2 || '',
-      pincode: address.pincode || '',
+      district: address.district || '', 
       city: address.city || '',
-      state: address.state || '',
-      orderNote: address.orderNote || '',
+      notes: address.notes || '', 
     },
     status: 'pending',             
     payment_status: 'pending',     
@@ -193,6 +185,7 @@ export const createCheckoutCODAndGetId = async ({ uid, products, address }) => {
     createdAt: Timestamp.now(),
   });
 
+  // Xóa sản phẩm khỏi giỏ hàng
   try {
     const userRef = doc(db, `users/${uid}`);
     const userDoc = await getDoc(userRef);
@@ -224,17 +217,16 @@ export const updateCODOrderStatus = async (orderId, newStatus) => {
       updatedAt: Timestamp.now(),
     };
 
-    // ✅ THÊM: Cập nhật payment status trong order và payment record
+    // Cập nhật payment status khi đơn hàng hoàn thành
     if (newStatus === 'succeeded' || newStatus === 'completed') {
       updateData.payment_status = 'succeeded';
-      // Cập nhật payment object trong order
       updateData['payment.status'] = 'succeeded';
       updateData['payment.payment_status'] = 'succeeded';
     }
 
     await updateDoc(orderRef, updateData);
     
-    // ✅ THÊM: Cập nhật payment record riêng biệt
+    // Cập nhật user order và payment record
     const orderDoc = await getDoc(orderRef);
     const orderData = orderDoc.data();
     
@@ -242,7 +234,7 @@ export const updateCODOrderStatus = async (orderId, newStatus) => {
       const userOrderRef = doc(db, `users/${orderData.uid}/orders/${orderId}`);
       await updateDoc(userOrderRef, updateData);
       
-      // ✅ Cập nhật payment record
+      // Cập nhật payment record
       const paymentRef = doc(db, `users/${orderData.uid}/payments/${orderId}`);
       await updateDoc(paymentRef, {
         status: newStatus === 'succeeded' || newStatus === 'completed' ? 'succeeded' : newStatus,
@@ -272,7 +264,7 @@ export const validateOrderData = (productList, address, totalPrice) => {
     throw new Error("Giỏ hàng trống");
   }
   
-  if (!address.fullName || !address.mobile || !address.addressLine1) {
+  if (!address.fullName || !address.mobile || !address.addressLine1 || !address.district || !address.city) {
     throw new Error("Vui lòng điền đầy đủ thông tin địa chỉ");
   }
 };
@@ -294,11 +286,10 @@ export const prepareOrderData = (user, productList, address, totalPrice, payment
       mobile: address.mobile,
       email: address.email || user?.email || "",
       addressLine1: address.addressLine1,
-      addressLine2: address.addressLine2 || "",
-      pincode: address.pincode || "",
+      district: address.district || "", 
       city: address.city || "",
-      state: address.state || "",
-      orderNote: address.orderNote || "",
+      notes: address.notes || "", 
+      fullAddress: address.fullAddress || "", 
     },
     totalAmount: totalPrice,
     paymentMode,
