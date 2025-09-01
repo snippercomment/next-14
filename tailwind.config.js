@@ -11,8 +11,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        // Màu thương hiệu
+        primary: "#B80015",      // đỏ chính
+       
+        // Trạng thái
+        success: "#28A745",      // xanh thành công
+        warning: "#FFC107",      // vàng cảnh báo
+        danger: "#FF4D4F",       // đỏ cảnh báo / nút xoá
+
+        // Text
+        main: "#000000",         // chữ chính (đen)
+        sub: "#333333",          // chữ phụ (xám đậm)
+        muted: "#666666",        // chữ mờ
+        faded: "#999999",        // giá gốc
+
+        // Border & nền
+        border: "#E5E5E5",
+        surface: "#F5F5F5",      // nền phụ (section)
+        background: "#FFFFFF",   // nền chính (trắng)
       },
     },
   },
