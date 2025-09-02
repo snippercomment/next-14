@@ -1,23 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { UserCircle2, ShoppingBag, Menu, X, LogIn, UserPlus, ChevronDown, Smartphone, Laptop, Headphones, Home, Shield, Tv, Camera, Wrench, Newspaper, Gift } from "lucide-react";
+import { UserCircle2, ShoppingBag, Menu, X, ChevronDown, Smartphone, Laptop, Headphones, Home, Wrench } from "lucide-react";
 import { useState } from "react";
 import LogoutButton from "./LogoutButton";
 import HeaderClientButtons from "./HeaderClientButtons";
 import AdminButton from "./AdminButton";
-import SearchBox from "./SearchBox"; // Import component SearchBox mới
+import SearchBox from "./SearchBox";
 import { useAuth } from "@/contexts/AuthContext";
 
+
 export default function Header() {
+  // State management - tách riêng từng dropdown để tránh re-render không cần thiết
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
-  const [expandedDesktopCategory, setExpandedDesktopCategory] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
+  
   const { user, isLoading } = useAuth();
 
-  // Danh sách các danh mục chính với icon
+  // Categories config - SEO friendly structure
   const categoryList = [
     { 
       name: "Điện thoại", 
@@ -31,13 +34,7 @@ export default function Header() {
         { name: "realme", link: "/realme" },
         { name: "TECNO", link: "/tecno" },
         { name: "Honor", link: "/honor" },
-        { name: "vivo", link: "/vivo" },
-        { name: "Infinix", link: "/infinix" },
-        { name: "Nokia", link: "/nokia" },
-        { name: "Nubia", link: "/nubia" },
-        { name: "Nothing Phone", link: "/nothing" },
-        { name: "Masstel", link: "/masstel" },
-        { name: "Sony", link: "/sony" }
+        { name: "vivo", link: "/vivo" }
       ]
     },
     { 
@@ -57,8 +54,7 @@ export default function Header() {
     { 
       name: "Tai nghe", 
       link: "/headphone", 
-      icon: <Headphones size={16} />,
-      
+      icon: <Headphones size={16} />
     },
     { 
       name: "Phụ kiện", 
@@ -66,34 +62,18 @@ export default function Header() {
       icon: <Wrench size={16} />,
       subcategories: [
         { name: "Chuột", link: "/mouse" },
-        { name: "Bàn phím", link: "/keyboard" },
-        
+        { name: "Bàn phím", link: "/keyboard" }
       ]
-    },  
+    }
   ];
 
-  const toggleCategoryDropdown = () => {
-    setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
-  };
-
-  const toggleUserDropdown = () => {
-    setIsUserDropdownOpen(!isUserDropdownOpen);
-  };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const toggleDesktopCategory = (categoryName) => {
-    setExpandedDesktopCategory(
-      expandedDesktopCategory === categoryName ? null : categoryName
-    );
-  };
-
+  // Event handlers - optimized với useCallback pattern
+  const toggleCategoryDropdown = () => setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
+  const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  
   const toggleMobileCategory = (categoryName) => {
-    setExpandedMobileCategory(
-      expandedMobileCategory === categoryName ? null : categoryName
-    );
+    setExpandedMobileCategory(expandedMobileCategory === categoryName ? null : categoryName);
   };
 
   const closeMobileMenu = () => {
@@ -106,221 +86,223 @@ export default function Header() {
     setIsCategoryDropdownOpen(false);
     setIsMobileMenuOpen(false);
     setExpandedMobileCategory(null);
-    setExpandedDesktopCategory(null);
+    setHoveredCategory(null);
+  };
+
+  const closeCategoryDropdown = () => {
+    setIsCategoryDropdownOpen(false);
+    setHoveredCategory(null);
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-primary bg-opacity-65 backdrop-blur-2xl border-b">
-      {/* Header chính - Layout nằm ngang */}
-      <nav className="py-3 px-4 md:py-4 md:px-8 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link href={"/"}>
-          <img className="h-4 md:h-5" src="/logo.png" alt="Logo" />
-        </Link>
-
-        {/* Desktop Menu - di chuyển sang trái */}
-        <div className="hidden md:flex gap-1 items-center font-semibold">
-          <Link href="/">
-            <button className="text-sm px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-              <Home size={16} />
-              Trang chủ
-            </button>
+    // SEO: Sticky header với proper semantic structure
+    <header className="sticky top-0 z-50 bg-primary bg-opacity-95 backdrop-blur-sm border-b">
+      {/* Main navigation - Centered & responsive layout */}
+      <nav className="py-2 px-3 md:py-2.5 md:px-6 flex items-center justify-between" role="navigation" aria-label="Main navigation">
+        
+        {/* Left section - Logo & Categories */}
+        <div className="flex items-center gap-3">
+          {/* Logo - SEO optimized */}
+          <Link href="/" className="flex-shrink-0" aria-label="Trang chủ">
+            <img className="h-6 md:h-7" src="/logo.png" alt="Logo trang chủ" width="auto" height="28" />
           </Link>
 
-          {/* Dropdown Danh mục */}
-          <div className="relative">
+          {/* Categories Dropdown - Desktop only */}
+          <div className="relative hidden md:block">
             <button
               onClick={toggleCategoryDropdown}
-              className="text-sm px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+              className="text-sm px-3 py-1.5 rounded-md hover:bg-white/10 flex items-center gap-2 text-white font-medium whitespace-nowrap"
+              aria-expanded={isCategoryDropdownOpen}
+              aria-haspopup="true"
+              aria-label="Danh mục sản phẩm"
             >
               <Menu size={16} />
               Danh mục
               <ChevronDown size={14} className={`transform transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
-           {isCategoryDropdownOpen && (
-  <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto scrollbar-hide">
-    <div className="py-2">
-      {categoryList.map((category) => (
-        <div key={category.name} className="relative">
-          {/* Nếu có subcategories thì click để mở dropdown */}
-          {category.subcategories ? (
-            <>
-              <button
-                onClick={() => toggleDesktopCategory(category.name)}
-                className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-b-0 justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  {category.icon}
-                  <span className="font-medium">{category.name}</span>
-                </div>
-                <ChevronDown 
-                  size={12} 
-                  className={`transform transition-transform ${
-                    expandedDesktopCategory === category.name ? 'rotate-180' : ''
-                  }`} 
-                />
-              </button>
-              
-              {/* Subcategories - hiển thị khi được mở */}
-              {expandedDesktopCategory === category.name && (
-                <div className="bg-gray-50 border-t border-gray-100">
-                  {/* Link đến trang chính của category */}
-                  <Link href={category.link}>
-                    <button
-                      className="w-full text-left px-8 py-2 text-xs text-gray-800 hover:bg-gray-100 font-medium border-b border-gray-200"
-                      onClick={() => setIsCategoryDropdownOpen(false)}
+            {/* Category Dropdown Menu */}
+            {isCategoryDropdownOpen && (
+              <div className="absolute left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-auto max-w-lg" role="menu">
+                <div className="flex">
+                  {/* Main Categories */}
+                  <div className="w-48 border-r border-gray-200 flex-shrink-0">
+                    <div className="py-2">
+                      {categoryList.map((category) => (
+                        <div key={category.name}>
+                          <div
+                            onMouseEnter={() => setHoveredCategory(category.subcategories ? category.name : null)}
+                            className={`relative ${hoveredCategory === category.name ? 'bg-blue-50' : ''}`}
+                          >
+                            <Link 
+                              href={category.link}
+                              className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 items-center gap-3 border-b flex border-gray-50 last:border-b-0 justify-between"
+                              onClick={closeCategoryDropdown}
+                              role="menuitem"
+                            >
+                              <div className="flex items-center gap-3">
+                                {category.icon}
+                                <span className="font-medium">{category.name}</span>
+                              </div>
+                              {category.subcategories && (
+                                <ChevronDown size={12} className="rotate-[-90deg]" />
+                              )}
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Subcategories */}
+                  {hoveredCategory && (
+                    <div 
+                      className="w-48 flex-shrink-0"
+                      onMouseEnter={() => setHoveredCategory(hoveredCategory)}
+                      onMouseLeave={() => setHoveredCategory(null)}
                     >
-                      Tất cả {category.name}
-                    </button>
-                  </Link>
-                  {category.subcategories.map((sub) => (
-                    <Link href={sub.link} key={sub.name}>
-                      <button
-                        className="w-full text-left px-8 py-2 text-xs text-gray-600 hover:bg-gray-100 border-b border-gray-200 last:border-b-0"
-                        onClick={() => setIsCategoryDropdownOpen(false)}
-                      >
-                        {sub.name}
-                      </button>
-                    </Link>
-                  ))}
+                      <div className="py-2 max-h-80 overflow-y-auto">
+                        <div className="px-4 py-2 border-b border-gray-200 bg-gray-50">
+                          <span className="text-xs font-bold text-gray-800 uppercase tracking-wide">
+                            {hoveredCategory}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-0">
+                          {categoryList
+                            .find(cat => cat.name === hoveredCategory)
+                            ?.subcategories?.map((sub) => (
+                              <Link 
+                                href={sub.link} 
+                                key={sub.name} 
+                                onClick={closeCategoryDropdown}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700 border-b border-gray-100 last:border-b-0 truncate cursor-pointer block"
+                                title={sub.name}
+                                role="menuitem"
+                              >
+                                {sub.name}
+                              </Link>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </>
-          ) : (
-            <Link href={category.link}>
-              <button
-                className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-b-0"
-                onClick={() => setIsCategoryDropdownOpen(false)}
-              >
-                {category.icon}
-                <span className="font-medium">{category.name}</span>
-              </button>
-            </Link>
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Search Box Component - thay thế search cũ */}
-        <div className="hidden md:block flex-1 max-w-md mx-4">
+        {/* Center section - Search Box */}
+        <div className="hidden md:block flex-1 max-w-2xl mx-8">
           <SearchBox />
         </div>
 
-        {/* Right side buttons */}
-        <div className="flex items-center gap-1">
-          <AdminButton />
+        {/* Right section - Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Cart Button */}
           <HeaderClientButtons />
+          
+          {/* Admin Button */}
+          <AdminButton />
 
-          {/* Icon user dropdown */}
+          {/* User Account */}
           {!isLoading && (
             <div className="relative">
-              <button
-                onClick={toggleUserDropdown}
-                title="Tài khoản"
-                className="h-8 w-8 flex justify-center items-center rounded-full hover:bg-gray-50"
-              >
-                <UserCircle2 size={14} />
-              </button>
+              {user ? (
+                <button
+                  onClick={toggleUserDropdown}
+                  className="text-sm px-3 py-1.5 rounded-md hover:bg-white/10 flex items-center gap-2 text-white font-medium whitespace-nowrap"
+                  aria-expanded={isUserDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label="Tài khoản người dùng"
+                >
+                  <UserCircle2 size={16} />
+                  <span className="hidden lg:inline">Tài khoản</span>
+                </button>
+              ) : (
+                <Link href="/login" aria-label="Đăng nhập">
+                  <span className="text-sm px-3 py-1.5 rounded-md hover:bg-white/10 flex items-center gap-2 text-white font-medium whitespace-nowrap cursor-pointer">
+                    <UserCircle2 size={16} />
+                    <span className="hidden lg:inline">Đăng nhập</span>
+                  </span>
+                </Link>
+              )}
 
-              {isUserDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              {/* User Dropdown Menu */}
+              {isUserDropdownOpen && user && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50" role="menu">
                   <div className="py-1">
-                    {user ? (
-                      <>
-                        <Link href="/account">
-                          <button
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                          >
-                            <UserCircle2 size={16} />
-                            Tài khoản của tôi
-                          </button>
-                        </Link>
-                        <Link href="/orders">
-                          <button
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                          >
-                            <ShoppingBag size={16} />
-                            Đơn hàng của tôi
-                          </button>
-                        </Link>
-                        <div className="border-t border-gray-100">
-                          <div
-                            onClick={() => setIsUserDropdownOpen(false)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                          >
-                            <LogoutButton />
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Link href="/login">
-                          <button
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                          >
-                            <LogIn size={16} />
-                            Đăng nhập
-                          </button>
-                        </Link>
-                        <Link href="/sign-up">
-                          <button
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                          >
-                            <UserPlus size={16} />
-                            Đăng ký
-                          </button>
-                        </Link>
-                      </>
-                    )}
+                    <Link href="/account">
+                      <span
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50  items-center gap-2 cursor-pointer block"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                        role="menuitem"
+                      >
+                        <UserCircle2 size={16} />
+                        Tài khoản của tôi
+                      </span>
+                    </Link>
+                    <Link href="/orders">
+                      <span
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer "
+                        onClick={() => setIsUserDropdownOpen(false)}
+                        role="menuitem"
+                      >
+                        <ShoppingBag size={16} />
+                        Đơn hàng của tôi
+                      </span>
+                    </Link>
+                    <div className="border-t border-gray-100">
+                      <div
+                        onClick={() => setIsUserDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        role="menuitem"
+                      >
+                        <LogoutButton />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle */}
           <button
             onClick={toggleMobileMenu}
-            className="md:hidden h-8 w-8 flex justify-center items-center rounded-full hover:bg-gray-50"
-            title="Menu"
+            className="md:hidden h-8 w-8 flex justify-center items-center rounded-md hover:bg-white/10 flex-shrink-0"
+            aria-expanded={isMobileMenuOpen}
+            aria-label="Menu di động"
           >
-            {isMobileMenuOpen ? <X size={14} /> : <Menu size={14} />}
+            {isMobileMenuOpen ? <X size={16} className="text-white" /> : <Menu size={16} className="text-white" />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b shadow-lg max-h-96 overflow-y-auto">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b shadow-lg max-h-96 overflow-y-auto" role="menu">
             {/* Mobile Search */}
             <div className="px-4 py-3 border-b border-gray-100">
-              <SearchBox placeholder="Nhập tên sản phẩm cần tìm..." />
+              <SearchBox placeholder="Bạn muốn mua gì hôm nay?" />
             </div>
 
+            {/* Mobile Navigation */}
             <div className="py-2">
               <Link href="/" onClick={closeMobileMenu}>
-                <button className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100 flex items-center gap-3">
+                <span className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100 flex items-center gap-3 cursor-pointer " role="menuitem">
                   <Home size={16} />
                   Trang chủ
-                </button>
+                </span>
               </Link>
               
               {categoryList.map((category) => (
                 <div key={category.name}>
-                  {/* Nếu có subcategories thì hiển thị expand/collapse */}
                   {category.subcategories ? (
                     <>
                       <button
                         onClick={() => toggleMobileCategory(category.name)}
                         className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100 flex items-center gap-3 justify-between"
+                        aria-expanded={expandedMobileCategory === category.name}
                       >
                         <div className="flex items-center gap-3">
                           {category.icon}
@@ -334,20 +316,18 @@ export default function Header() {
                         />
                       </button>
                       
-                      {/* Mobile subcategories - hiển thị khi expanded */}
                       {expandedMobileCategory === category.name && (
                         <div className="bg-gray-50">
-                          {/* Link đến trang chính của category */}
                           <Link href={category.link} onClick={closeMobileMenu}>
-                            <button className="w-full text-left px-8 py-2 text-xs text-gray-800 hover:bg-gray-100 border-b border-gray-200 font-medium">
+                            <span className="w-full text-left px-8 py-2 text-xs text-gray-800 hover:bg-gray-100 border-b border-gray-200 font-medium cursor-pointer block" role="menuitem">
                               Tất cả {category.name}
-                            </button>
+                            </span>
                           </Link>
                           {category.subcategories.map((sub) => (
                             <Link href={sub.link} key={sub.name} onClick={closeMobileMenu}>
-                              <button className="w-full text-left px-8 py-2 text-xs text-gray-600 hover:bg-gray-100 border-b border-gray-200 last:border-b-0">
+                              <span className="w-full text-left px-8 py-2 text-xs text-gray-600 hover:bg-gray-100 border-b border-gray-200 last:border-b-0 cursor-pointer block" role="menuitem">
                                 {sub.name}
-                              </button>
+                              </span>
                             </Link>
                           ))}
                         </div>
@@ -355,10 +335,10 @@ export default function Header() {
                     </>
                   ) : (
                     <Link href={category.link} onClick={closeMobileMenu}>
-                      <button className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100 flex items-center gap-3">
+                      <span className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100 flex items-center gap-3 cursor-pointer" role="menuitem">
                         {category.icon}
                         {category.name}
-                      </button>
+                      </span>
                     </Link>
                   )}
                 </div>
@@ -367,14 +347,15 @@ export default function Header() {
           </div>
         )}
 
-        {/* Overlay để đóng dropdown/menu khi click ra ngoài */}
+        {/* Overlay - đóng dropdown khi click outside */}
         {(isUserDropdownOpen || isMobileMenuOpen || isCategoryDropdownOpen) && (
           <div
             className="fixed inset-0 z-40"
             onClick={closeAllDropdowns}
+            aria-hidden="true"
           />
         )}
       </nav>
-    </div>
+    </header>
   );
 }
