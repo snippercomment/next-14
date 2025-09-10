@@ -99,3 +99,6 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
         </div>
     );
 }
+
+
+// này là nối với những cái tia chính mục cha > con
