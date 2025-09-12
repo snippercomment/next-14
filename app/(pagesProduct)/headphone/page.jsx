@@ -6,11 +6,14 @@ import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
 import FilterBar from '../form/FilterBar';
+import SortBar from "../form/Sort";
+import PaginationBar from "../form/Panigation";
 
 
 export default function Page({ categoryFilter = null }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
-
+  const [sort, setSort] = useState("popular");
+  const [visibleCount, setVisibleCount] = useState(1);
   const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
@@ -33,9 +36,23 @@ export default function Page({ categoryFilter = null }) {
     }
     return products; 
   };
-
+// sắp xếp theo chọn tiêu chí
   const filteredProducts = getProductsByCategory();
+// sắp xếp theo sort
+const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sort === "priceAsc") {
+      return a.price - b.price;
+    }
+    if (sort === "priceDesc") {
+      return b.price - a.price;
+    }
+    if (sort === "sale") {
+      return (b.discount || 0) - (a.discount || 0);
+    }
+    return 0; // mặc định "popular" chưa xử lý
+  });
 
+  // chọn tiêu chí
   const getCurrentCategoryName = () => {
     if (categoryFilter) {
       return categoryFilter;
@@ -52,7 +69,8 @@ export default function Page({ categoryFilter = null }) {
       }
     });
   };
-
+  // lấy sản phẩm hiển thị theo limit
+  const visibleProducts = sortedProducts.slice(0, visibleCount);
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -73,14 +91,13 @@ export default function Page({ categoryFilter = null }) {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           {getCurrentCategoryName()}
         </h1>
-        <p className="text-gray-600">
-          Khám phá các dòng {getCurrentCategoryName()} mới nhất với đa dạng cấu hình 
-        </p>
+        
       </div>
 
       {/* Gắn FilterBar */}
-      <FilterBar />
-
+       <FilterBar category="headphone" />
+       {/* Sort */}
+      <SortBar sort={sort} setSort={setSort} />
       {/* Products Grid */}
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -107,6 +124,12 @@ export default function Page({ categoryFilter = null }) {
           </div>
         </div>
       )}
+      {/* Pagination Bar */}
+      <PaginationBar
+        total={sortedProducts.length}
+        currentCount={visibleProducts.length}
+        onLoadMore={() => setVisibleCount((prev) => prev + 12)}
+      />
 
       {/* Hiển thị số lượng đã chọn */}
       {selectedProducts.length > 0 && (

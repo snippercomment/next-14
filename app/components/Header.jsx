@@ -217,7 +217,7 @@ export default function Header() {
                   aria-label="Tài khoản người dùng"
                 >
                   <UserCircle2 size={16} />
-                  <span className="hidden lg:inline">Tài khoản</span>
+                
                 </button>
               ) : (
                 <Link href="/login" aria-label="Đăng nhập">

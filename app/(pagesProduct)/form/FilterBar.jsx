@@ -4,43 +4,47 @@ import { useState } from "react";
 import {
   Funnel,
   Truck,
-  ShoppingCart,
   DollarSign,
   HardDrive,
   Cpu,
-  Info,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
 
-const filters = [
-  { key: "filter", label: "Bộ lọc", icon: Funnel, type: "button", highlight: true },
-  { key: "stock", label: "Sẵn hàng", icon: Truck, type: "button" },
-  { key: "new", label: "Hàng mới về", icon: ShoppingCart, type: "button" },
-  { key: "price", label: "Xem theo giá", icon: DollarSign, type: "button" },
-  {
-    key: "ocung",
-    label: "Ổ cứng",
-    icon: HardDrive,
-    type: "dropdown",
-    options: ["256GB", "512GB", "1TB", "2TB"],
-    tooltip:
-      "Ổ cứng là thiết bị dùng để lưu trữ dữ liệu trong máy tính. Loại ổ cứng phổ biến hiện nay là SSD với tốc độ đọc ghi, khởi động ứng dụng nhanh hơn so với HDD.",
-  },
-  {
-    key: "cpu",
-    label: "CPU",
-    icon: Cpu,
-    type: "dropdown",
-    options: ["Intel", "AMD", "Apple M1/M2"],
-    tooltip:
-      "CPU là bộ vi xử lý trung tâm, đóng vai trò xử lý mọi tác vụ chính trên máy tính. CPU càng mạnh thì khả năng xử lý càng nhanh.",
-  },
-];
+// Toàn bộ filterData để chung file này
+const filterData = {
+  laptop: [
+    { key: "stock", label: "Sẵn sàng", icon: Truck, type: "button" },
+    { key: "price", label: "Xem theo giá", icon: DollarSign, type: "price" },
+    {
+      key: "ocung",
+      label: "Ổ cứng",
+      icon: HardDrive,
+      type: "dropdown",
+      options: ["256GB", "512GB", "1TB", "2TB"],
+    },
+    {
+      key: "ram",
+      label: "Dung lượng RAM",
+      icon: Funnel,
+      type: "dropdown",
+      options: ["8GB", "16GB", "24GB", "32GB", "64GB"],
+    },
+    {
+      key: "cpu",
+      label: "CPU",
+      icon: Cpu,
+      type: "dropdown",
+      options: ["Intel Core i3", "Intel Core i5", "Intel Core i7"],
+    },
+  ],
+};
 
-export default function FilterBar() {
+export default function FilterBar({ category }) {
+  const filters = filterData[category] || [];
   const [openDropdown, setOpenDropdown] = useState(null);
   const [selected, setSelected] = useState({});
+  const [maxPrice, setMaxPrice] = useState(97190000); // chỉ 1 giá max
 
   const toggleDropdown = (key) => {
     setOpenDropdown(openDropdown === key ? null : key);
@@ -51,45 +55,30 @@ export default function FilterBar() {
   };
 
   return (
-    <div className="w-full border-b pb-3 mb-6">
+    <div className="w-full border-b pb-3 mb-6 relative z-30">
       <h2 className="font-semibold text-lg mb-3">Chọn theo tiêu chí</h2>
       <div className="flex flex-wrap gap-2">
         {filters.map((f) =>
           f.type === "button" ? (
             <button
               key={f.key}
-              className={`flex items-center gap-1 px-4 py-2 border rounded-md hover:bg-gray-100 ${
-                f.highlight
-                  ? "text-red-600 border-red-500 hover:bg-red-50"
-                  : "text-gray-700 border-gray-300"
-              }`}
+              className="flex items-center gap-1 px-4 py-2 border rounded-md hover:bg-gray-100 text-gray-700 border-gray-300"
             >
               <f.icon className="w-4 h-4" />
               {f.label}
             </button>
-          ) : (
+          ) : f.type === "price" ? (
             <div key={f.key} className="relative">
               <button
                 onClick={() => toggleDropdown(f.key)}
                 className={`flex items-center gap-1 px-4 py-2 border rounded-md hover:bg-gray-100 ${
-                  openDropdown === f.key ? "border-red-500 text-red-600" : "text-gray-700 border-gray-300"
+                  openDropdown === f.key
+                    ? "border-red-500 text-red-600"
+                    : "text-gray-700 border-gray-300"
                 }`}
               >
                 <f.icon className="w-4 h-4" />
                 {f.label}
-
-                {/* Tooltip icon */}
-                {f.tooltip && (
-                  <div className="relative group">
-                    <Info className="w-4 h-4 ml-1 text-gray-400 hover:text-gray-600 cursor-pointer" />
-                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-64 bg-black text-white text-sm rounded-md p-3 shadow-lg z-20">
-                      {f.tooltip}
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full border-8 border-transparent border-b-black"></div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Chevron để biết có dropdown */}
                 {openDropdown === f.key ? (
                   <ChevronUp className="w-4 h-4 ml-1" />
                 ) : (
@@ -97,15 +86,100 @@ export default function FilterBar() {
                 )}
               </button>
 
-              {/* Dropdown menu */}
               {openDropdown === f.key && (
-                <div className="absolute left-0 mt-2 w-64 bg-white border rounded-xl shadow-lg p-4 z-10">
-                  <div className="flex flex-wrap gap-2 mb-4">
+                <div className="fixed left-1/2 top-1/4 transform -translate-x-1/2 w-[420px] bg-white border rounded-xl shadow-lg p-6 z-50">
+                  <h3 className="text-sm font-medium mb-3">
+                    Hãy chọn mức giá phù hợp với bạn
+                  </h3>
+
+                  {/* Input giá */}
+                  <div className="flex justify-between mb-4">
+                    <input
+                      type="text"
+                      value={`0đ`}
+                      readOnly
+                      className="w-1/3 px-2 py-1 border rounded text-sm"
+                    />
+                    <span>-</span>
+                    <input
+                      type="text"
+                      value={`${maxPrice.toLocaleString("vi-VN")}đ`}
+                      readOnly
+                      className="w-1/3 px-2 py-1 border rounded text-sm"
+                    />
+                  </div>
+
+                  {/* Slider 1 chiều */}
+                  <div className="relative w-full h-2 mb-6">
+                    {/* Track màu xám */}
+                    <div className="absolute top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 rounded" />
+                    {/* Track màu đỏ từ 0 -> maxPrice */}
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 h-1 bg-red-500 rounded"
+                      style={{
+                        left: "0%",
+                        right: `${100 - (maxPrice / 97190000) * 100}%`,
+                      }}
+                    />
+                    {/* Thanh range */}
+                    <input
+                      type="range"
+                      min="0"
+                      max="97190000"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(+e.target.value)}
+                      className="absolute w-full h-2 bg-transparent pointer-events-auto accent-red-500"
+                    />
+                  </div>
+
+                  {/* Nút */}
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => setOpenDropdown(null)}
+                      className="px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200"
+                    >
+                      Đóng
+                    </button>
+                    <button
+                      onClick={() => {
+                        console.log("Giá tối đa:", maxPrice);
+                        setOpenDropdown(null);
+                      }}
+                      className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600"
+                    >
+                      Xem kết quả
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div key={f.key} className="relative">
+              <button
+                onClick={() => toggleDropdown(f.key)}
+                className={`flex items-center gap-1 px-4 py-2 border rounded-md hover:bg-gray-100 ${
+                  openDropdown === f.key
+                    ? "border-red-500 text-red-600"
+                    : "text-gray-700 border-gray-300"
+                }`}
+              >
+                <f.icon className="w-4 h-4" />
+                {f.label}
+                {openDropdown === f.key ? (
+                  <ChevronUp className="w-4 h-4 ml-1" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 ml-1" />
+                )}
+              </button>
+
+              {openDropdown === f.key && (
+                <div className="absolute left-0 mt-2 w-64 bg-white border rounded-xl shadow-lg p-4 z-50">
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4">
                     {f.options.map((opt) => (
                       <button
                         key={opt}
                         onClick={() => handleSelect(f.key, opt)}
-                        className={`px-4 py-2 rounded-full border ${
+                        className={`px-3 py-1.5 text-sm rounded-md border transition ${
                           selected[f.key] === opt
                             ? "bg-red-500 text-white border-red-500"
                             : "bg-gray-50 hover:bg-gray-100 border-gray-300 text-gray-700"
@@ -115,6 +189,7 @@ export default function FilterBar() {
                       </button>
                     ))}
                   </div>
+
                   <div className="flex justify-between">
                     <button
                       onClick={() => setOpenDropdown(null)}
