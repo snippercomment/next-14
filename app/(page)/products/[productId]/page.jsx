@@ -5,7 +5,6 @@ import Review from "./Components/Review";
 import RelatedProducts from "./Components/RalatedProduct";
 import AddReview from "./Components/AddReview";
 import AuthContextProvider from "@/contexts/AuthContext";
-import CommentsSection from "./Components/CommentsSection";
 import ScrollToTop from "./Components/ScrollToTop";
 import ContactButton from "./Components/ContactButton";
 
@@ -52,12 +51,7 @@ export default async function Page({ params }) {
                 brandId={product?.brandId}
                 currentProductId={product?.id}
             />
-              
-            {/* Phần bình luận */}
-            <AuthContextProvider>
-              <CommentsSection productId={productId} productTitle={product?.title} />
-            </AuthContextProvider>
-
+        
             {/* Floating Navigation Buttons */}
             <ScrollToTop />
             <ContactButton />

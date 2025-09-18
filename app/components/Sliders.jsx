@@ -30,7 +30,7 @@ export default function FeaturedProductSlider({ featuredProducts }) {
                             <div className="flex flex-col-reverse md:flex-row gap-4 p-5 md:px-24 md:py-20 w-full">
                                 <div className="flex-1 flex flex-col md:gap-10 gap-4">
                                     <h2 className="text-gray-500 text-xs md:text-base">
-                                        SẢN PHẨM MỚI
+                                        SẢN PHẨM NỔI BẬT
                                     </h2>
                                     <div className="flex flex-col gap-4">
                                         <Link href={`/products/${product?.id}`}>

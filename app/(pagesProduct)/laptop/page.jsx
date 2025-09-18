@@ -8,9 +8,12 @@ import { useCategories } from '@/lib/firestore/categories/read';
 import FilterBar from '../form/FilterBar';
 import SortBar from "../form/Sort";
 import PaginationBar from "../form/Panigation";
+import CommentsSection from '../form/CommentsSection';
+import { getProduct } from '@/lib/firestore/products/read_server';
 
-
-export default function Page({ categoryFilter = null }) {
+export default function Page({ categoryFilter = null ,params}) {
+  const { productId } = params;
+  const product = getProduct({ id: productId });
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(3);
@@ -116,10 +119,10 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Không tìm thấy tai nghe phù hợp
+              Không tìm thấy laptop phù hợp
             </h3>
             <p className="text-gray-500 mb-4">
-              Không có tai nghe nào trong danh mục "{getCurrentCategoryName()}"
+              Không có laptop nào trong danh mục "{getCurrentCategoryName()}"
             </p>
           </div>
         </div>
@@ -139,6 +142,7 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
           </span>
         </div>
       )}
+      <CommentsSection productId={productId} productTitle={product?.title} />
     </div>
   );
 }

@@ -1,50 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Funnel,
-  Truck,
-  DollarSign,
-  HardDrive,
-  Cpu,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-
-// Toàn bộ filterData để chung file này
-const filterData = {
-  laptop: [
-    { key: "stock", label: "Sẵn sàng", icon: Truck, type: "button" },
-    { key: "price", label: "Xem theo giá", icon: DollarSign, type: "price" },
-    {
-      key: "ocung",
-      label: "Ổ cứng",
-      icon: HardDrive,
-      type: "dropdown",
-      options: ["256GB", "512GB", "1TB", "2TB"],
-    },
-    {
-      key: "ram",
-      label: "Dung lượng RAM",
-      icon: Funnel,
-      type: "dropdown",
-      options: ["8GB", "16GB", "24GB", "32GB", "64GB"],
-    },
-    {
-      key: "cpu",
-      label: "CPU",
-      icon: Cpu,
-      type: "dropdown",
-      options: ["Intel Core i3", "Intel Core i5", "Intel Core i7"],
-    },
-  ],
-};
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { filterData } from "./filterData"; // Import data từ file riêng
 
 export default function FilterBar({ category }) {
   const filters = filterData[category] || [];
   const [openDropdown, setOpenDropdown] = useState(null);
   const [selected, setSelected] = useState({});
-  const [maxPrice, setMaxPrice] = useState(97190000); // chỉ 1 giá max
+  const [maxPrice, setMaxPrice] = useState(97190000);
 
   const toggleDropdown = (key) => {
     setOpenDropdown(openDropdown === key ? null : key);

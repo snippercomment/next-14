@@ -17,19 +17,29 @@ import {
   MessageSquare,
   Calendar,
   Heart,
-  User
+  ChevronRight
 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-export default function CommentsSection({ productId, productTitle }) {
+export default function HomepageComments() {
   const { user } = useAuth();
-  const { data: comments, isLoading } = useComments({ productId });
+  const { data: comments, isLoading } = useComments({ productId: "homepage" }); 
   const { data: admins } = useAdmins();
   const [newComment, setNewComment] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
+
+  // Giới hạn hiển thị 5 bình luận đầu tiên
+  const COMMENTS_LIMIT = 5;
+  const displayedComments = showAllComments 
+    ? comments 
+    : comments?.slice(0, COMMENTS_LIMIT) || [];
+  const remainingComments = comments?.length > COMMENTS_LIMIT 
+    ? comments.length - COMMENTS_LIMIT 
+    : 0;
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -39,7 +49,6 @@ export default function CommentsSection({ productId, productTitle }) {
       return;
     }
 
-    // Nếu không đăng nhập, yêu cầu thông tin khách
     if (!user && (!guestName.trim() || !guestEmail.trim())) {
       toast.error("Vui lòng nhập họ tên và email");
       return;
@@ -50,7 +59,7 @@ export default function CommentsSection({ productId, productTitle }) {
     try {
       await addComment({
         uid: user ? user.uid : `guest_${Date.now()}`,
-        productId,
+        productId: "homepage",
         message: newComment,
         displayName: user ? user.displayName : guestName,
         photoURL: user ? user.photoURL : "",
@@ -81,11 +90,12 @@ export default function CommentsSection({ productId, productTitle }) {
   };
 
   return (
-    <section className="mt-12 max-w-4xl mx-auto">
+    <section className="mt-12 max-w-4xl mx-auto px-4">
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-          Bình luận về {productTitle}
+         Hỏi và đáp
         </h2>
+       
       </div>
 
       {/* Form thêm bình luận */}
@@ -109,7 +119,6 @@ export default function CommentsSection({ productId, productTitle }) {
               </div>
             </div>
 
-            {/* Nếu chưa đăng nhập, hiển thị form thông tin khách */}
             {!user && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
@@ -132,7 +141,7 @@ export default function CommentsSection({ productId, productTitle }) {
             )}
 
             <Textarea
-              placeholder="Để gửi bình luận, bạn cần nhập tối thiểu 15 ký tự *"
+              placeholder="Chia sẻ cảm nhận của bạn về website (tối thiểu 15 ký tự) *"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               minRows={4}
@@ -174,9 +183,45 @@ export default function CommentsSection({ productId, productTitle }) {
               </h3>
             </div>
             
-            {comments.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} currentUser={user} admins={admins} />
+            {displayedComments.map((comment) => (
+              <CommentItem 
+                key={comment.id} 
+                comment={comment} 
+                currentUser={user} 
+                admins={admins} 
+              />
             ))}
+
+            {/* Nút "Xem thêm" */}
+            {!showAllComments && remainingComments > 0 && (
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant="light"
+                  color="primary"
+                  size="lg"
+                  endContent={<ChevronRight className="w-4 h-4" />}
+                  onClick={() => setShowAllComments(true)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-6 py-3 rounded-full"
+                >
+                  Xem thêm {remainingComments} bình luận
+                </Button>
+              </div>
+            )}
+
+            {/* Nút "Thu gọn" khi đã hiển thị tất cả */}
+            {showAllComments && comments.length > COMMENTS_LIMIT && (
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant="light"
+                  color="default"
+                  size="lg"
+                  onClick={() => setShowAllComments(false)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-6 py-3 rounded-full"
+                >
+                  Thu gọn
+                </Button>
+              </div>
+            )}
           </>
         ) : (
           <Card>
@@ -186,7 +231,7 @@ export default function CommentsSection({ productId, productTitle }) {
                 Chưa có bình luận nào
               </h3>
               <p className="text-gray-500">
-                Hãy là người đầu tiên bình luận về sản phẩm này!
+                Hãy là người đầu tiên chia sẻ cảm nhận về website!
               </p>
             </CardBody>
           </Card>
@@ -208,7 +253,7 @@ function CommentItem({ comment, currentUser, admins }) {
     setIsLiking(true);
     try {
       await toggleCommentLike({
-        productId: comment.productId,
+        productId: "homepage",
         commentId: comment.id,
         uid: currentUser.uid
       });
@@ -224,14 +269,13 @@ function CommentItem({ comment, currentUser, admins }) {
     if (!timestamp) return "";
     return new Date(timestamp.seconds * 1000).toLocaleDateString("vi-VN", {
       year: "numeric",
-      month: "short",
+      month: "short", 
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit"
     });
   };
 
-  // Tìm admin info từ admins array
   const getAdminInfo = (adminId) => {
     if (!admins || !adminId) return null;
     return admins.find(admin => admin.id === adminId || admin.uid === adminId);
@@ -265,7 +309,6 @@ function CommentItem({ comment, currentUser, admins }) {
               </p>
             </div>
             
-            {/* Hiển thị phản hồi từ admin nếu có */}
             {comment?.reply && (
               <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
                 <div className="flex items-center gap-2 mb-2">
@@ -279,7 +322,7 @@ function CommentItem({ comment, currentUser, admins }) {
                     {adminInfo?.name || comment?.reply?.adminName || "Admin"}
                   </span>
                   <Chip size="sm" color="primary" variant="flat">
-                    QTV Discount
+                    QTV
                   </Chip>
                   <span className="text-xs text-gray-500">
                     {formatDate(comment?.reply?.timestamp)}

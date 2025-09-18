@@ -8,9 +8,12 @@ import { useCategories } from '@/lib/firestore/categories/read';
 import FilterBar from '../form/FilterBar';
 import SortBar from "../form/Sort";
 import PaginationBar from "../form/Panigation";
+import { getProduct } from '@/lib/firestore/products/read_server';
+import CommentsSection from '../form/CommentsSection';
 
-
-export default function Page({ categoryFilter = null }) {
+export default function Page({ categoryFilter = null,params }) {
+   const { productId } = params;
+  const product = getProduct({ id: productId });
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(1);
@@ -139,6 +142,7 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
           </span>
         </div>
       )}
+      <CommentsSection productId={productId} productTitle={product?.title} />
     </div>
   );
 }

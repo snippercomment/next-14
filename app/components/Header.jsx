@@ -229,41 +229,46 @@ export default function Header() {
               )}
 
               {/* User Dropdown Menu */}
-              {isUserDropdownOpen && user && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50" role="menu">
-                  <div className="py-1">
-                    <Link href="/account">
-                      <span
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50  items-center gap-2 cursor-pointer block"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        role="menuitem"
-                      >
-                        <UserCircle2 size={16} />
-                        Tài khoản của tôi
-                      </span>
-                    </Link>
-                    <Link href="/orders">
-                      <span
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer "
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        role="menuitem"
-                      >
-                        <ShoppingBag size={16} />
-                        Đơn hàng của tôi
-                      </span>
-                    </Link>
-                    <div className="border-t border-gray-100">
-                      <div
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                        role="menuitem"
-                      >
-                        <LogoutButton />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+            {isUserDropdownOpen && user && (
+  <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50" role="menu">
+    <div className="py-1">
+      <Link href="/account" onClick={() => setIsUserDropdownOpen(false)}>
+        <div
+          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+          role="menuitem"
+        >
+          <UserCircle2 size={18} className="text-gray-600" />
+          <span className="leading-none">Tài khoản của tôi</span>
+        </div>
+      </Link>
+
+      <Link href="/orders" onClick={() => setIsUserDropdownOpen(false)}>
+        <div
+          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+          role="menuitem"
+        >
+          <ShoppingBag size={18} className="text-gray-600" />
+          <span className="leading-none">Đơn hàng của tôi</span>
+        </div>
+      </Link>
+
+      <div className="border-t border-gray-100">
+        <button
+          onClick={() => {
+            setIsUserDropdownOpen(false);
+            // logic logout ở đây
+          }}
+          className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left"
+          role="menuitem"
+        >
+          <LogoutButton />
+        
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
             </div>
           )}
 
