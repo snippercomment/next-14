@@ -34,7 +34,7 @@ export default function CollapsibleSidebar() {
   const menuList = [
     { name: "Trang chủ", link: "/admin", icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: "Sản phẩm", link: "/admin/products", icon: <PackageOpen className="h-5 w-5" /> },
-    { name: "Danh mục", link: "/admin/categories", icon: <Layers2 className="h-5 w-5" /> },
+    { name: "Thể loại", link: "/admin/categories", icon: <Layers2 className="h-5 w-5" /> },
     { name: "Thương hiệu", link: "/admin/brands", icon: <Cat className="h-5 w-5" /> },
     { name: "Đơn hàng", link: "/admin/orders", icon: <ShoppingCart className="h-5 w-5" /> },
     { name: "Khách hàng", link: "/admin/customers", icon: <User className="h-5 w-5" /> },

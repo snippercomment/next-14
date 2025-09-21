@@ -24,7 +24,7 @@ export default function Header() {
   const categoryList = [
     { 
       name: "Điện thoại", 
-      link: "/phone", 
+      link: "/iphone-s", 
       icon: <Smartphone size={16} />,
       subcategories: [
         { name: "iPhone", link: "/iphone" },

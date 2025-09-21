@@ -36,7 +36,7 @@ const getBrandDisplayName = (category) => {
     
     return brandNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
 };
-// Định nghĩa các danh mục thương hiệu
+// Định nghĩa các Bộ sưu tập
 const BRAND_CATEGORIES = {
     iphone: { value: "iphone", label: "iPhone", description: "Thương hiệu điện thoại iPhone" },
     laptop: { value: "laptop", label: "Laptop", description: "Thương hiệu máy tính xách tay" },
@@ -48,39 +48,62 @@ export default function BasicDetails({ data, handleData }) {
     const { data: brands } = useBrands();
     const { data: categories } = useCategories();
 
-    // Lọc thương hiệu theo danh mục
+    // Tổ chức categories thành cấu trúc cha-con
+    const organizedCategories = useMemo(() => {
+        if (!categories) return { parentCategories: [], childCategories: [] };
+        
+        const parentCategories = categories.filter(cat => !cat.parentId);
+        const childCategories = categories.filter(cat => cat.parentId);
+        
+        return {
+            parentCategories,
+            childCategories
+        };
+    }, [categories]);
+
+    // Lọc Thể loại con theo Thể loại cha được chọn
+    const filteredChildCategories = useMemo(() => {
+        if (!data?.parentCategoryId || !organizedCategories.childCategories) return [];
+        return organizedCategories.childCategories.filter(child => 
+            child.parentId === data.parentCategoryId
+        );
+    }, [organizedCategories.childCategories, data?.parentCategoryId]);
+
+    // Lọc thương hiệu theo Thể loại
     const filteredBrands = useMemo(() => {
         if (!data?.brandCategory) return brands || [];
         return brands?.filter(brand => brand.category === data.brandCategory) || [];
     }, [brands, data?.brandCategory]);
 
     // Thông tin sản phẩm
-
     const productInfo = useMemo(() => {
-    const selectedBrand = brands?.find(brand => brand.id === data?.brandId);
-    const selectedCategory = categories?.find(category => category.id === data?.categoryId);
-    const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
-    
-    let availableColors = [];
-    let storageOptions = [];
-    
-    if (selectedBrand?.name) {
-        availableColors = getColorsByBrand(selectedBrand.name);
-        storageOptions = getStorageOptionsByBrand(selectedBrand.name); 
-    } else if (productType) {
-        availableColors = getColorsByProductType(productType);
-        storageOptions = getStorageOptionsByProductType(productType);
-    }
+        const selectedBrand = brands?.find(brand => brand.id === data?.brandId);
+        // Ưu tiên category con, nếu không có thì dùng category cha
+        const selectedCategory = categories?.find(category => 
+            category.id === (data?.categoryId || data?.parentCategoryId)
+        );
+        const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
+        
+        let availableColors = [];
+        let storageOptions = [];
+        
+        if (selectedBrand?.name) {
+            availableColors = getColorsByBrand(selectedBrand.name);
+            storageOptions = getStorageOptionsByBrand(selectedBrand.name); 
+        } else if (productType) {
+            availableColors = getColorsByProductType(productType);
+            storageOptions = getStorageOptionsByProductType(productType);
+        }
 
-    return {
-        selectedBrand,
-        selectedCategory,
-        productType,
-        categoryInfo: getProductCategoryInfo(productType),
-        availableColors,
-        storageOptions 
-    };
-}, [brands, categories, data?.brandId, data?.categoryId]);
+        return {
+            selectedBrand,
+            selectedCategory,
+            productType,
+            categoryInfo: getProductCategoryInfo(productType),
+            availableColors,
+            storageOptions 
+        };
+    }, [brands, categories, data?.brandId, data?.categoryId, data?.parentCategoryId]);
 
     // Xử lý chọn/bỏ chọn màu
     const handleColorToggle = (colorId) => {
@@ -100,7 +123,7 @@ export default function BasicDetails({ data, handleData }) {
         handleData(productInfo.categoryInfo.storageField, updatedStorages);
     };
 
-    // Reset dữ liệu khi thay đổi danh mục - FIX: Reset tất cả các trường liên quan
+    
     const resetProductData = () => {
         handleData("colorIds", []);
         // Reset tất cả các trường storage có thể có
@@ -122,7 +145,13 @@ export default function BasicDetails({ data, handleData }) {
         resetProductData();
     };
 
-    const handleCategoryChange = (categoryId) => {
+    const handleParentCategoryChange = (parentCategoryId) => {
+        handleData("parentCategoryId", parentCategoryId);
+        handleData("categoryId", ""); 
+        resetProductData();
+    };
+
+    const handleChildCategoryChange = (categoryId) => {
         handleData("categoryId", categoryId);
         resetProductData();
     };
@@ -161,10 +190,10 @@ export default function BasicDetails({ data, handleData }) {
                 />
             </div>
 
-            {/* Danh mục thương hiệu */}
+            {/* Bộ sưu tập*/}
             <div className="flex flex-col gap-2">
                 <label className="text-gray-700 text-sm font-medium">
-                    Danh mục thương hiệu <span className="text-red-500">*</span>
+                    Bộ sưu tập <span className="text-red-500">*</span>
                 </label>
                 <select
                     value={data?.brandCategory ?? ""}
@@ -172,7 +201,7 @@ export default function BasicDetails({ data, handleData }) {
                     className="border border-gray-300 px-4 py-3 rounded-lg w-full outline-none focus:ring-2 focus:ring-blue-500"
                     required
                 >
-                    <option value="">Chọn danh mục thương hiệu</option>
+                    <option value="">Chọn bộ sưu tập</option>
                     {Object.values(BRAND_CATEGORIES).map((category) => (
                         <option key={category.value} value={category.value}>
                             {category.label}
@@ -194,7 +223,7 @@ export default function BasicDetails({ data, handleData }) {
                     disabled={!data?.brandCategory}
                 >
                     <option value="">
-                        {!data?.brandCategory ? "Vui lòng chọn danh mục trước" : "Chọn thương hiệu"}
+                        {!data?.brandCategory ? "Vui lòng chọn bộ sưu tập" : "Chọn thương hiệu"}
                     </option>
                     {filteredBrands.map((item) => (
                         <option value={item?.id} key={item?.id}>
@@ -204,25 +233,49 @@ export default function BasicDetails({ data, handleData }) {
                 </select>
             </div>
 
-            {/* Danh mục sản phẩm */}
+            {/* Thể loại sản phẩm cha */}
             <div className="flex flex-col gap-2">
                 <label className="text-gray-700 text-sm font-medium">
-                    Danh mục sản phẩm <span className="text-red-500">*</span>
+                    Thể loại sản phẩm <span className="text-red-500">*</span>
                 </label>
                 <select
-                    value={data?.categoryId ?? ""}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    value={data?.parentCategoryId ?? ""}
+                    onChange={(e) => handleParentCategoryChange(e.target.value)}
                     className="border border-gray-300 px-4 py-3 rounded-lg w-full outline-none focus:ring-2 focus:ring-blue-500"
                     required
                 >
-                    <option value="">Chọn danh mục sản phẩm</option>
-                    {categories?.map((item) => (
+                    <option value="">Chọn thể loại chính</option>
+                    {organizedCategories.parentCategories?.map((item) => (
                         <option value={item?.id} key={item?.id}>
                             {item?.name}
                         </option>
                     ))}
                 </select>
             </div>
+
+            {/* Thể loại sản phẩm con (nếu có) */}
+            {filteredChildCategories.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    <label className="text-gray-700 text-sm font-medium">
+                        Thể loại con (tùy chọn)
+                    </label>
+                    <select
+                        value={data?.categoryId ?? ""}
+                        onChange={(e) => handleChildCategoryChange(e.target.value)}
+                        className="border border-gray-300 px-4 py-3 rounded-lg w-full outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">Trống</option>
+                        {filteredChildCategories.map((item) => (
+                            <option value={item?.id} key={item?.id}>
+                                {item?.name}
+                            </option>
+                        ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                        Để trống nếu sản phẩm thuộc trực tiếp thể loại chính
+                    </p>
+                </div>
+            )}
 
             {/* Kho hàng và Nổi bật */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -334,69 +387,69 @@ export default function BasicDetails({ data, handleData }) {
 
             {/* Màu sắc */}
             {productInfo.availableColors.length > 0 && (
-    <div className="flex flex-col gap-3">
-        <label className="text-gray-700 text-sm font-medium">
-            Màu sắc <span className="text-red-500">*</span>
-        </label>
-        <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-            {/* Nhóm màu theo thương hiệu */}
-            {Object.entries(
-                productInfo.availableColors.reduce((groups, color) => {
-                    const brandKey = getBrandDisplayName(color.category);
-                    if (!groups[brandKey]) groups[brandKey] = [];
-                    groups[brandKey].push(color);
-                    return groups;
-                }, {})
-            ).map(([brandName, colors]) => (
-                <div key={brandName} className="mb-4 last:mb-0">
-                    {/* Tên thương hiệu */}
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3 pb-1 border-b border-gray-200 uppercase tracking-wide">
-                        {brandName}
-                    </h3>
-                    
-                    {/* Grid màu sắc */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                        {colors.map((color) => {
-                            const isSelected = (data?.colorIds || []).includes(color.id);
-                            return (
-                                <label
-                                    key={color.id}
-                                    className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer border-2 transition-all duration-200 hover:shadow-sm ${
-                                        isSelected
-                                            ? 'bg-blue-50 border-blue-400 shadow-sm'
-                                            : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                                    }`}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={isSelected}
-                                        onChange={() => handleColorToggle(color.id)}
-                                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    <div
-                                        className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 shadow-sm"
-                                        style={{ backgroundColor: color.hexColor }}
-                                        title={color.title}
-                                    ></div>
-                                    <span className="text-xs font-medium text-gray-700 leading-tight truncate">
-                                        {color.name}
-                                    </span>
-                                </label>
-                            );
-                        })}
+                <div className="flex flex-col gap-3">
+                    <label className="text-gray-700 text-sm font-medium">
+                        Màu sắc <span className="text-red-500">*</span>
+                    </label>
+                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                        {/* Nhóm màu theo thương hiệu */}
+                        {Object.entries(
+                            productInfo.availableColors.reduce((groups, color) => {
+                                const brandKey = getBrandDisplayName(color.category);
+                                if (!groups[brandKey]) groups[brandKey] = [];
+                                groups[brandKey].push(color);
+                                return groups;
+                            }, {})
+                        ).map(([brandName, colors]) => (
+                            <div key={brandName} className="mb-4 last:mb-0">
+                                {/* Tên thương hiệu */}
+                                <h3 className="text-sm font-semibold text-gray-600 mb-3 pb-1 border-b border-gray-200 uppercase tracking-wide">
+                                    {brandName}
+                                </h3>
+                                
+                                {/* Grid màu sắc */}
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                                    {colors.map((color) => {
+                                        const isSelected = (data?.colorIds || []).includes(color.id);
+                                        return (
+                                            <label
+                                                key={color.id}
+                                                className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer border-2 transition-all duration-200 hover:shadow-sm ${
+                                                    isSelected
+                                                        ? 'bg-blue-50 border-blue-400 shadow-sm'
+                                                        : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => handleColorToggle(color.id)}
+                                                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                                />
+                                                <div
+                                                    className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 shadow-sm"
+                                                    style={{ backgroundColor: color.hexColor }}
+                                                    title={color.title}
+                                                ></div>
+                                                <span className="text-xs font-medium text-gray-700 leading-tight truncate">
+                                                    {color.name}
+                                                </span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
-            ))}
-        </div>
-    </div>
-)}
+            )}
 
             {/* Thông báo nếu chưa chọn brand/category */}
             {!productInfo.selectedBrand && !productInfo.selectedCategory && (
                 <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
                     <div className="flex items-center gap-2">   
                         <span className="text-sm text-yellow-700">
-                            Vui lòng chọn thương hiệu và danh mục để hiển thị màu sắc và cấu hình phù hợp.
+                            Vui lòng chọn thương hiệu và thể loại để hiển thị màu sắc và cấu hình phù hợp.
                         </span>
                     </div>
                 </div>

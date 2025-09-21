@@ -1,5 +1,4 @@
 "use client";
-import { useProduct } from "@/lib/firestore/products/read";
 import { useAllComments } from "@/lib/firestore/comments/read";
 import { useAdmins } from "@/lib/firestore/admins/read";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,7 +24,8 @@ import {
   Calendar,
   Heart,
   Edit,
-  MoreVertical
+  MoreVertical,
+  Package
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo } from "react";
@@ -47,11 +47,13 @@ export default function CommentsListView() {
     
     let filtered = [...comments];
 
-    // Search by name or content
+    // Search by name, content, or product
     if (searchTerm) {
       filtered = filtered.filter(comment => 
         comment.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        comment.message?.toLowerCase().includes(searchTerm.toLowerCase())
+        comment.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        comment.productTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        comment.productId?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -71,6 +73,8 @@ export default function CommentsListView() {
           return a.timestamp?.seconds - b.timestamp?.seconds;
         case "most_liked":
           return (b.likes || 0) - (a.likes || 0);
+        case "product":
+          return (a.productTitle || "").localeCompare(b.productTitle || "");
         default:
           return 0;
       }
@@ -87,14 +91,15 @@ export default function CommentsListView() {
   );
 
   const stats = useMemo(() => {
-    if (!comments) return { total: 0, replied: 0, notReplied: 0, totalLikes: 0 };
+    if (!comments) return { total: 0, replied: 0, notReplied: 0, totalLikes: 0, uniqueProducts: 0 };
     
     const total = comments.length;
     const replied = comments.filter(c => c.reply).length;
     const notReplied = total - replied;
     const totalLikes = comments.reduce((sum, c) => sum + (c.likes || 0), 0);
+    const uniqueProducts = new Set(comments.map(c => c.productId)).size;
     
-    return { total, replied, notReplied, totalLikes };
+    return { total, replied, notReplied, totalLikes, uniqueProducts };
   }, [comments]);
 
   return (
@@ -102,11 +107,11 @@ export default function CommentsListView() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Quản lý Bình luận</h1>
-        <p className="text-gray-600">Quản lý và trả lời các bình luận từ khách hàng</p>
+        <p className="text-gray-600">Quản lý và trả lời các bình luận từ tất cả sản phẩm</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <Card>
           <CardBody className="flex flex-row items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -154,6 +159,18 @@ export default function CommentsListView() {
             </div>
           </CardBody>
         </Card>
+
+        <Card>
+          <CardBody className="flex flex-row items-center gap-3">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Package className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Sản phẩm có BL</p>
+              <p className="text-2xl font-bold">{stats.uniqueProducts}</p>
+            </div>
+          </CardBody>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -162,7 +179,7 @@ export default function CommentsListView() {
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
               <Input
-                placeholder="Tìm kiếm theo tên hoặc nội dung..."
+                placeholder="Tìm kiếm theo tên, nội dung hoặc sản phẩm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 startContent={<Search className="w-4 h-4" />}
@@ -191,6 +208,7 @@ export default function CommentsListView() {
               <SelectItem key="newest" value="newest">Mới nhất</SelectItem>
               <SelectItem key="oldest" value="oldest">Cũ nhất</SelectItem>
               <SelectItem key="most_liked" value="most_liked">Nhiều like nhất</SelectItem>
+              <SelectItem key="product" value="product">Theo sản phẩm</SelectItem>
             </Select>
           </div>
         </CardBody>
@@ -240,7 +258,6 @@ function CommentCard({ item, admins, currentUser }) {
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const { data: product } = useProduct({ productId: item?.productId });
 
   const handleDelete = async () => {
     if (!confirm("Bạn có chắc chắn muốn xóa bình luận này?")) return;
@@ -252,7 +269,7 @@ function CommentCard({ item, admins, currentUser }) {
       });
       toast.success("Đã xóa bình luận thành công");
     } catch (error) {
-      toast.error(error?.message);
+      toast.error(error?.message || "Có lỗi xảy ra khi xóa bình luận");
     }
     setIsLoading(false);
   };
@@ -280,7 +297,7 @@ function CommentCard({ item, admins, currentUser }) {
       setReplyText("");
       setShowReplyForm(false);
     } catch (error) {
-      toast.error(error?.message);
+      toast.error(error?.message || "Có lỗi xảy ra khi trả lời");
     }
     setIsReplying(false);
   };
@@ -347,11 +364,15 @@ function CommentCard({ item, admins, currentUser }) {
                   </span>
                 </div>
                 
-                <Link href={`/products/${item?.productId}`}>
-                  <p className="text-sm text-blue-600 hover:underline mb-2">
-                   {product?.title || "Đang tải..."}
-                  </p>
-                </Link>
+                {/* Product information */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="w-4 h-4 text-blue-500" />
+                  <Link href={`/products/${item?.productId}`}>
+                    <span className="text-sm text-blue-600 hover:underline">
+                      {item?.productTitle || `Sản phẩm #${item?.productId?.slice(-8)}`}
+                    </span>
+                  </Link>
+                </div>
               </div>
               
               <div className="flex gap-2">

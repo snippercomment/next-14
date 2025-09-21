@@ -4,7 +4,8 @@ import { createNewCategory, updateCategory } from "@/lib/firestore/categories/wr
 import { toast } from "react-hot-toast";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getCategory } from "@/lib/firestore/categories/read_server";
-import { Upload, X } from "lucide-react";
+import { useCategories } from "@/lib/firestore/categories/read";
+
 
 export default function Form() {
     const [data, setData] = useState(null);
@@ -12,16 +13,20 @@ export default function Form() {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     
-    // lấy id từ url
+    // Lấy danh sách tất cả categories để làm parent options
+    const { data: allCategories } = useCategories();
+    
+    // lấy id và parentId từ url
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
+    const parentId = searchParams.get("parentId");
     
-    // nếu có id thì lấy dữ liệu danh mục
+    // nếu có id thì lấy dữ liệu Thể loại
     const fetchData = async () => {
         try {
             const res = await getCategory({ id: id });
             if (!res) {
-                toast.error("Danh mục không tồn tại");
+                toast.error("Thể loại không tồn tại");
             }
             else {
                 setData(res);
@@ -34,8 +39,11 @@ export default function Form() {
     useEffect(() => {
         if (id) {
             fetchData();
+        } else if (parentId) {
+            // Nếu có parentId từ URL, set làm parent mặc định
+            setData({ parentId: parentId });
         }
-    }, [id]);
+    }, [id, parentId]);
     
     // xử lý dữ liệu
     const handleData = (key, value) => {
@@ -47,12 +55,12 @@ export default function Form() {
         })
     }
     
-    // tạo danh mục
+    // tạo thể loại
     const handleCreate = async () => {
         setIsLoading(true);
         try {
             await createNewCategory({ data: data, image: image });
-            toast.success("Tạo danh mục thành công");
+            toast.success("Tạo Thể loại thành công");
             setData(null);
             setImage(null);
         } catch (error) {
@@ -61,7 +69,7 @@ export default function Form() {
         setIsLoading(false);
     }
     
-    // cập nhật danh mục
+    // cập nhật thể loại
     const handleUpdate = async () => {
         setIsLoading(true);
         try {
@@ -72,7 +80,7 @@ export default function Form() {
                 ...(image && { image: image }) // Chỉ thêm image nếu có ảnh mới
             };
             await updateCategory(updateData);
-            toast.success("Cập nhật danh mục thành công");
+            toast.success("Cập nhật Thể loại thành công");
             setData(null);
             setImage(null);
             router.push("/admin/categories");
@@ -82,9 +90,26 @@ export default function Form() {
         setIsLoading(false);
     }
 
+    // Lọc ra các Thể loạicó thể làm parent (không bao gồm chính nó và con của nó)
+    const getParentOptions = () => {
+        if (!allCategories) return [];
+        
+        return allCategories.filter(category => {
+            // Không cho phép chọn chính nó làm parent
+            if (category.id === id) return false;
+            
+            // Không cho phép chọn Thể loại con của nó làm parent (tránh vòng lặp)
+            if (category.parentId === id) return false;
+            
+            return true;
+        });
+    };
+
     return (
         <div className="flex flex-col gap-3 bg-white rounded-xl p-5 w-full md:w-[400px]">
-            <h1 className="font-semibold">{id ? "Cập Nhật" : "Tạo Mới"} Danh Mục</h1>
+            <h1 className="font-semibold">
+                {id ? "Cập Nhật" : parentId ? "Tạo Thể loại Con" : "Tạo Mới"} Thể loại
+            </h1>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -122,15 +147,42 @@ export default function Form() {
                         className="border px-4 py-2 rounded-lg w-full"
                     />
                 </div>
+
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="parent-category" className="text-gray-500 text-sm">
+                        Thể loại Cha {parentId && <span className="text-green-500">(Đã được chọn sẵn)</span>}
+                    </label>
+                    <select
+                        id="parent-category"
+                        name="parent-category"
+                        value={data?.parentId ?? ""}
+                        onChange={(e) => handleData("parentId", e.target.value || null)}
+                        className="border px-4 py-2 rounded-lg w-full focus:outline-none"
+                        disabled={!!parentId} // Vô hiệu hóa nếu parentId được set từ URL
+                    >
+                        <option value="">-- Chọn Thể loại (Để trống nếu là Thể loại gốc) --</option>
+                        {getParentOptions()?.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
+                    {parentId && (
+                        <p className="text-green-600 text-sm">
+                            Thể loại con sẽ được tạo trong: {getParentOptions()?.find(cat => cat.id === parentId)?.name || 'Thể loại đã chọn'}
+                        </p>
+                    )}
+                </div>
+
                 <div className="flex flex-col gap-1">
                     <label htmlFor="category-name" className="text-gray-500 text-sm">
-                        Tên Danh Mục <span className="text-red-500">*</span>{" "}
+                        Tên Thể loại <span className="text-red-500">*</span>{" "}
                     </label>
                     <input
                         id="category-name"
                         name="category-name"
                         type="text"
-                        placeholder="Nhập tên danh mục"
+                        placeholder="Nhập tên thể loại"
                         value={data?.name ?? ""}
                         onChange={(e) => handleData("name", e.target.value)}
                         className="border px-4 py-2 rounded-lg w-full focus:outline-none"
@@ -144,7 +196,7 @@ export default function Form() {
                         id="category-slug"
                         name="category-slug"
                         type="text"
-                        placeholder="Nhập slug (VD: dien-thoai)"
+                        placeholder="Nhập slug "
                         value={data?.slug ?? ""}
                         onChange={(e) => handleData("slug", e.target.value)}
                         className="border px-4 py-2 rounded-lg w-full focus:outline-none"
