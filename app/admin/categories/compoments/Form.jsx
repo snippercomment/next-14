@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { getCategory } from "@/lib/firestore/categories/read_server";
 import { useCategories } from "@/lib/firestore/categories/read";
 
-
 export default function Form() {
     const [data, setData] = useState(null);
     const [image, setImage] = useState(null);
@@ -24,11 +23,13 @@ export default function Form() {
     // nếu có id thì lấy dữ liệu Thể loại
     const fetchData = async () => {
         try {
-            const res = await getCategory({ id: id });
+            const res = await getCategory({ 
+                id: id, 
+                parentId: parentId // Truyền parentId nếu đang edit subcategory
+            });
             if (!res) {
                 toast.error("Thể loại không tồn tại");
-            }
-            else {
+            } else {
                 setData(res);
             }
         } catch (error) {
@@ -63,6 +64,7 @@ export default function Form() {
             toast.success("Tạo Thể loại thành công");
             setData(null);
             setImage(null);
+            router.push("/admin/categories");
         } catch (error) {
             toast.error(error?.message);
         }
@@ -73,11 +75,10 @@ export default function Form() {
     const handleUpdate = async () => {
         setIsLoading(true);
         try {
-            // Chỉ truyền image nếu có ảnh mới được chọn
             const updateData = {
                 id: id,
                 data: data,
-                ...(image && { image: image }) // Chỉ thêm image nếu có ảnh mới
+                ...(image && { image: image })
             };
             await updateCategory(updateData);
             toast.success("Cập nhật Thể loại thành công");
@@ -90,17 +91,13 @@ export default function Form() {
         setIsLoading(false);
     }
 
-    // Lọc ra các Thể loạicó thể làm parent (không bao gồm chính nó và con của nó)
+    // Lấy danh sách parent categories (chỉ những category không có parentId)
     const getParentOptions = () => {
         if (!allCategories) return [];
         
         return allCategories.filter(category => {
             // Không cho phép chọn chính nó làm parent
             if (category.id === id) return false;
-            
-            // Không cho phép chọn Thể loại con của nó làm parent (tránh vòng lặp)
-            if (category.parentId === id) return false;
-            
             return true;
         });
     };

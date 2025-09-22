@@ -6,6 +6,7 @@ import {
     setDoc,
     updateDoc,
     Timestamp,
+    getDocs
 } from "firebase/firestore";
 import { uploadImageToCloudinary } from "@/lib/uploadToCloudinary";
 
@@ -25,9 +26,18 @@ export const createNewCategory = async ({ data, image }) => {
         // Upload ảnh lên Cloudinary
         const imageURL = await uploadImageToCloudinary(image, 'categories');
         
-        const newId = doc(collection(db, `ids`)).id;
+        const newId = doc(collection(db, `categories`)).id;
 
-        await setDoc(doc(db, `categories/${newId}`), {
+        let docPath;
+        if (data.parentId) {
+            // Nếu có parentId, tạo trong subcollection của parent
+            docPath = `categories/${data.parentId}/subcategories/${newId}`;
+        } else {
+            // Nếu không có parentId, tạo trong collection chính
+            docPath = `categories/${newId}`;
+        }
+
+        await setDoc(doc(db, docPath), {
             ...data,
             id: newId,
             imageURL: imageURL,
@@ -55,7 +65,10 @@ export const updateCategory = async ({ id, data, image }) => {
     }
 
     try {
-        let updateData = { ...data, timestampUpdate: Timestamp.now() };
+        let updateData = { 
+            ...data, 
+            timestampUpdate: Timestamp.now()
+        };
 
         // Nếu có ảnh mới, upload lên Cloudinary
         if (image) {
@@ -63,7 +76,16 @@ export const updateCategory = async ({ id, data, image }) => {
             updateData.imageURL = imageURL;
         }
 
-        const categoryRef = doc(db, `categories/${id}`);
+        let docPath;
+        if (data.parentId) {
+            // Nếu có parentId, update trong subcollection
+            docPath = `categories/${data.parentId}/subcategories/${id}`;
+        } else {
+            // Nếu không có parentId, update trong collection chính
+            docPath = `categories/${id}`;
+        }
+
+        const categoryRef = doc(db, docPath);
         await updateDoc(categoryRef, updateData);
 
         return { success: true, imageURL: updateData.imageURL };
@@ -73,14 +95,33 @@ export const updateCategory = async ({ id, data, image }) => {
     }
 };
 
-// xoá danh mục
-export const deleteCategory = async ({ id }) => {
+// xoá danh mục và tất cả con của nó
+export const deleteCategory = async ({ id, parentId = null }) => {
     if (!id) {
         throw new Error("ID là bắt buộc");
     }
 
     try {
-        await deleteDoc(doc(db, `categories/${id}`));
+        let docPath;
+        if (parentId) {
+            // Xóa subcategory
+            docPath = `categories/${parentId}/subcategories/${id}`;
+        } else {
+            // Xóa category chính và tất cả subcategories của nó
+            docPath = `categories/${id}`;
+            
+            // Trước khi xóa category cha, xóa tất cả subcategories
+            const subcategoriesRef = collection(db, `categories/${id}/subcategories`);
+            const subcategoriesSnapshot = await getDocs(subcategoriesRef);
+            
+            const deletePromises = subcategoriesSnapshot.docs.map(subDoc => 
+                deleteDoc(doc(db, `categories/${id}/subcategories/${subDoc.id}`))
+            );
+            await Promise.all(deletePromises);
+        }
+
+        await deleteDoc(doc(db, docPath));
+        
         return { success: true };
     } catch (error) {
         console.error("Error deleting category:", error);

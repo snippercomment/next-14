@@ -24,10 +24,10 @@ export default function Header() {
   const categoryList = [
     { 
       name: "Điện thoại", 
-      link: "/iphone-s", 
+      link: "/iphone", 
       icon: <Smartphone size={16} />,
       subcategories: [
-        { name: "iPhone", link: "/iphone" },
+        { name: "iPhone", link: "/iphone/iphone-s" },
         { name: "Samsung", link: "/samsung" },
         { name: "Xiaomi", link: "/xiaomi" },
         { name: "OPPO", link: "/oppo" },

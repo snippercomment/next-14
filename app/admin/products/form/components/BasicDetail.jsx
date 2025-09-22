@@ -36,6 +36,7 @@ const getBrandDisplayName = (category) => {
     
     return brandNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
 };
+
 // Định nghĩa các Bộ sưu tập
 const BRAND_CATEGORIES = {
     iphone: { value: "iphone", label: "iPhone", description: "Thương hiệu điện thoại iPhone" },
@@ -48,12 +49,26 @@ export default function BasicDetails({ data, handleData }) {
     const { data: brands } = useBrands();
     const { data: categories } = useCategories();
 
-    // Tổ chức categories thành cấu trúc cha-con
+    // Tổ chức categories thành cấu trúc cha-con (tương thích với file 1)
     const organizedCategories = useMemo(() => {
         if (!categories) return { parentCategories: [], childCategories: [] };
         
-        const parentCategories = categories.filter(cat => !cat.parentId);
-        const childCategories = categories.filter(cat => cat.parentId);
+        // Categories ở đây là mảng các thể loại cha, mỗi thể loại có thể có children
+        const parentCategories = categories; // Tất cả đều là thể loại cha
+        
+        // Lấy tất cả thể loại con từ children của các thể loại cha
+        const childCategories = [];
+        categories.forEach(parent => {
+            if (parent.children && parent.children.length > 0) {
+                parent.children.forEach(child => {
+                    childCategories.push({
+                        ...child,
+                        parentId: parent.id,
+                        parentName: parent.name
+                    });
+                });
+            }
+        });
         
         return {
             parentCategories,
@@ -78,10 +93,18 @@ export default function BasicDetails({ data, handleData }) {
     // Thông tin sản phẩm
     const productInfo = useMemo(() => {
         const selectedBrand = brands?.find(brand => brand.id === data?.brandId);
-        // Ưu tiên category con, nếu không có thì dùng category cha
-        const selectedCategory = categories?.find(category => 
-            category.id === (data?.categoryId || data?.parentCategoryId)
-        );
+        
+        // Tìm category được chọn (ưu tiên con trước, sau đó đến cha)
+        let selectedCategory;
+        if (data?.categoryId) {
+            // Tìm trong thể loại con
+            selectedCategory = organizedCategories.childCategories.find(cat => cat.id === data.categoryId);
+        }
+        if (!selectedCategory && data?.parentCategoryId) {
+            // Tìm trong thể loại cha
+            selectedCategory = organizedCategories.parentCategories.find(cat => cat.id === data.parentCategoryId);
+        }
+        
         const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
         
         let availableColors = [];
@@ -103,7 +126,7 @@ export default function BasicDetails({ data, handleData }) {
             availableColors,
             storageOptions 
         };
-    }, [brands, categories, data?.brandId, data?.categoryId, data?.parentCategoryId]);
+    }, [brands, organizedCategories, data?.brandId, data?.categoryId, data?.parentCategoryId]);
 
     // Xử lý chọn/bỏ chọn màu
     const handleColorToggle = (colorId) => {
@@ -248,6 +271,9 @@ export default function BasicDetails({ data, handleData }) {
                     {organizedCategories.parentCategories?.map((item) => (
                         <option value={item?.id} key={item?.id}>
                             {item?.name}
+                            {item.children && item.children.length > 0 && 
+                                ` (${item.children.length} thể loại con)`
+                            }
                         </option>
                     ))}
                 </select>
@@ -264,16 +290,46 @@ export default function BasicDetails({ data, handleData }) {
                         onChange={(e) => handleChildCategoryChange(e.target.value)}
                         className="border border-gray-300 px-4 py-3 rounded-lg w-full outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                        <option value="">Trống</option>
+                        <option value="">Trống - Thuộc trực tiếp thể loại chính</option>
                         {filteredChildCategories.map((item) => (
                             <option value={item?.id} key={item?.id}>
                                 {item?.name}
                             </option>
                         ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                        Để trống nếu sản phẩm thuộc trực tiếp thể loại chính
-                    </p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="text-xs text-blue-700">
+                            <strong>Lưu ý:</strong> Để trống nếu sản phẩm thuộc trực tiếp thể loại chính. 
+                            Chọn thể loại con nếu muốn phân loại chi tiết hơn.
+                        </p>
+                        {data?.parentCategoryId && (
+                            <p className="text-xs text-blue-600 mt-1">
+                                Thể loại chính đã chọn: <strong>
+                                    {organizedCategories.parentCategories.find(cat => cat.id === data.parentCategoryId)?.name}
+                                </strong>
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Hiển thị thông tin thể loại đã chọn */}
+            {data?.parentCategoryId && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Thể loại đã chọn:</h4>
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                            {organizedCategories.parentCategories.find(cat => cat.id === data.parentCategoryId)?.name}
+                        </span>
+                        {data?.categoryId && (
+                            <>
+                                <span className="text-gray-400">→</span>
+                                <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
+                                    {filteredChildCategories.find(cat => cat.id === data.categoryId)?.name}
+                                </span>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
 

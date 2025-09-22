@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductCard from '../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
@@ -11,9 +11,9 @@ import PaginationBar from "../form/Panigation";
 import { getProduct } from '@/lib/firestore/products/read_server';
 import CommentsSection from '../form/CommentsSection';
 
-export default function Page({ categoryFilter = null ,params}) {
-   const { productId } = params;
-  const product = getProduct({ id: productId });
+export default function Page({ categoryFilter = null, params }) {
+  const { productId } = params;
+  const [product, setProduct] = useState(null);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(3);
@@ -21,46 +21,127 @@ export default function Page({ categoryFilter = null ,params}) {
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
 
+  // Lấy product data bất đồng bộ
+  useEffect(() => {
+    if (productId) {
+      const fetchProduct = async () => {
+        try {
+          const productData = await getProduct({ id: productId });
+          setProduct(productData);
+        } catch (error) {
+          console.error("Error fetching product:", error);
+        }
+      };
+      fetchProduct();
+    }
+  }, [productId]);
+
+  // Hàm helper để tìm category (bao gồm cả subcategories)
+  const findCategoryById = (categoryId) => {
+    if (!categories) return null;
+    
+    for (const category of categories) {
+      if (category.id === categoryId) {
+        return category;
+      }
+      // Tìm trong subcategories
+      if (category.children) {
+        const subCategory = category.children.find(child => child.id === categoryId);
+        if (subCategory) {
+          return subCategory;
+        }
+      }
+    }
+    return null;
+  };
+
+  // Lấy tất cả categoryIds liên quan đến điện thoại
+  const getPhoneCategoryIds = () => {
+    if (!categories) return [];
+    
+    const phoneIds = [];
+    
+    categories.forEach(parent => {
+      const parentName = parent.name?.toLowerCase() || '';
+      const isPhoneParent = parentName.includes('điện thoại') || 
+                           parentName.includes('phone') ||
+                           parentName.includes('mobile') ||
+                           parentName.includes('iphone');
+      
+      if (isPhoneParent) {
+        // Thêm parent category id (sản phẩm có thể được gán trực tiếp vào parent)
+        phoneIds.push(parent.id);
+        
+        // Thêm tất cả children category ids
+        if (parent.children && parent.children.length > 0) {
+          parent.children.forEach(child => {
+            phoneIds.push(child.id);
+          });
+        }
+      }
+    });
+    
+    return phoneIds;
+  };
+
+  // Lấy tất cả sản phẩm điện thoại
   const products = allProducts?.filter(product => {
-    const category = categories?.find(c => c.id === product.categoryId);
-    return category?.name?.toLowerCase().includes('điện thoại') || 
-           category?.name?.toLowerCase().includes('phone') ||
-           product.type === 'phone' ||
-           product.productType === 'phone';
+    if (!product) return false;
+    
+    const phoneCategoryIds = getPhoneCategoryIds();
+    
+    // Kiểm tra theo categoryId (có thể là parent hoặc child category)
+    const isInPhoneCategory = phoneCategoryIds.includes(product.categoryId);
+    
+    // Kiểm tra theo thuộc tính khác của sản phẩm
+    const isPhoneByType = product.type === 'phone' ||
+                         product.productType === 'phone' ||
+                         product.category === 'phone';
+    
+    // Kiểm tra theo tên sản phẩm
+    const productName = product.title?.toLowerCase() || product.name?.toLowerCase() || '';
+    const isPhoneByName = productName.includes('iphone') || 
+                         productName.includes('samsung') ||
+                         productName.includes('phone') ||
+                         productName.includes('điện thoại');
+    
+    return isInPhoneCategory || isPhoneByType || isPhoneByName;
   }) || [];
 
   const getProductsByCategory = () => {
     if (!products || !categories) return [];
     if (categoryFilter) {
       return products.filter(product => {
-        const category = categories.find(c => c.id === product.categoryId);
+        const category = findCategoryById(product.categoryId);
         return category?.name === categoryFilter;
       });
     }
     return products; 
   };
-// sắp xếp theo chọn tiêu chí
+
+  // Sắp xếp theo chọn tiêu chí
   const filteredProducts = getProductsByCategory();
-// sắp xếp theo sort
-const sortedProducts = [...filteredProducts].sort((a, b) => {
+  
+  // Sắp xếp theo sort
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sort === "priceAsc") {
-      return a.price - b.price;
+      return (a.price || 0) - (b.price || 0);
     }
     if (sort === "priceDesc") {
-      return b.price - a.price;
+      return (b.price || 0) - (a.price || 0);
     }
     if (sort === "sale") {
       return (b.discount || 0) - (a.discount || 0);
     }
-    return 0; // mặc định "popular" chưa xử lý
+    return 0; // mặc định "popular" 
   });
 
-  // chọn tiêu chí
+  // Chọn tiêu chí
   const getCurrentCategoryName = () => {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Điện thoại'; 
+    return 'Tất cả điện thoại'; 
   };
 
   const handleProductSelect = (productId) => {
@@ -72,8 +153,10 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
       }
     });
   };
-  // lấy sản phẩm hiển thị theo limit
+
+  // Lấy sản phẩm hiển thị theo limit
   const visibleProducts = sortedProducts.slice(0, visibleCount);
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -94,13 +177,14 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           {getCurrentCategoryName()}
         </h1>
-        
       </div>
 
       {/* Gắn FilterBar */}
-       <FilterBar category="phone" />
-       {/* Sort */}
+      <FilterBar category="phone" />
+      
+      {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
+      
       {/* Products Grid */}
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -124,9 +208,14 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
             <p className="text-gray-500 mb-4">
               Không có điện thoại nào trong danh mục "{getCurrentCategoryName()}"
             </p>
+            <div className="text-xs text-gray-400 mt-4">
+              <p>Debug: Tổng số sản phẩm: {allProducts?.length || 0}</p>
+              <p>Debug: Số danh mục: {categories?.length || 0}</p>
+            </div>
           </div>
         </div>
       )}
+      
       {/* Pagination Bar */}
       <PaginationBar
         total={sortedProducts.length}
@@ -142,7 +231,11 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
           </span>
         </div>
       )}
-      <CommentsSection productId={productId} productTitle={product?.title} />
+      
+      {/* Comments Section */}
+      {productId && (
+        <CommentsSection productId={productId} productTitle={product?.title} />
+      )}
     </div>
   );
 }

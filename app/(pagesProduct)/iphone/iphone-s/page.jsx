@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductCard from '../../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
@@ -8,53 +8,120 @@ import { useCategories } from '@/lib/firestore/categories/read';
 import FilterBar from '../../form/FilterBar';
 import SortBar from "../../form/Sort";
 import PaginationBar from "../../form/Panigation";
+import { getProduct } from '@/lib/firestore/products/read_server';
+import CommentsSection from '../../form/CommentsSection';
 
-export default function iPhone15Page({ params }) {
+export default function Page({ categoryFilter = null, params }) {
+  const { productId } = params;
+  const [product, setProduct] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
-  const [visibleCount, setVisibleCount] = useState(12);
+  const [visibleCount, setVisibleCount] = useState(3);
   const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
 
-  // Lọc sản phẩm iPhone 15 cụ thể - SỬA LẠI LOGIC
-  const iPhone15Products = allProducts?.filter(product => {
-    const brand = brands?.find(b => b.id === product.brandId);
+  // Lấy product data bất đồng bộ
+  useEffect(() => {
+    if (productId) {
+      const fetchProduct = async () => {
+        try {
+          const productData = await getProduct({ id: productId });
+          setProduct(productData);
+        } catch (error) {
+          console.error("Error fetching product:", error);
+        }
+      };
+      fetchProduct();
+    }
+  }, [productId]);
+
+  // Hàm helper để tìm category (bao gồm cả subcategories)
+  const findCategoryById = (categoryId) => {
+    if (!categories) return null;
     
-    // Kiểm tra brand có phải Apple không
-    const isApple = brand?.name?.toLowerCase().includes('apple') || 
-                   brand?.name?.toLowerCase().includes('iphone');
+    for (const category of categories) {
+      if (category.id === categoryId) {
+        return category;
+      }
+      // Tìm trong subcategories
+      if (category.children) {
+        const subCategory = category.children.find(child => child.id === categoryId);
+        if (subCategory) {
+          return subCategory;
+        }
+      }
+    }
+    return null;
+  };
+
+  // Lọc sản phẩm điện thoại với logic cải thiện
+  const products = allProducts?.filter(product => {
+    const category = findCategoryById(product.categoryId);
     
-    // Kiểm tra tên sản phẩm có chứa iPhone 15 không
-    const isIPhone15 = product.title?.toLowerCase().includes('iphone 15') ||
-                      product.title?.toLowerCase().includes('iphone15') ||
-                      product.model?.toLowerCase().includes('15') ||
-                      product.name?.toLowerCase().includes('iphone 15');
+    if (!category) return false;
     
-    return isApple && isIPhone15;
+    // Kiểm tra nhiều điều kiện
+    const categoryName = category.name?.toLowerCase() || '';
+    const isPhone = categoryName.includes('điện thoại') || 
+                   categoryName.includes('phone') ||
+                   categoryName.includes('mobile') ||
+                   product.type === 'phone' ||
+                   product.productType === 'phone' ||
+                   product.category === 'phone';
+    
+    return isPhone;
   }) || [];
 
-  // Debug: In ra để kiểm tra
-  console.log('All products:', allProducts?.length);
-  console.log('Brands:', brands?.map(b => ({ id: b.id, name: b.name })));
-  console.log('Filtered iPhone 15:', iPhone15Products?.length);
-  console.log('iPhone 15 Products:', iPhone15Products);
+  
 
-  // Sắp xếp sản phẩm
-  const sortedProducts = [...iPhone15Products].sort((a, b) => {
-    switch(sort) {
-      case "priceAsc":
-        return a.price - b.price;
-      case "priceDesc":
-        return b.price - a.price;
-      case "sale":
-        return (b.discount || 0) - (a.discount || 0);
-      case "newest":
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      default:
-        return 0;
+  const getProductsByCategory = () => {
+    if (!products || !categories) return [];
+    if (categoryFilter) {
+      return products.filter(product => {
+        const category = findCategoryById(product.categoryId);
+        return category?.name === categoryFilter;
+      });
     }
+    return products; 
+  };
+
+  // Sắp xếp theo chọn tiêu chí
+  const filteredProducts = getProductsByCategory();
+  
+  // Sắp xếp theo sort
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sort === "priceAsc") {
+      return (a.price || 0) - (b.price || 0);
+    }
+    if (sort === "priceDesc") {
+      return (b.price || 0) - (a.price || 0);
+    }
+    if (sort === "sale") {
+      return (b.discount || 0) - (a.discount || 0);
+    }
+    return 0; // mặc định "popular" chưa xử lý
   });
 
+  // Chọn tiêu chí
+  const getCurrentCategoryName = () => {
+    if (categoryFilter) {
+      return categoryFilter;
+    }
+    return 'Điện thoại'; 
+  };
+
+  const handleProductSelect = (productId) => {
+    setSelectedProducts(prev => {
+      if (prev.includes(productId)) {
+        return prev.filter(id => id !== productId);
+      } else {
+        return [...prev, productId];
+      }
+    });
+  };
+
+  // Lấy sản phẩm hiển thị theo limit
   const visibleProducts = sortedProducts.slice(0, visibleCount);
 
   if (isLoading) {
@@ -63,7 +130,7 @@ export default function iPhone15Page({ params }) {
         <div className="text-center">
           <div className="inline-flex items-center gap-2">
             <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-            <span>Đang tải iPhone 15...</span>
+            <span>Đang tải sản phẩm...</span>
           </div>
         </div>
       </div>
@@ -72,112 +139,69 @@ export default function iPhone15Page({ params }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumb Navigation */}
+      {/* Header với tên danh mục */}
       <div className="mb-6">
-        <nav className="text-sm breadcrumbs mb-4">
-          <ol className="list-none p-0 inline-flex">
-            <li className="flex items-center">
-              <a href="/" className="text-blue-600 hover:text-blue-800">Trang chủ</a>
-              <span className="mx-2 text-gray-400">/</span>
-            </li>
-            <li className="flex items-center">
-              <a href="/products" className="text-blue-600 hover:text-blue-800">Điện thoại</a>
-              <span className="mx-2 text-gray-400">/</span>
-            </li>
-            <li className="flex items-center">
-              <a href="/products/iphone" className="text-blue-600 hover:text-blue-800">iPhone</a>
-              <span className="mx-2 text-gray-400">/</span>
-            </li>
-            <li className="text-gray-500">iPhone 15</li>
-          </ol>
-        </nav>
-        
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-            <span className="text-white font-bold text-lg">15</span>
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-1">
-              iPhone 15 Series
-            </h1>
-            <p className="text-gray-600">
-              Khám phá iPhone 15 mới nhất với chip A17 Pro và camera tiên tiến
-            </p>
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{iPhone15Products.length}</div>
-            <div className="text-sm text-gray-600">Sản phẩm</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {iPhone15Products.filter(p => p.discount > 0).length}
-            </div>
-            <div className="text-sm text-gray-600">Đang giảm giá</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">
-              {iPhone15Products.length > 0 ? 
-                Math.min(...iPhone15Products.map(p => p.price)).toLocaleString() + 'đ' 
-                : '0đ'
-              }
-            </div>
-            <div className="text-sm text-gray-600">Giá từ</div>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          {getCurrentCategoryName()}
+        </h1>
       </div>
 
-      {/* Filter và Sort */}
-      <FilterBar category="iphone-15" />
+      {/* Gắn FilterBar */}
+      <FilterBar category="phone" />
+      
+      {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
-
+      
       {/* Products Grid */}
-      {iPhone15Products.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+      {filteredProducts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {visibleProducts.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              brands={brands}
-              categories={categories}
-              allowedProductTypes={['phone', 'iPhone']}
-            />
+            <div key={product.id} className="relative">
+              <ProductCard
+                product={product}
+                brands={brands}
+                categories={categories}
+                allowedProductTypes={['phone']}
+              />
+            </div>
           ))}
         </div>
       ) : (
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
-            <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-            </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Chưa có iPhone 15
+              Không tìm thấy điện thoại phù hợp
             </h3>
             <p className="text-gray-500 mb-4">
-              Hiện tại chưa có iPhone 15 nào trong kho hàng
+              Không có điện thoại nào trong danh mục "{getCurrentCategoryName()}"
             </p>
-            <a 
-              href="/products/iphone" 
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Xem tất cả iPhone
-            </a>
+            <div className="text-xs text-gray-400 mt-4">
+              <p>Debug: Tổng số sản phẩm: {allProducts?.length || 0}</p>
+              <p>Debug: Số danh mục: {categories?.length || 0}</p>
+            </div>
           </div>
         </div>
       )}
+      
+      {/* Pagination Bar */}
+      <PaginationBar
+        total={sortedProducts.length}
+        currentCount={visibleProducts.length}
+        onLoadMore={() => setVisibleCount((prev) => prev + 12)}
+      />
 
-      {/* Pagination */}
-      {iPhone15Products.length > 0 && (
-        <PaginationBar
-          total={sortedProducts.length}
-          currentCount={visibleProducts.length}
-          onLoadMore={() => setVisibleCount((prev) => prev + 12)}
-        />
+      {/* Hiển thị số lượng đã chọn */}
+      {selectedProducts.length > 0 && (
+        <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          <span className="font-medium">
+            Đã chọn: {selectedProducts.length} sản phẩm
+          </span>
+        </div>
+      )}
+      
+      {/* Comments Section */}
+      {productId && (
+        <CommentsSection productId={productId} productTitle={product?.title} />
       )}
     </div>
   );

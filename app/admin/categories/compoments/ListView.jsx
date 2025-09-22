@@ -22,21 +22,6 @@ export default function ListView() {
         return <div>{error}</div>
     }
 
-    // Tổ chức categories thành cấu trúc cha-con
-    const organizeCategories = (categories) => {
-        if (!categories) return [];
-        
-        const parentCategories = categories.filter(cat => !cat.parentId);
-        const childCategories = categories.filter(cat => cat.parentId);
-        
-        return parentCategories.map(parent => ({
-            ...parent,
-            children: childCategories.filter(child => child.parentId === parent.id)
-        }));
-    };
-
-    const organizedCategories = organizeCategories(categories);
-
     const toggleExpand = (categoryId) => {
         const newExpanded = new Set(expandedCategories);
         if (newExpanded.has(categoryId)) {
@@ -52,12 +37,12 @@ export default function ListView() {
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">Quản lý thể loại</h1>
                 <Chip color="primary" variant="flat">
-                    {categories?.length || 0} thể loại
+                    {categories?.length || 0} thể loại cha
                 </Chip>
             </div>
             
             <div className="space-y-3">
-                {organizedCategories?.map((parent) => (
+                {categories?.map((parent) => (
                     <ParentCategoryCard 
                         key={parent.id} 
                         parent={parent} 
@@ -75,9 +60,10 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
     const router = useRouter();
     
     const handleDelete = async (categoryId) => {
-        if (!confirm("Bạn có chắc chắn muốn xoá Thể loại này không?")) return;
+        if (!confirm("Bạn có chắc chắn muốn xoá Thể loại này không? Tất cả thể loại con cũng sẽ bị xoá.")) return;
         setIsDeleting(true);
         try {
+            // Xóa parent category (không cần truyền parentId)
             await deleteCategory({ id: categoryId });
             toast.success("Xoá Thể loại thành công");
         } catch (error) {
@@ -102,9 +88,9 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
                     <button
                         onClick={onToggleExpand}
                         className="p-1 hover:bg-white/50 rounded-lg transition-colors"
-                        disabled={parent.children?.length === 0}
+                        disabled={!parent.children || parent.children.length === 0}
                     >
-                        {parent.children?.length > 0 ? (
+                        {parent.children && parent.children.length > 0 ? (
                             isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />
                         ) : (
                             <div className="w-5 h-5" />
@@ -123,7 +109,7 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
                             <Chip size="sm" color="primary" variant="flat">
                                 Thể loại cha
                             </Chip>
-                            {parent.children?.length > 0 && (
+                            {parent.children && parent.children.length > 0 && (
                                 <Chip size="sm" color="success" variant="flat">
                                     {parent.children.length} Thể loại con
                                 </Chip>
@@ -142,7 +128,7 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
                         variant="flat"
                         startContent={<Plus size={16} />}
                     >
-                        Thêm
+                        Thêm con
                     </Button>
                     <Button
                         onClick={() => handleUpdate(parent.id)}
@@ -169,7 +155,7 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
             </div>
             
             {/* Content - Thể loại con */}
-            {isExpanded && parent.children?.length > 0 && (
+            {isExpanded && parent.children && parent.children.length > 0 && (
                 <div className="bg-gray-50 p-4">
                     <div className="grid gap-3">
                         {parent.children.map((child) => (
@@ -177,6 +163,7 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
                                 key={child.id} 
                                 child={child} 
                                 parentName={parent.name}
+                                parentId={parent.id}
                             />
                         ))}
                     </div>
@@ -184,7 +171,7 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
             )}
             
             {/* Empty state khi không có con */}
-            {isExpanded && parent.children?.length === 0 && (
+            {isExpanded && (!parent.children || parent.children.length === 0) && (
                 <div className="p-6 text-center text-gray-500">
                     <p className="mb-3">Chưa có thể loại con nào</p>
                     <Button
@@ -202,7 +189,7 @@ function ParentCategoryCard({ parent, isExpanded, onToggleExpand }) {
     );
 }
 
-function ChildCategoryCard({ child, parentName }) {
+function ChildCategoryCard({ child, parentName, parentId }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
     
@@ -210,7 +197,8 @@ function ChildCategoryCard({ child, parentName }) {
         if (!confirm("Bạn có chắc chắn muốn xoá Thể loại con này không?")) return;
         setIsDeleting(true);
         try {
-            await deleteCategory({ id: child.id });
+            // Xóa subcategory với parentId
+            await deleteCategory({ id: child.id, parentId: parentId });
             toast.success("Xoá Thể loại con thành công");
         } catch (error) {
             toast.error(error?.message);
@@ -219,7 +207,7 @@ function ChildCategoryCard({ child, parentName }) {
     };
     
     const handleUpdate = () => {
-        router.push(`/admin/categories?id=${child.id}`);
+        router.push(`/admin/categories?id=${child.id}&parentId=${parentId}`);
     }
 
     return (
