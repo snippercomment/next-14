@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import ProductCard from '../form/ProductCard';
+import ProductCard from '../../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
-import FilterBar from '../form/FilterBar';
-import SortBar from "../form/Sort";
-import PaginationBar from "../form/Panigation";
+import FilterBar from '../../form/FilterBar';
+import SortBar from "../../form/Sort";
+import PaginationBar from "../../form/Panigation";
 import { getProduct } from '@/lib/firestore/products/read_server';
-import CommentsSection from '../form/CommentsSection';
+import CommentsSection from '../../form/CommentsSection';
 
 export default function Page({ categoryFilter = null, params }) {
   const { productId } = params;
@@ -55,56 +55,25 @@ export default function Page({ categoryFilter = null, params }) {
     return null;
   };
 
-  // Lấy tất cả categoryIds liên quan đến điện thoại
-  const getPhoneCategoryIds = () => {
-    if (!categories) return [];
-    
-    const phoneIds = [];
-    
-    categories.forEach(parent => {
-      const parentName = parent.name?.toLowerCase() || '';
-      const isPhoneParent = parentName.includes('điện thoại') || 
-                           parentName.includes('phone') ||
-                           parentName.includes('mobile') ||
-                           parentName.includes('iphone');
-      
-      if (isPhoneParent) {
-        // Thêm parent category id (sản phẩm có thể được gán trực tiếp vào parent)
-        phoneIds.push(parent.id);
-        
-        // Thêm tất cả children category ids
-        if (parent.children && parent.children.length > 0) {
-          parent.children.forEach(child => {
-            phoneIds.push(child.id);
-          });
-        }
-      }
-    });
-    
-    return phoneIds;
-  };
-
-  // Lấy tất cả sản phẩm điện thoại
+  // Lọc sản phẩm điện thoại với logic cải thiện
   const products = allProducts?.filter(product => {
-    if (!product) return false;
+    const category = findCategoryById(product.categoryId);
     
-    const phoneCategoryIds = getPhoneCategoryIds();
+    if (!category) return false;
     
-    // Kiểm tra theo categoryId (có thể là parent hoặc child category)
-    const isInPhoneCategory = phoneCategoryIds.includes(product.categoryId);
+    // Kiểm tra nhiều điều kiện
+    const categoryName = category.name?.toLowerCase() || '';
+    const isPhone = categoryName.includes('điện thoại') || 
+                   categoryName.includes('xiaomi') ||
+                   
+                   product.type === 'xiaomi' ||
+                   product.productType === 'xiaomi' ||
+                   product.category === 'xiaomi';
     
-    
-    
-    // Kiểm tra theo tên sản phẩm
-    const productName = product.title?.toLowerCase() || product.name?.toLowerCase() || '';
-    const isPhoneByName = productName.includes('iphone') || 
-                          productName.includes('samsung') ||
-                          productName.includes('oppo') ||
-                          productName.includes('vivo') ||
-                          productName.includes('phone');
-    
-    return isInPhoneCategory || isPhoneByName;
+    return isPhone;
   }) || [];
+
+  
 
   const getProductsByCategory = () => {
     if (!products || !categories) return [];
@@ -131,7 +100,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (sort === "sale") {
       return (b.discount || 0) - (a.discount || 0);
     }
-    return 0;
+    return 0; 
   });
 
   // Chọn tiêu chí
@@ -139,7 +108,17 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Tất cả điện thoại'; 
+    return 'Xiaomi'; 
+  };
+
+  const handleProductSelect = (productId) => {
+    setSelectedProducts(prev => {
+      if (prev.includes(productId)) {
+        return prev.filter(id => id !== productId);
+      } else {
+        return [...prev, productId];
+      }
+    });
   };
 
   // Lấy sản phẩm hiển thị theo limit
@@ -196,7 +175,7 @@ export default function Page({ categoryFilter = null, params }) {
             <p className="text-gray-500 mb-4">
               Không có điện thoại nào trong danh mục "{getCurrentCategoryName()}"
             </p>
-           
+            
           </div>
         </div>
       )}
@@ -218,7 +197,7 @@ export default function Page({ categoryFilter = null, params }) {
       )}
       
       {/* Comments Section */}
-     <CommentsSection productId="general-phones" productTitle={getCurrentCategoryName()} />
+     <CommentsSection productId="general-iphones" productTitle={getCurrentCategoryName()} />
     </div>
   );
 }

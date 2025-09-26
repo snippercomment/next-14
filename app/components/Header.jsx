@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { UserCircle2, ShoppingBag, Menu, X, ChevronDown, Smartphone, Laptop, Headphones, Home, Wrench } from "lucide-react";
+import { UserCircle2, ShoppingBag, Menu, X, ChevronDown, Smartphone, Laptop, Headphones, Home, Mouse  } from "lucide-react";
 import { useState } from "react";
 import LogoutButton from "./LogoutButton";
 import HeaderClientButtons from "./HeaderClientButtons";
@@ -28,13 +28,10 @@ export default function Header() {
       icon: <Smartphone size={16} />,
       subcategories: [
         { name: "iPhone", link: "/iphone/iphone-s" },
-        { name: "Samsung", link: "/samsung" },
-        { name: "Xiaomi", link: "/xiaomi" },
-        { name: "OPPO", link: "/oppo" },
-        { name: "realme", link: "/realme" },
-        { name: "TECNO", link: "/tecno" },
-        { name: "Honor", link: "/honor" },
-        { name: "vivo", link: "/vivo" }
+        { name: "Samsung", link: "/iphone/samsung" },
+        { name: "Xiaomi", link: "/iphone/xiaomi" },
+        { name: "OPPO", link: "/iphone/oppo" },    
+        { name: "Vivo", link: "/iphone/vivo" }
       ]
     },
     { 
@@ -42,13 +39,13 @@ export default function Header() {
       link: "/laptop", 
       icon: <Laptop size={16} />,
       subcategories: [
-        { name: "MacBook", link: "/macbook" },
-        { name: "Dell", link: "/dell" },
-        { name: "HP", link: "/hp" },
-        { name: "Asus", link: "/asus" },
-        { name: "Lenovo", link: "/lenovo" },
-        { name: "Acer", link: "/acer" },
-        { name: "MSI", link: "/msi" }
+        { name: "MacBook", link: "/laptop/macbook" },
+        { name: "Dell", link: "/laptop/dell" },
+        { name: "HP", link: "/laptop/hp" },
+        { name: "Asus", link: "/laptop/asus" },
+        { name: "Lenovo", link: "/laptop/lenovo" },
+        { name: "Acer", link: "/laptop/acer" },
+        { name: "MSI", link: "/laptop/msi" }
       ]
     },
     { 
@@ -57,12 +54,15 @@ export default function Header() {
       icon: <Headphones size={16} />
     },
     { 
-      name: "Phụ kiện", 
-      link: "/accessories", 
-      icon: <Wrench size={16} />,
+      name: "Chuột", 
+      link: "/mouse", 
+      icon: <Mouse size={16} />,
       subcategories: [
-        { name: "Chuột", link: "/mouse" },
-        { name: "Bàn phím", link: "/keyboard" }
+        { name: "hyper", link: "/mouse/hyper" },
+        { name: "gaming", link: "/mouse/gaming" },
+        { name: "logitech", link: "/mouse/logitech" },
+        { name: "razer", link: "/mouse/razer" },
+        { name: "corsair", link: "/mouse/corsair" },
       ]
     }
   ];

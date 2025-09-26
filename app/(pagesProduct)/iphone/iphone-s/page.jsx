@@ -100,7 +100,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (sort === "sale") {
       return (b.discount || 0) - (a.discount || 0);
     }
-    return 0; // mặc định "popular" chưa xử lý
+    return 0; 
   });
 
   // Chọn tiêu chí
@@ -108,7 +108,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Điện thoại'; 
+    return 'Iphone'; 
   };
 
   const handleProductSelect = (productId) => {
@@ -175,10 +175,7 @@ export default function Page({ categoryFilter = null, params }) {
             <p className="text-gray-500 mb-4">
               Không có điện thoại nào trong danh mục "{getCurrentCategoryName()}"
             </p>
-            <div className="text-xs text-gray-400 mt-4">
-              <p>Debug: Tổng số sản phẩm: {allProducts?.length || 0}</p>
-              <p>Debug: Số danh mục: {categories?.length || 0}</p>
-            </div>
+            
           </div>
         </div>
       )}
@@ -200,9 +197,7 @@ export default function Page({ categoryFilter = null, params }) {
       )}
       
       {/* Comments Section */}
-      {productId && (
-        <CommentsSection productId={productId} productTitle={product?.title} />
-      )}
+      <CommentsSection productId="general-iphones" productTitle={getCurrentCategoryName()} />
     </div>
   );
 }
