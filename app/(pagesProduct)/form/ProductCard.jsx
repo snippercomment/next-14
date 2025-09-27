@@ -5,6 +5,9 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+import AuthContextProvider from "@/contexts/AuthContext"; 
+import FavoriteButton from "@/app/components/FavoriteButton";
+
 export default function ProductCard({ product, brands, categories, allowedProductTypes = null }) {
     const [imageError, setImageError] = useState(false);
 
@@ -128,7 +131,12 @@ export default function ProductCard({ product, brands, categories, allowedProduc
                             </span>
                         )}
                     </div>
-
+                    {/* Favorite Button */}
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <AuthContextProvider>
+                            <FavoriteButton productId={product?.id} />
+                        </AuthContextProvider>
+                    </div>
                     {/* Hình ảnh */}
                     <div className="w-full h-full flex items-center justify-center">
                         {!imageError ? (
