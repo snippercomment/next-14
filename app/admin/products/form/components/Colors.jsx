@@ -568,7 +568,30 @@ export const phoneColors = [
         title: "Corsair RGB",
         hexColor: "#FF00FF",
         category: "corsair"
-    }
+    },
+    // Corsair Mouse Gaming Editions
+{
+    id: "gaming-red",
+    name: "Gaming Đỏ",
+    title: "Gaming Đỏ",
+    hexColor: "#FF0000", 
+    category: "gaming"
+},
+{
+    id: "gaming-blue",
+    name: "Gaming Xanh",
+    title: "Gaming Xanh",
+    hexColor: "#1E90FF", 
+    category: "gaming"
+},
+{
+    id: "gaming-neon",
+    name: "Gaming Neon",
+    title: "Gaming Neon",
+    hexColor: "#39FF14", 
+    category: "gaming"
+}
+
 ];
 
 // iPhone storage options
