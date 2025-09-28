@@ -58,11 +58,11 @@ export default function Header() {
       link: "/mouse", 
       icon: <Mouse size={16} />,
       subcategories: [
-        { name: "hyper", link: "/mouse/hyper" },
-        { name: "gaming", link: "/mouse/gaming" },
-        { name: "logitech", link: "/mouse/logitech" },
-        { name: "razer", link: "/mouse/razer" },
-        { name: "corsair", link: "/mouse/corsair" },
+        { name: "Hyper", link: "/mouse/hyper" },
+        { name: "Gaming", link: "/mouse/gaming" },
+        { name: "Logitech", link: "/mouse/logitech" },
+        { name: "Razer", link: "/mouse/razer" },
+        { name: "Corsair", link: "/mouse/corsair" },
       ]
     }
   ];
