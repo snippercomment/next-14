@@ -17,6 +17,7 @@ export default function Page({ categoryFilter = null, params }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(3);
+  const [filters, setFilters] = useState({});
   const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
@@ -35,6 +36,13 @@ export default function Page({ categoryFilter = null, params }) {
       fetchProduct();
     }
   }, [productId]);
+
+  // Hàm xử lý khi filter thay đổi
+  const handleFilterChange = (newFilters) => {
+    console.log("Filters applied:", newFilters); // Debug log
+    setFilters(newFilters);
+    setVisibleCount(3); // Reset về 3 sản phẩm đầu khi filter
+  };
 
   // Hàm helper để tìm category (bao gồm cả subcategories)
   const findCategoryById = (categoryId) => {
@@ -69,10 +77,8 @@ export default function Page({ categoryFilter = null, params }) {
                            parentName.includes('iphone');
       
       if (isPhoneParent) {
-        // Thêm parent category id (sản phẩm có thể được gán trực tiếp vào parent)
         phoneIds.push(parent.id);
         
-        // Thêm tất cả children category ids
         if (parent.children && parent.children.length > 0) {
           parent.children.forEach(child => {
             phoneIds.push(child.id);
@@ -89,13 +95,8 @@ export default function Page({ categoryFilter = null, params }) {
     if (!product) return false;
     
     const phoneCategoryIds = getPhoneCategoryIds();
-    
-    // Kiểm tra theo categoryId (có thể là parent hoặc child category)
     const isInPhoneCategory = phoneCategoryIds.includes(product.categoryId);
     
-    
-    
-    // Kiểm tra theo tên sản phẩm
     const productName = product.title?.toLowerCase() || product.name?.toLowerCase() || '';
     const isPhoneByName = productName.includes('iphone') || 
                           productName.includes('samsung') ||
@@ -106,15 +107,75 @@ export default function Page({ categoryFilter = null, params }) {
     return isInPhoneCategory || isPhoneByName;
   }) || [];
 
+  // Hàm extract số từ chuỗi storage (ví dụ: "128GB" -> 128)
+  const extractStorageValue = (storageStr) => {
+    if (!storageStr) return 0;
+    const str = String(storageStr).toLowerCase();
+    
+    // Tìm số và đơn vị
+    const match = str.match(/(\d+)\s*(gb|tb)/i);
+    if (!match) return 0;
+    
+    const value = parseInt(match[1]);
+    const unit = match[2].toLowerCase();
+    
+    // Chuyển TB sang GB để so sánh
+    return unit === 'tb' ? value * 1024 : value;
+  };
+
   const getProductsByCategory = () => {
     if (!products || !categories) return [];
+    
+    let filtered = products;
+    
+    // Lọc theo category nếu có
     if (categoryFilter) {
-      return products.filter(product => {
+      filtered = filtered.filter(product => {
         const category = findCategoryById(product.categoryId);
         return category?.name === categoryFilter;
       });
     }
-    return products; 
+    
+    // Áp dụng các filter
+    if (Object.keys(filters).length > 0) {
+      filtered = filtered.filter(product => {
+        // Lọc theo giá
+        if (filters.maxPrice && filters.maxPrice < 97190000) {
+          if (product.price > filters.maxPrice) {
+            console.log(`Product ${product.title} filtered out by price: ${product.price} > ${filters.maxPrice}`);
+            return false;
+          }
+        }
+        
+        // Lọc theo bộ nhớ trong
+        if (filters.memory) {
+          // Lấy storage từ nhiều nguồn có thể
+          const productStorage = product.storage || 
+                                product.specifications?.storage || 
+                                product.memory || 
+                                product.capacity ||
+                                '';
+          
+          const productStorageValue = extractStorageValue(productStorage);
+          const filterStorageValue = extractStorageValue(filters.memory);
+          
+          console.log(`Checking storage for ${product.title}:`, {
+            raw: productStorage,
+            productValue: productStorageValue,
+            filterValue: filterStorageValue
+          });
+          
+          // So sánh số liệu
+          if (productStorageValue !== filterStorageValue) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+    }
+    
+    return filtered;
   };
 
   // Sắp xếp theo chọn tiêu chí
@@ -165,10 +226,20 @@ export default function Page({ categoryFilter = null, params }) {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           {getCurrentCategoryName()}
         </h1>
+        <p className="text-sm text-gray-600">
+          Tìm thấy {sortedProducts.length} sản phẩm
+          {Object.keys(filters).length > 0 && (
+            <span className="ml-2 text-blue-600">
+              (Đã lọc: {Object.entries(filters).filter(([k, v]) => k !== 'maxPrice' || v < 97190000).map(([k, v]) => 
+                k === 'maxPrice' ? `< ${(v/1000000).toFixed(0)}tr` : v
+              ).join(', ')})
+            </span>
+          )}
+        </p>
       </div>
 
       {/* Gắn FilterBar */}
-      <FilterBar category="phone" />
+      <FilterBar category="phone" onFilterChange={handleFilterChange} />
       
       {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
@@ -194,9 +265,11 @@ export default function Page({ categoryFilter = null, params }) {
               Không tìm thấy điện thoại phù hợp
             </h3>
             <p className="text-gray-500 mb-4">
-              Không có điện thoại nào trong danh mục "{getCurrentCategoryName()}"
+              {Object.keys(filters).length > 0 
+                ? "Không có sản phẩm nào phù hợp với bộ lọc của bạn. Hãy thử điều chỉnh bộ lọc."
+                : `Không có điện thoại nào trong danh mục "${getCurrentCategoryName()}"`
+              }
             </p>
-           
           </div>
         </div>
       )}
@@ -218,7 +291,7 @@ export default function Page({ categoryFilter = null, params }) {
       )}
       
       {/* Comments Section */}
-     <CommentsSection productId="general-phones" productTitle={getCurrentCategoryName()} />
+      <CommentsSection productId="general-phones" productTitle={getCurrentCategoryName()} />
     </div>
   );
 }

@@ -99,18 +99,13 @@ export const filterData = {
     { key: "stock", label: "Sẵn sàng", icon: Truck, type: "button" },
     { key: "price", label: "Xem theo giá", icon: DollarSign, type: "price" },
     {
-      key: "ram",
-      label: "Dung lượng RAM",
+      key: "memory",
+      label: "Bộ nhớ trong",
       icon: Funnel,
       type: "dropdown",
-      options: ["4GB", "6GB", "8GB", "12GB", "16GB"],
+      options: ["64GB", "128GB", "256GB", "512GB", "1TB"]
+
     },
-    {
-      key: "loaidienthoai",
-      label: "Loại điện thoại",
-      icon: Smartphone,
-      type: "dropdown",
-      options: ["iPhone", "Android"],
-    },
+   
   ],
 };
