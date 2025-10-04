@@ -5,9 +5,7 @@ import { useBrands } from "@/lib/firestore/brands/read";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function BrandProduct({ selectedBrand, onBrandChange }) {
-    // Lấy dữ liệu brands từ Firestore như trong admin
     const { data: brands } = useBrands();
-
     // Lấy pathname và router để navigation
     const pathname = usePathname();
     const router = useRouter();
@@ -25,7 +23,7 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
 
     // Lọc brands theo category hiện tại
     const filteredBrands = brands?.filter(brand => {
-        console.log(`Brand: ${brand.name}, Category: ${brand.category}, Status: ${brand.status}`);
+        
         // Chỉ lọc theo category, bỏ qua status vì status undefined
         return brand.category === currentCategory;
     }) || [];
@@ -101,4 +99,3 @@ export default function BrandProduct({ selectedBrand, onBrandChange }) {
 }
 
 
-// này là nối với những cái tia chính mục cha > con

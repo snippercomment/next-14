@@ -24,13 +24,32 @@ export default function ListView() {
     const { data: brands } = useBrands();
     const { data: categories } = useCategories();
 
+    // Hàm kiểm tra product có thuộc category (bao gồm cả children)
+    const productMatchesCategory = (product, categoryId) => {
+        if (!categoryId) return true;
+        
+        // Tìm category được chọn
+        const selectedCategory = categories?.find(cat => cat.id === categoryId);
+        if (!selectedCategory) return false;
+        
+        // Check xem product có categoryId trùng với parent
+        if (product.categoryId === categoryId) return true;
+        
+        // Check xem product có categoryId trùng với bất kỳ child nào
+        if (selectedCategory.children && selectedCategory.children.length > 0) {
+            return selectedCategory.children.some(child => child.id === product.categoryId);
+        }
+        
+        return false;
+    };
+
     // Load tất cả sản phẩm
     const {
         data: products,
         error,
         isLoading,
     } = useProducts({
-        pageLimit: 1000, // Load nhiều để có tất cả sản phẩm
+        pageLimit: 1000,
         lastSnapDoc: null,
     });
 
@@ -38,18 +57,21 @@ export default function ListView() {
     const filteredProducts = useMemo(() => {
         return products?.filter(product => {
             const matchBrand = !filterBrand || product.brandId === filterBrand;
-            const matchCategory = !filterCategory || product.categoryId === filterCategory;
             
-            // Tính toán số lượng còn lại (tự động trừ đi số lượng đã bán)
+            // Sử dụng hàm kiểm tra category mới
+            const matchCategory = productMatchesCategory(product, filterCategory);
+            
+            // Tính toán số lượng còn lại
             const soldQuantity = product.soldQuantity || product.orders || 0;
             const remainingStock = product.stock - soldQuantity;
             
             const matchStatus = !filterStatus || 
                 (filterStatus === "in-stock" && remainingStock > 0) ||
                 (filterStatus === "out-of-stock" && remainingStock <= 0);
+                
             return matchBrand && matchCategory && matchStatus;
         }) || [];
-    }, [products, filterBrand, filterCategory, filterStatus]);
+    }, [products, filterBrand, filterCategory, filterStatus, categories]);
 
     // Tính toán pagination
     const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -118,12 +140,12 @@ export default function ListView() {
                         selectedKeys={filterBrand ? [filterBrand] : []}
                         onSelectionChange={(keys) => {
                             const selected = Array.from(keys)[0];
-                            handleFilterChange('brand', selected === "all" ? "" : selected || "");
+                            handleFilterChange('brand', selected || "");
                         }}
                         className="w-full"
                         aria-label="Lọc theo thương hiệu"
                     >
-                        <SelectItem key="all" value="all">
+                        <SelectItem key="" value="">
                             Tất cả thương hiệu
                         </SelectItem>
                         {brands?.map((brand) => (
@@ -136,20 +158,20 @@ export default function ListView() {
 
                 <div className="flex flex-col gap-2 flex-1">
                     <label className="text-gray-700 text-sm font-medium">
-                        Lọc theo danh mục
+                        Lọc theo thể loại
                     </label>
                     <Select
-                        placeholder="Tất cả danh mục"
+                        placeholder="Tất cả thể loại"
                         selectedKeys={filterCategory ? [filterCategory] : []}
                         onSelectionChange={(keys) => {
                             const selected = Array.from(keys)[0];
-                            handleFilterChange('category', selected === "all" ? "" : selected || "");
+                            handleFilterChange('category', selected || "");
                         }}
                         className="w-full"
-                        aria-label="Lọc theo danh mục"
+                        aria-label="Lọc theo thể loại"
                     >
-                        <SelectItem key="all" value="all">
-                            Tất cả danh mục
+                        <SelectItem key="" value="">
+                            Tất cả thể loại
                         </SelectItem>
                         {categories?.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
@@ -168,12 +190,12 @@ export default function ListView() {
                         selectedKeys={filterStatus ? [filterStatus] : []}
                         onSelectionChange={(keys) => {
                             const selected = Array.from(keys)[0];
-                            handleFilterChange('status', selected === "all" ? "" : selected || "");
+                            handleFilterChange('status', selected || "");
                         }}
                         className="w-full"
                         aria-label="Lọc theo trạng thái"
                     >
-                        <SelectItem key="all" value="all">
+                        <SelectItem key="" value="">
                             Tất cả trạng thái
                         </SelectItem>
                         <SelectItem key="in-stock" value="in-stock">
@@ -256,7 +278,6 @@ export default function ListView() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Previous Button */}
                         <Button
                             isIconOnly
                             variant="flat"
@@ -269,98 +290,92 @@ export default function ListView() {
                             <ChevronLeft size={16} />
                         </Button>
 
-                        {/* Page Numbers */}
                         <div className="flex items-center gap-1">
-  {(() => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                            {(() => {
+                                const pageNumbers = [];
+                                const maxVisiblePages = 5;
+                                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-    // Điều chỉnh startPage nếu endPage đã tới maximum
-    if (endPage === totalPages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
+                                if (endPage === totalPages) {
+                                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                                }
 
-    // Hiển thị trang đầu và dấu ...
-    if (startPage > 1) {
-      pageNumbers.push(
-        <Button
-          key={1}
-          variant={currentPage === 1 ? "solid" : "flat"}
-          size="sm"
-          onPress={() => handlePageChange(1)}
-          className={`min-w-8 h-8 ${currentPage === 1
-              ? "bg-blue-600 text-white"
-              : "hover:bg-gray-100"
-            }`}
-        >
-          1
-        </Button>
-      );
+                                if (startPage > 1) {
+                                    pageNumbers.push(
+                                        <Button
+                                            key={1}
+                                            variant={currentPage === 1 ? "solid" : "flat"}
+                                            size="sm"
+                                            onPress={() => handlePageChange(1)}
+                                            className={`min-w-8 h-8 ${currentPage === 1
+                                                ? "bg-blue-600 text-white"
+                                                : "hover:bg-gray-100"
+                                                }`}
+                                        >
+                                            1
+                                        </Button>
+                                    );
 
-      if (startPage > 2) {
-        pageNumbers.push(
-          <span key="start-ellipsis" className="px-2 text-gray-400">
-            ...
-          </span>
-        );
-      }
-    }
+                                    if (startPage > 2) {
+                                        pageNumbers.push(
+                                            <span key="start-ellipsis" className="px-2 text-gray-400">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+                                }
 
-    // Hiển thị các trang ở giữa (bao gồm cả trang đầu và cuối nếu chúng nằm trong khoảng)
-    for (let i = startPage; i <= endPage; i++) {
-      // Chỉ thêm trang nếu chưa được thêm ở trên hoặc dưới
-      if ((i === 1 && startPage > 1) || (i === totalPages && endPage < totalPages)) {
-        continue;
-      }
-      
-      pageNumbers.push(
-        <Button
-          key={i}
-          variant={currentPage === i ? "solid" : "flat"}
-          size="sm"
-          onPress={() => handlePageChange(i)}
-          className={`min-w-8 h-8 ${currentPage === i
-              ? "bg-blue-600 text-white"
-              : "hover:bg-gray-100"
-            }`}
-        >
-          {i}
-        </Button>
-      );
-    }
+                                for (let i = startPage; i <= endPage; i++) {
+                                    if ((i === 1 && startPage > 1) || (i === totalPages && endPage < totalPages)) {
+                                        continue;
+                                    }
 
-    // Hiển thị dấu ... và trang cuối
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pageNumbers.push(
-          <span key="end-ellipsis" className="px-2 text-gray-400">
-            ...
-          </span>
-        );
-      }
+                                    pageNumbers.push(
+                                        <Button
+                                            key={i}
+                                            variant={currentPage === i ? "solid" : "flat"}
+                                            size="sm"
+                                            onPress={() => handlePageChange(i)}
+                                            className={`min-w-8 h-8 ${currentPage === i
+                                                ? "bg-blue-600 text-white"
+                                                : "hover:bg-gray-100"
+                                                }`}
+                                        >
+                                            {i}
+                                        </Button>
+                                    );
+                                }
 
-      pageNumbers.push(
-        <Button
-          key={totalPages}
-          variant={currentPage === totalPages ? "solid" : "flat"}
-          size="sm"
-          onPress={() => handlePageChange(totalPages)}
-          className={`min-w-8 h-8 ${currentPage === totalPages
-              ? "bg-blue-600 text-white"
-              : "hover:bg-gray-100"
-            }`}
-        >
-          {totalPages}
-        </Button>
-      );
-    }
+                                if (endPage < totalPages) {
+                                    if (endPage < totalPages - 1) {
+                                        pageNumbers.push(
+                                            <span key="end-ellipsis" className="px-2 text-gray-400">
+                                                ...
+                                            </span>
+                                        );
+                                    }
 
-    return pageNumbers;
-  })()}
-</div>
-                        {/* Next Button */}
+                                    pageNumbers.push(
+                                        <Button
+                                            key={totalPages}
+                                            variant={currentPage === totalPages ? "solid" : "flat"}
+                                            size="sm"
+                                            onPress={() => handlePageChange(totalPages)}
+                                            className={`min-w-8 h-8 ${currentPage === totalPages
+                                                ? "bg-blue-600 text-white"
+                                                : "hover:bg-gray-100"
+                                                }`}
+                                        >
+                                            {totalPages}
+                                        </Button>
+                                    );
+                                }
+
+                                return pageNumbers;
+                            })()}
+                        </div>
+
                         <Button
                             isIconOnly
                             variant="flat"
@@ -383,13 +398,11 @@ function Row({ item, index, brands, categories }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 
-    // Xác định loại sản phẩm
     const selectedBrand = brands?.find(brand => brand.id === item?.brandId);
     const selectedCategory = categories?.find(category => category.id === item?.categoryId);
     const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
     const categoryInfo = getProductCategoryInfo(productType);
 
-    // Tính toán số lượng còn lại (tự động trừ đi số lượng đã bán)
     const soldQuantity = item?.soldQuantity || item?.orders || 0;
     const remainingStock = item?.stock - soldQuantity;
 
@@ -410,7 +423,6 @@ function Row({ item, index, brands, categories }) {
         router.push(`/admin/products/form?id=${item?.id}`);
     };
 
-    // Hàm để định dạng tiền Việt Nam
     const formatCurrencyVND = (amount) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -419,7 +431,6 @@ function Row({ item, index, brands, categories }) {
         }).format(amount);
     };
 
-    // Hàm hiển thị dung lượng
     const renderStorages = () => {
         const storageField = categoryInfo.storageField;
         const storageData = item?.[storageField];
@@ -473,7 +484,6 @@ function Row({ item, index, brands, categories }) {
         }
     };
 
-    // Hàm hiển thị màu sắc
     const renderColors = () => {
         if (Array.isArray(item?.colorIds) && item.colorIds.length > 0) {
             const colors = item.colorIds.map(colorId => getColorById(colorId)).filter(Boolean);

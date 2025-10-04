@@ -10,52 +10,118 @@ import SortBar from "../form/Sort";
 import PaginationBar from "../form/Panigation";
 import CommentsSection from '../form/CommentsSection';
 import { getProduct } from '@/lib/firestore/products/read_server';
+import BrandProduct from '../form/BrandProduct'; 
 
-export default function Page({ categoryFilter = null ,params}) {
+
+export default function Page({ categoryFilter = null, params }) {
   const { productId } = params;
   const product = getProduct({ id: productId });
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(3);
+  const [filters, setFilters] = useState({});
+  const [selectedBrand, setSelectedBrand] = useState(''); 
   const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
 
-  const products = allProducts?.filter(product => {
-    const category = categories?.find(c => c.id === product.categoryId);
-    return category?.name?.toLowerCase().includes('Lap top') || 
-           category?.name?.toLowerCase().includes('laptop') ||
-           product.type === 'laptop' ||
-           product.productType === 'laptop';
-  }) || [];
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setVisibleCount(3);
+  };
 
+  const handleBrandChange = (brandId) => {
+    setSelectedBrand(brandId);
+    setVisibleCount(3);
+  };
+  const getLaptopCategoryIds = () => {
+    if (!categories) return [];
+    
+    const laptopIds = [];
+    
+    categories.forEach(parent => {
+      const parentName = parent.name?.toLowerCase() || '';
+      const isLaptopParent = parentName.includes('laptop');
+      
+      if (isLaptopParent) {
+        laptopIds.push(parent.id);
+        
+        if (parent.children && parent.children.length > 0) {
+          parent.children.forEach(child => {
+            laptopIds.push(child.id);
+          });
+        }
+      }
+    });
+    
+    return laptopIds;
+  };
+
+ const products = allProducts?.filter(product => {
+    if (!product) return false;
+    
+    const laptopCategoryIds = getLaptopCategoryIds();
+    const isInLaptopCategory = laptopCategoryIds.includes(product.categoryId);
+    
+    const productName = product.title?.toLowerCase() || product.name?.toLowerCase() || '';
+    const isLaptopByName = productName.includes('macbook') || 
+                          productName.includes('dell') ||
+                          productName.includes('hp') ||
+                          productName.includes('acer') ||
+                          productName.includes('lenovo') ||
+                          productName.includes('msi') ||
+                          productName.includes('laptop') ||
+                          productName.includes('asus');
+    
+    return isInLaptopCategory || isLaptopByName;
+  }) || [];
   const getProductsByCategory = () => {
     if (!products || !categories) return [];
+    
+    let filtered = products;
+    
     if (categoryFilter) {
-      return products.filter(product => {
+      filtered = filtered.filter(product => {
         const category = categories.find(c => c.id === product.categoryId);
         return category?.name === categoryFilter;
       });
     }
-    return products; 
+    
+    if (selectedBrand) {
+      filtered = filtered.filter(product => {
+        return product.brandId === selectedBrand;
+      });
+    }
+    
+    if (Object.keys(filters).length > 0) {
+      filtered = filtered.filter(product => {
+        if (filters.maxPrice && filters.maxPrice < 97190000) {
+          if (product.price > filters.maxPrice) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+    
+    return filtered;
   };
-// sắp xếp theo chọn tiêu chí
+
   const filteredProducts = getProductsByCategory();
-// sắp xếp theo sort
-const sortedProducts = [...filteredProducts].sort((a, b) => {
+  
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sort === "priceAsc") {
-      return a.price - b.price;
+      return (a.price || 0) - (b.price || 0);
     }
     if (sort === "priceDesc") {
-      return b.price - a.price;
+      return (b.price || 0) - (a.price || 0);
     }
     if (sort === "sale") {
       return (b.discount || 0) - (a.discount || 0);
     }
-    return 0; // mặc định "popular" chưa xử lý
+    return 0;
   });
 
-  // chọn tiêu chí
   const getCurrentCategoryName = () => {
     if (categoryFilter) {
       return categoryFilter;
@@ -72,8 +138,9 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
       }
     });
   };
-  // lấy sản phẩm hiển thị theo limit
+
   const visibleProducts = sortedProducts.slice(0, visibleCount);
+  
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -94,13 +161,23 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           {getCurrentCategoryName()}
         </h1>
-        
+       
       </div>
 
-      {/* Gắn FilterBar */}
-       <FilterBar category="laptop" />
-       {/* Sort */}
+      {/* BrandProduct component với styling responsive */}
+      <div className="mb-6 -mx-4 px-4 overflow-x-auto">
+        <BrandProduct 
+          selectedBrand={selectedBrand} 
+          onBrandChange={handleBrandChange}
+        />
+      </div>
+
+      {/* FilterBar */}
+      <FilterBar category="laptop" onFilterChange={handleFilterChange} />
+      
+      {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
+      
       {/* Products Grid */}
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -122,11 +199,15 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
               Không tìm thấy laptop phù hợp
             </h3>
             <p className="text-gray-500 mb-4">
-              Không có laptop nào trong danh mục "{getCurrentCategoryName()}"
+              {Object.keys(filters).length > 0 || selectedBrand
+                ? "Không có sản phẩm nào phù hợp với bộ lọc của bạn. Hãy thử điều chỉnh bộ lọc."
+                : `Không có laptop nào trong danh mục "${getCurrentCategoryName()}"`
+              }
             </p>
           </div>
         </div>
       )}
+      
       {/* Pagination Bar */}
       <PaginationBar
         total={sortedProducts.length}
@@ -142,6 +223,7 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
           </span>
         </div>
       )}
+      
       <CommentsSection productId={productId} productTitle={product?.title} />
     </div>
   );
