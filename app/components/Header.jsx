@@ -51,7 +51,11 @@ export default function Header() {
     { 
       name: "Tai nghe", 
       link: "/headphone", 
-      icon: <Headphones size={16} />
+      icon: <Headphones size={16} />,
+      subcategories:[
+        {name:"Sony",link: "/headphone/sony"},
+        {name:"Apple",link: "/headphone/apple"},
+      ]
     },
     { 
       name: "Chuột", 

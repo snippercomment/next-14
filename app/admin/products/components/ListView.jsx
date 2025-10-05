@@ -8,22 +8,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import { getColorById, getProductCategoryInfo, detectProductType } from "../form/components/Colors";
-import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
 
 const ITEMS_PER_PAGE = 5;
 
 export default function ListView() {
-    const [filterBrand, setFilterBrand] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
     const [filterCategory, setFilterCategory] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const router = useRouter();
 
-    // Lấy danh sách brand và category
-    const { data: brands } = useBrands();
     const { data: categories } = useCategories();
-
     // Hàm kiểm tra product có thuộc category (bao gồm cả children)
     const productMatchesCategory = (product, categoryId) => {
         if (!categoryId) return true;
@@ -54,24 +49,26 @@ export default function ListView() {
     });
 
     // Lọc dữ liệu sản phẩm
-    const filteredProducts = useMemo(() => {
-        return products?.filter(product => {
-            const matchBrand = !filterBrand || product.brandId === filterBrand;
+   const filteredProducts = useMemo(() => {
+    return products?.filter(product => {
+        // Tìm kiếm theo tên sản phẩm
+        const matchSearch = !searchQuery || 
+            product.title.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Sử dụng hàm kiểm tra category mới
+        const matchCategory = productMatchesCategory(product, filterCategory);
+        
+        // Tính toán số lượng còn lại
+        const soldQuantity = product.soldQuantity || product.orders || 0;
+        const remainingStock = product.stock - soldQuantity;
+        
+        const matchStatus = !filterStatus || 
+            (filterStatus === "in-stock" && remainingStock > 0) ||
+            (filterStatus === "out-of-stock" && remainingStock <= 0);
             
-            // Sử dụng hàm kiểm tra category mới
-            const matchCategory = productMatchesCategory(product, filterCategory);
-            
-            // Tính toán số lượng còn lại
-            const soldQuantity = product.soldQuantity || product.orders || 0;
-            const remainingStock = product.stock - soldQuantity;
-            
-            const matchStatus = !filterStatus || 
-                (filterStatus === "in-stock" && remainingStock > 0) ||
-                (filterStatus === "out-of-stock" && remainingStock <= 0);
-                
-            return matchBrand && matchCategory && matchStatus;
-        }) || [];
-    }, [products, filterBrand, filterCategory, filterStatus, categories]);
+        return matchSearch && matchCategory && matchStatus;
+    }) || [];
+}, [products, searchQuery, filterCategory, filterStatus, categories]);
 
     // Tính toán pagination
     const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -79,23 +76,17 @@ export default function ListView() {
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
-    // Reset về trang 1 khi filter thay đổi
     const handleFilterChange = (type, value) => {
-        setCurrentPage(1);
-        if (type === 'brand') {
-            setFilterBrand(value);
-        } else if (type === 'category') {
-            setFilterCategory(value);
-        } else if (type === 'status') {
-            setFilterStatus(value);
-        }
-    };
+    setCurrentPage(1);
+    if (type === 'search') {
+        setSearchQuery(value);
+    } else if (type === 'category') {
+        setFilterCategory(value);
+    } else if (type === 'status') {
+        setFilterStatus(value);
+    }
+};
 
-    // Xử lý chuyển trang
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
 
     if (isLoading) {
         return (
@@ -129,84 +120,73 @@ export default function ListView() {
                 </div>
             </div>
 
-            {/* Bộ lọc */}
-            <div className="flex flex-col md:flex-row gap-3 mb-4">
-                <div className="flex flex-col gap-2 flex-1">
-                    <label className="text-gray-700 text-sm font-medium">
-                        Lọc theo thương hiệu
-                    </label>
-                    <Select
-                        placeholder="Tất cả thương hiệu"
-                        selectedKeys={filterBrand ? [filterBrand] : []}
-                        onSelectionChange={(keys) => {
-                            const selected = Array.from(keys)[0];
-                            handleFilterChange('brand', selected || "");
-                        }}
-                        className="w-full"
-                        aria-label="Lọc theo thương hiệu"
-                    >
-                        <SelectItem key="" value="">
-                            Tất cả thương hiệu
-                        </SelectItem>
-                        {brands?.map((brand) => (
-                            <SelectItem key={brand.id} value={brand.id}>
-                                {brand.name}
-                            </SelectItem>
-                        ))}
-                    </Select>
-                </div>
+            
+           {/* Bộ lọc */}
+                <div className="flex flex-col md:flex-row gap-3 mb-4">
+                    <div className="flex flex-col gap-2 flex-1">
+                        <label className="text-gray-700 text-sm font-medium">
+                            Tìm kiếm sản phẩm
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Nhập tên sản phẩm..."
+                            value={searchQuery}
+                            onChange={(e) => handleFilterChange('search', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
 
-                <div className="flex flex-col gap-2 flex-1">
-                    <label className="text-gray-700 text-sm font-medium">
-                        Lọc theo thể loại
-                    </label>
-                    <Select
-                        placeholder="Tất cả thể loại"
-                        selectedKeys={filterCategory ? [filterCategory] : []}
-                        onSelectionChange={(keys) => {
-                            const selected = Array.from(keys)[0];
-                            handleFilterChange('category', selected || "");
-                        }}
-                        className="w-full"
-                        aria-label="Lọc theo thể loại"
-                    >
-                        <SelectItem key="" value="">
-                            Tất cả thể loại
-                        </SelectItem>
-                        {categories?.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                                {category.name}
+                    <div className="flex flex-col gap-2 flex-1">
+                        <label className="text-gray-700 text-sm font-medium">
+                            Lọc theo thể loại
+                        </label>
+                        <Select
+                            placeholder="Tất cả thể loại"
+                            selectedKeys={filterCategory ? [filterCategory] : []}
+                            onSelectionChange={(keys) => {
+                                const selected = Array.from(keys)[0];
+                                handleFilterChange('category', selected || "");
+                            }}
+                            className="w-full"
+                            aria-label="Lọc theo thể loại"
+                        >
+                            <SelectItem key="" value="">
+                                Tất cả thể loại
                             </SelectItem>
-                        ))}
-                    </Select>
-                </div>
+                            {categories?.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                    {category.name}
+                                </SelectItem>
+                            ))}
+                        </Select>
+                    </div>
 
-                <div className="flex flex-col gap-2 flex-1">
-                    <label className="text-gray-700 text-sm font-medium">
-                        Lọc theo trạng thái
-                    </label>
-                    <Select
-                        placeholder="Tất cả trạng thái"
-                        selectedKeys={filterStatus ? [filterStatus] : []}
-                        onSelectionChange={(keys) => {
-                            const selected = Array.from(keys)[0];
-                            handleFilterChange('status', selected || "");
-                        }}
-                        className="w-full"
-                        aria-label="Lọc theo trạng thái"
-                    >
-                        <SelectItem key="" value="">
-                            Tất cả trạng thái
-                        </SelectItem>
-                        <SelectItem key="in-stock" value="in-stock">
-                            Còn hàng
-                        </SelectItem>
-                        <SelectItem key="out-of-stock" value="out-of-stock">
-                            Hết hàng
-                        </SelectItem>
-                    </Select>
+                    <div className="flex flex-col gap-2 flex-1">
+                        <label className="text-gray-700 text-sm font-medium">
+                            Lọc theo trạng thái
+                        </label>
+                        <Select
+                            placeholder="Tất cả trạng thái"
+                            selectedKeys={filterStatus ? [filterStatus] : []}
+                            onSelectionChange={(keys) => {
+                                const selected = Array.from(keys)[0];
+                                handleFilterChange('status', selected || "");
+                            }}
+                            className="w-full"
+                            aria-label="Lọc theo trạng thái"
+                        >
+                            <SelectItem key="" value="">
+                                Tất cả trạng thái
+                            </SelectItem>
+                            <SelectItem key="in-stock" value="in-stock">
+                                Còn hàng
+                            </SelectItem>
+                            <SelectItem key="out-of-stock" value="out-of-stock">
+                                Hết hàng
+                            </SelectItem>
+                        </Select>
+                    </div>
                 </div>
-            </div>
 
             {/* Bảng dữ liệu */}
             <div className="overflow-x-auto">
@@ -232,7 +212,7 @@ export default function ListView() {
                                 Màu sắc
                             </th>
                             <th className="text-left py-3 px-4 font-medium text-gray-700">
-                                Số lượng ban đầu
+                                Số lượng
                             </th>
                             <th className="text-left py-3 px-4 font-medium text-gray-700">
                                 Còn lại
@@ -252,7 +232,6 @@ export default function ListView() {
                                     key={item.id}
                                     index={startIndex + index}
                                     item={item}
-                                    brands={brands}
                                     categories={categories}
                                 />
                             ))
@@ -394,13 +373,13 @@ export default function ListView() {
     );
 }
 
-function Row({ item, index, brands, categories }) {
+function Row({ item, index, categories }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
 
-    const selectedBrand = brands?.find(brand => brand.id === item?.brandId);
+    
     const selectedCategory = categories?.find(category => category.id === item?.categoryId);
-    const productType = detectProductType(selectedBrand?.name, selectedCategory?.name);
+    const productType = detectProductType(selectedCategory?.name);
     const categoryInfo = getProductCategoryInfo(productType);
 
     const soldQuantity = item?.soldQuantity || item?.orders || 0;

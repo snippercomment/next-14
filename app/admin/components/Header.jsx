@@ -70,7 +70,7 @@ export default function Header({ toggleSidebar, isCollapsed }) {
                             size="sm"
                             src={admin?.imageURL}
                             name={admin?.name || "Admin"}
-                            className="cursor-pointer hover:scale-105 transition-transform duration-200"
+                            className="cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
                         />
                     </div>
                 </div>

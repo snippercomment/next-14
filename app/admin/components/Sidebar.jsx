@@ -77,7 +77,7 @@ export default function CollapsibleSidebar() {
   return (
     <section
       className={`sticky top-0 flex flex-col gap-6 bg-white border-r px-3 py-4 h-screen overflow-hidden z-50 transition-all duration-300 ${
-        isCollapsed ? "w-[70px]" : "w-[240px]"
+        isCollapsed ? "w-[80px]" : "w-[240px]"
       }`}
     >
       {/* Logo + Toggle */}
@@ -85,9 +85,7 @@ export default function CollapsibleSidebar() {
         <div className={`flex items-center ${isCollapsed ? "justify-center w-full" : "justify-center flex-1"}`}>
           <button onClick={handleLogoClick} className="hover:opacity-80 focus:outline-none rounded">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">D</span>
-              </div>
+             
               {!isCollapsed && <span className="text-xl font-bold text-gray-800">Discount</span>}
             </div>
           </button>
@@ -97,7 +95,7 @@ export default function CollapsibleSidebar() {
         <button
           onClick={toggleSidebar}
           className="p-1.5 rounded-md hover:bg-gray-100 border border-gray-300 ml-2 flex-shrink-0"
-          title={isCollapsed ? "Mở rộng sidebar" : "Thu nhỏ sidebar"}
+          title={isCollapsed ? "Mở rộng" : "Thu nhỏ"}
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
