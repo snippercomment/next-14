@@ -23,9 +23,8 @@ import {
   MessageSquare,
   Calendar,
   Heart,
-  Edit,
-  MoreVertical,
-  Package
+  Package,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo } from "react";
@@ -53,7 +52,9 @@ export default function CommentsListView() {
         comment.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         comment.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         comment.productTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        comment.productId?.toLowerCase().includes(searchTerm.toLowerCase())
+        comment.productId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        comment.categoryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        comment.subCategoryName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -73,8 +74,6 @@ export default function CommentsListView() {
           return a.timestamp?.seconds - b.timestamp?.seconds;
         case "most_liked":
           return (b.likes || 0) - (a.likes || 0);
-        case "product":
-          return (a.productTitle || "").localeCompare(b.productTitle || "");
         default:
           return 0;
       }
@@ -91,15 +90,14 @@ export default function CommentsListView() {
   );
 
   const stats = useMemo(() => {
-    if (!comments) return { total: 0, replied: 0, notReplied: 0, totalLikes: 0, uniqueProducts: 0 };
+    if (!comments) return { total: 0, replied: 0, notReplied: 0, totalLikes: 0 };
     
     const total = comments.length;
     const replied = comments.filter(c => c.reply).length;
     const notReplied = total - replied;
     const totalLikes = comments.reduce((sum, c) => sum + (c.likes || 0), 0);
-    const uniqueProducts = new Set(comments.map(c => c.productId)).size;
     
-    return { total, replied, notReplied, totalLikes, uniqueProducts };
+    return { total, replied, notReplied, totalLikes };
   }, [comments]);
 
   return (
@@ -107,11 +105,11 @@ export default function CommentsListView() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Quản lý Bình luận</h1>
-        <p className="text-gray-600">Quản lý và trả lời các bình luận từ tất cả sản phẩm</p>
+       
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardBody className="flex flex-row items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -159,18 +157,6 @@ export default function CommentsListView() {
             </div>
           </CardBody>
         </Card>
-
-        <Card>
-          <CardBody className="flex flex-row items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Package className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Sản phẩm có BL</p>
-              <p className="text-2xl font-bold">{stats.uniqueProducts}</p>
-            </div>
-          </CardBody>
-        </Card>
       </div>
 
       {/* Filters */}
@@ -179,36 +165,41 @@ export default function CommentsListView() {
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
               <Input
+                label="Tìm kiếm"
                 placeholder="Tìm kiếm theo tên, nội dung hoặc sản phẩm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 startContent={<Search className="w-4 h-4" />}
                 isClearable
                 onClear={() => setSearchTerm("")}
+                aria-label="Tìm kiếm bình luận"
               />
             </div>
 
-            <Select
+           <Select
+              label="Trạng thái"
               placeholder="Trạng thái"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              selectedKeys={new Set([filterStatus])}
+              onSelectionChange={(keys) => setFilterStatus(Array.from(keys)[0])}
               className="w-40"
+              aria-label="Lọc theo trạng thái"
             >
-              <SelectItem key="all" value="all">Tất cả</SelectItem>
-              <SelectItem key="replied" value="replied">Đã trả lời</SelectItem>
-              <SelectItem key="not_replied" value="not_replied">Chưa trả lời</SelectItem>
+              <SelectItem key="all">Tất cả</SelectItem>
+              <SelectItem key="replied">Đã trả lời</SelectItem>
+              <SelectItem key="not_replied">Chưa trả lời</SelectItem>
             </Select>
 
             <Select
+              label="Sắp xếp"
               placeholder="Sắp xếp"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              selectedKeys={new Set([sortBy])}
+              onSelectionChange={(keys) => setSortBy(Array.from(keys)[0])}
               className="w-40"
+              aria-label="Sắp xếp bình luận"
             >
-              <SelectItem key="newest" value="newest">Mới nhất</SelectItem>
-              <SelectItem key="oldest" value="oldest">Cũ nhất</SelectItem>
-              <SelectItem key="most_liked" value="most_liked">Nhiều like nhất</SelectItem>
-              <SelectItem key="product" value="product">Theo sản phẩm</SelectItem>
+              <SelectItem key="newest">Mới nhất</SelectItem>
+              <SelectItem key="oldest">Cũ nhất</SelectItem>
+              <SelectItem key="most_liked">Nhiều like nhất</SelectItem>
             </Select>
           </div>
         </CardBody>
@@ -243,9 +234,6 @@ export default function CommentsListView() {
             <h3 className="text-lg font-semibold text-gray-600 mb-2">
               Không tìm thấy bình luận nào
             </h3>
-            <p className="text-gray-500">
-              Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
-            </p>
           </CardBody>
         </Card>
       )}
@@ -282,7 +270,6 @@ function CommentCard({ item, admins, currentUser }) {
     
     setIsReplying(true);
     try {
-      // Lấy thông tin admin từ database
       const currentAdmin = admins?.find(admin => admin.uid === currentUser?.uid || admin.email === currentUser?.email);
       
       await addCommentReply({
@@ -313,14 +300,51 @@ function CommentCard({ item, admins, currentUser }) {
     });
   };
 
-  // Tìm admin info từ admins array
   const getAdminInfo = (adminId) => {
     if (!admins || !adminId) return null;
     return admins.find(admin => admin.id === adminId || admin.uid === adminId);
   };
 
   const adminInfo = item?.reply?.adminId ? getAdminInfo(item.reply.adminId) : null;
+  const buildCategoryPath = () => {
+    const paths = [];
+    
+    // Thêm category chính
+    if (item?.categoryName) {
+      paths.push({
+        name: item.categoryName,
+        url: `/categories/${item.categoryId || item.categorySlug || ''}`,
+        icon: <Package className="w-3.5 h-3.5" />
+      });
+    }
+    
+  
+    if (item?.subCategoryName) {
+      paths.push({
+        name: item.subCategoryName,
+        url: `/categories/${item.categoryId || item.categorySlug || ''}/${item.subCategoryId || item.subCategorySlug || ''}`,
+      });
+    }
+    
+  
+    if (item?.productTitle) {
+      paths.push({
+        name: item.productTitle,
+        url: `/products/${item.productId}`,
+        isProduct: true
+      });
+    } else if (item?.productId) {
+      paths.push({
+        name: `#${item.productId}`,
+        url: `/products/${item.productId}`,
+        isProduct: true
+      });
+    }
+    
+    return paths;
+  };
 
+  const categoryPath = buildCategoryPath();
   return (
     <Card>
       <CardBody className="p-6">
@@ -334,7 +358,7 @@ function CommentCard({ item, admins, currentUser }) {
           
           <div className="flex-1">
             <div className="flex justify-between items-start mb-3">
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-lg">{item?.displayName}</h3>
                   {item?.reply ? (
@@ -353,7 +377,7 @@ function CommentCard({ item, admins, currentUser }) {
                   )}
                 </div>
                 
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-3">
                   <span className="text-sm text-gray-500">
                     <Calendar className="w-4 h-4 inline mr-1" />
                     {formatDate(item?.timestamp)}
@@ -364,14 +388,47 @@ function CommentCard({ item, admins, currentUser }) {
                   </span>
                 </div>
                 
-                {/* Product information */}
-                <div className="flex items-center gap-2 mb-2">
-                  <Package className="w-4 h-4 text-blue-500" />
-                  <Link href={`/products/${item?.productId}`}>
-                    <span className="text-sm text-blue-600 hover:underline">
-                      {item?.productTitle || `Sản phẩm #${item?.productId?.slice(-8)}`}
-                    </span>
-                  </Link>
+                {/* Category Hierarchy Breadcrumb - Thông tin sản phẩm */}
+                <div className="mb-3">
+                  
+                  {categoryPath.length > 0 ? (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {categoryPath.map((path, index) => (
+                        <div key={index} className="flex items-center gap-1.5">
+                          {index === 0 && path.icon && (
+                            <span className="text-blue-500">{path.icon}</span>
+                          )}
+                          <Link href={path.url}>
+                            <span className={`text-sm hover:underline ${
+                              path.isProduct 
+                                ? 'text-blue-700 font-semibold' 
+                                : 'text-blue-600'
+                            }`}>
+                              {path.name}
+                            </span>
+                          </Link>
+                          {index < categoryPath.length - 1 && (
+                            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Package className="w-3.5 h-3.5 text-gray-400" />
+                      {item?.productId ? (
+                        <Link href={`/products/${item.productId}`}>
+                          <span className="text-sm text-blue-600 hover:underline font-semibold">
+                            Sản phẩm #{item.productId.substring(0, 8)}...
+                          </span>
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-gray-400 italic">
+                          Thông tin sản phẩm không có
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -382,6 +439,7 @@ function CommentCard({ item, admins, currentUser }) {
                   variant="flat"
                   onClick={() => setShowReplyForm(!showReplyForm)}
                   startContent={<Reply size={16} />}
+                  aria-label={item?.reply ? "Chỉnh sửa phản hồi" : "Trả lời bình luận"}
                 >
                   {item?.reply ? "Chỉnh sửa" : "Trả lời"}
                 </Button>
@@ -393,6 +451,7 @@ function CommentCard({ item, admins, currentUser }) {
                   isLoading={isLoading}
                   onClick={handleDelete}
                   startContent={<Trash2 size={16} />}
+                  aria-label="Xóa bình luận"
                 >
                   Xóa
                 </Button>
@@ -431,12 +490,14 @@ function CommentCard({ item, admins, currentUser }) {
             {showReplyForm && (
               <div className="bg-white border rounded-lg p-4">
                 <Textarea
+                  label="Nội dung trả lời"
                   placeholder="Nhập nội dung trả lời..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   minRows={3}
                   maxRows={6}
                   className="mb-3"
+                  aria-label="Nội dung trả lời bình luận"
                 />
                 <div className="flex gap-2 justify-end">
                   <Button
@@ -446,6 +507,7 @@ function CommentCard({ item, admins, currentUser }) {
                       setShowReplyForm(false);
                       setReplyText("");
                     }}
+                    aria-label="Hủy trả lời"
                   >
                     Hủy
                   </Button>
@@ -455,6 +517,7 @@ function CommentCard({ item, admins, currentUser }) {
                     onClick={handleReply}
                     isLoading={isReplying}
                     startContent={<Send size={14} />}
+                    aria-label={item?.reply ? "Cập nhật phản hồi" : "Gửi phản hồi"}
                   >
                     {item?.reply ? "Cập nhật" : "Gửi trả lời"}
                   </Button>

@@ -17,14 +17,24 @@ import {
   MessageSquare,
   Calendar,
   Heart,
-  ChevronRight
+  ChevronRight,
+  Package
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-export default function HomepageComments() {
+export default function CommentsSection({ 
+  productId, 
+  productTitle,
+  categoryName,
+  categoryId,
+  subCategoryName,
+  subCategoryId,
+  isParentCategory = false 
+}) {
   const { user } = useAuth();
-  const { data: comments, isLoading } = useComments({ productId: "homepage" }); 
+  const { data: comments, isLoading } = useComments({ productId }); 
   const { data: admins } = useAdmins();
   const [newComment, setNewComment] = useState("");
   const [guestName, setGuestName] = useState("");
@@ -32,7 +42,6 @@ export default function HomepageComments() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAllComments, setShowAllComments] = useState(false);
 
-  // Giới hạn hiển thị 5 bình luận đầu tiên
   const COMMENTS_LIMIT = 5;
   const displayedComments = showAllComments 
     ? comments 
@@ -59,10 +68,16 @@ export default function HomepageComments() {
     try {
       await addComment({
         uid: user ? user.uid : `guest_${Date.now()}`,
-        productId: "homepage",
+        productId: productId,
         message: newComment,
         displayName: user ? user.displayName : guestName,
         photoURL: user ? user.photoURL : "",
+        // Metadata về vị trí comment
+        categoryName: categoryName,
+        categoryId: categoryId,
+        subCategoryName: subCategoryName || null,
+        subCategoryId: subCategoryId || null,
+        productTitle: productTitle,
       });
       
       setNewComment("");
@@ -93,9 +108,8 @@ export default function HomepageComments() {
     <section className="mt-12 max-w-4xl mx-auto px-4">
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-         Hỏi và đáp
+          Hỏi và đáp
         </h2>
-       
       </div>
 
       {/* Form thêm bình luận */}
@@ -141,7 +155,7 @@ export default function HomepageComments() {
             )}
 
             <Textarea
-              placeholder="Chia sẻ cảm nhận của bạn về website (tối thiểu 15 ký tự) *"
+              placeholder="Chia sẻ cảm nhận của bạn (tối thiểu 15 ký tự) *"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               minRows={4}
@@ -192,7 +206,6 @@ export default function HomepageComments() {
               />
             ))}
 
-            {/* Nút "Xem thêm" */}
             {!showAllComments && remainingComments > 0 && (
               <div className="flex justify-center mt-6">
                 <Button
@@ -208,7 +221,6 @@ export default function HomepageComments() {
               </div>
             )}
 
-            {/* Nút "Thu gọn" khi đã hiển thị tất cả */}
             {showAllComments && comments.length > COMMENTS_LIMIT && (
               <div className="flex justify-center mt-6">
                 <Button
@@ -231,7 +243,7 @@ export default function HomepageComments() {
                 Chưa có bình luận nào
               </h3>
               <p className="text-gray-500">
-                Hãy là người đầu tiên chia sẻ cảm nhận về website!
+                Hãy là người đầu tiên chia sẻ cảm nhận!
               </p>
             </CardBody>
           </Card>
@@ -253,7 +265,7 @@ function CommentItem({ comment, currentUser, admins }) {
     setIsLiking(true);
     try {
       await toggleCommentLike({
-        productId: "homepage",
+        productId: comment.productId,
         commentId: comment.id,
         uid: currentUser.uid
       });
@@ -283,6 +295,32 @@ function CommentItem({ comment, currentUser, admins }) {
 
   const adminInfo = comment?.reply?.adminId ? getAdminInfo(comment.reply.adminId) : null;
 
+  // Build category path từ comment metadata
+  const buildCategoryPath = () => {
+    const paths = [];
+    
+    // Category chính
+    if (comment?.categoryName) {
+      paths.push({
+        name: comment.categoryName,
+        url: `/categories/${comment.categoryId || ''}`,
+        icon: <Package className="w-3.5 h-3.5" />
+      });
+    }
+    
+    // Subcategory (nếu có)
+    if (comment?.subCategoryName) {
+      paths.push({
+        name: comment.subCategoryName,
+        url: `/categories/${comment.categoryId || ''}/${comment.subCategoryId || ''}`,
+      });
+    }
+    
+    return paths;
+  };
+
+  const categoryPath = buildCategoryPath();
+
   return (
     <Card>
       <CardBody className="p-6">
@@ -302,6 +340,27 @@ function CommentItem({ comment, currentUser, admins }) {
                 {formatDate(comment?.timestamp)}
               </span>
             </div>
+
+            {/* Category Path Breadcrumb */}
+            {categoryPath.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap mb-3">
+                {categoryPath.map((path, index) => (
+                  <div key={index} className="flex items-center gap-1.5">
+                    {index === 0 && path.icon && (
+                      <span className="text-blue-500">{path.icon}</span>
+                    )}
+                    <Link href={path.url}>
+                      <span className="text-sm text-blue-600 hover:underline">
+                        {path.name}
+                      </span>
+                    </Link>
+                    {index < categoryPath.length - 1 && (
+                      <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
             
             <div className="bg-gray-50 rounded-lg p-4 mb-3">
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -310,7 +369,7 @@ function CommentItem({ comment, currentUser, admins }) {
             </div>
             
             {comment?.reply && (
-              <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
+              <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400 mb-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Avatar 
                     src={adminInfo?.imageURL || comment?.reply?.adminPhotoURL} 

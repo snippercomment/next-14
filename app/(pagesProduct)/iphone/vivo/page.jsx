@@ -54,7 +54,39 @@ export default function Page({ categoryFilter = null, params }) {
     }
     return null;
   };
-
+const getCategoryInfo = () => {
+    if (!categories) return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+    
+    for (const parent of categories) {
+      if (parent.children) {
+        const vivoSubCat = parent.children.find(child => {
+          const name = child.name?.toLowerCase() || '';
+          return name.includes('vivo');
+        });
+        
+        if (vivoSubCat) {
+          return {
+            parentId: parent.id,
+            parentName: parent.name,
+            subCategoryId: vivoSubCat.id,
+            subCategoryName: vivoSubCat.name
+          };
+        }
+      }
+    }
+    
+    return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+  };
   // Lọc sản phẩm điện thoại với logic cải thiện
   const products = allProducts?.filter(product => {
     const category = findCategoryById(product.categoryId);
@@ -109,7 +141,7 @@ export default function Page({ categoryFilter = null, params }) {
     }
     return 'Vivo'; 
   };
-
+  const categoryInfo = getCategoryInfo();
   const handleProductSelect = (productId) => {
     setSelectedProducts(prev => {
       if (prev.includes(productId)) {
@@ -196,7 +228,14 @@ export default function Page({ categoryFilter = null, params }) {
       )}
       
       {/* Comments Section */}
-     <CommentsSection productId="general-iphones" productTitle={getCurrentCategoryName()} />
+      <CommentsSection 
+                      productId="Vivo"
+                      productTitle={getCurrentCategoryName()}
+                      categoryName={categoryInfo.parentName || "Điện thoại"}
+                      categoryId={categoryInfo.parentId}
+                      subCategoryName={categoryInfo.subCategoryName || "Vivo"}
+                      subCategoryId={categoryInfo.subCategoryId}
+              />
     </div>
   );
 }

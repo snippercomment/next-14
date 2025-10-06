@@ -65,6 +65,21 @@ export default function Page({ categoryFilter = null, params }) {
     return null;
   };
 
+  // Lấy parent category ID và tên cho điện thoại
+  const getPhoneCategoryInfo = () => {
+    if (!categories) return { id: null, name: null };
+    
+    const phoneParent = categories.find(cat => {
+      const name = cat.name?.toLowerCase() || '';
+      return name.includes('điện thoại') || name.includes('phone') || name.includes('mobile');
+    });
+    
+    return {
+      id: phoneParent?.id || null,
+      name: phoneParent?.name || 'Điện thoại'
+    };
+  };
+
   const getPhoneCategoryIds = () => {
     if (!categories) return [];
     
@@ -191,6 +206,7 @@ export default function Page({ categoryFilter = null, params }) {
   };
 
   const visibleProducts = sortedProducts.slice(0, visibleCount);
+  const phoneCategoryInfo = getPhoneCategoryInfo();
 
   if (isLoading) {
     return (
@@ -207,15 +223,12 @@ export default function Page({ categoryFilter = null, params }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header với tên danh mục */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           {getCurrentCategoryName()}
         </h1>
-       
       </div>
 
-      {/* BrandProduct component với styling responsive */}
       <div className="mb-6 -mx-4 px-4 overflow-x-auto">
         <BrandProduct 
           selectedBrand={selectedBrand} 
@@ -223,13 +236,9 @@ export default function Page({ categoryFilter = null, params }) {
         />
       </div>
 
-      {/* FilterBar */}
       <FilterBar category="phone" onFilterChange={handleFilterChange} />
-      
-      {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
       
-      {/* Products Grid */}
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {visibleProducts.map(product => (
@@ -259,14 +268,12 @@ export default function Page({ categoryFilter = null, params }) {
         </div>
       )}
       
-      {/* Pagination Bar */}
       <PaginationBar
         total={sortedProducts.length}
         currentCount={visibleProducts.length}
         onLoadMore={() => setVisibleCount((prev) => prev + 12)}
       />
 
-      {/* Hiển thị số lượng đã chọn */}
       {selectedProducts.length > 0 && (
         <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg">
           <span className="font-medium">
@@ -275,8 +282,14 @@ export default function Page({ categoryFilter = null, params }) {
         </div>
       )}
       
-      {/* Comments Section */}
-      <CommentsSection productId="general-phones" productTitle={getCurrentCategoryName()} />
+     
+      <CommentsSection 
+        productId="dien-thoai"
+        productTitle={getCurrentCategoryName()}
+        categoryName={phoneCategoryInfo.name}
+        categoryId={phoneCategoryInfo.id}
+        isParentCategory={true}
+      />
     </div>
   );
 }

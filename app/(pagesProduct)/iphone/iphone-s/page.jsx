@@ -54,7 +54,39 @@ export default function Page({ categoryFilter = null, params }) {
     }
     return null;
   };
-
+   const getCategoryInfo = () => {
+    if (!categories) return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+    
+    for (const parent of categories) {
+      if (parent.children) {
+        const iphoneSubCat = parent.children.find(child => {
+          const name = child.name?.toLowerCase() || '';
+          return name.includes('iphone');
+        });
+        
+        if (iphoneSubCat) {
+          return {
+            parentId: parent.id,
+            parentName: parent.name,
+            subCategoryId: iphoneSubCat.id,
+            subCategoryName: iphoneSubCat.name
+          };
+        }
+      }
+    }
+    
+    return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+  };
   // Lọc sản phẩm điện thoại với logic cải thiện
   const products = allProducts?.filter(product => {
     const category = findCategoryById(product.categoryId);
@@ -110,7 +142,8 @@ export default function Page({ categoryFilter = null, params }) {
     }
     return 'Iphone'; 
   };
-
+  // Lấy thông tin category
+  const categoryInfo = getCategoryInfo();
   const handleProductSelect = (productId) => {
     setSelectedProducts(prev => {
       if (prev.includes(productId)) {
@@ -196,8 +229,14 @@ export default function Page({ categoryFilter = null, params }) {
         </div>
       )}
       
-      {/* Comments Section */}
-      <CommentsSection productId="general-iphones" productTitle={getCurrentCategoryName()} />
+      <CommentsSection 
+              productId="Iphone"
+              productTitle={getCurrentCategoryName()}
+              categoryName={categoryInfo.parentName || "Điện thoại"}
+              categoryId={categoryInfo.parentId}
+              subCategoryName={categoryInfo.subCategoryName || "Iphone"}
+              subCategoryId={categoryInfo.subCategoryId}
+      />
     </div>
   );
 }
