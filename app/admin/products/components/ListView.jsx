@@ -76,6 +76,13 @@ export default function ListView() {
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
+    const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+        setCurrentPage(newPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+};
+
     const handleFilterChange = (type, value) => {
     setCurrentPage(1);
     if (type === 'search') {

@@ -5,7 +5,7 @@ import ProductCard from '../../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
-import FilterBar from '../../form/FilterBar';
+
 import SortBar from "../../form/Sort";
 import PaginationBar from "../../form/Panigation";
 import { getProduct } from '@/lib/firestore/products/read_server';
@@ -176,11 +176,7 @@ export default function Page({ categoryFilter = null, params }) {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           {getCurrentCategoryName()}
         </h1>
-      </div>
-
-      {/* Gắn FilterBar */}
-      <FilterBar category="phone" />
-      
+      </div>    
       {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
       
@@ -204,10 +200,6 @@ export default function Page({ categoryFilter = null, params }) {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Không tìm thấy điện thoại phù hợp
             </h3>
-            <p className="text-gray-500 mb-4">
-              Không có điện thoại nào trong danh mục "{getCurrentCategoryName()}"
-            </p>
-            
           </div>
         </div>
       )}

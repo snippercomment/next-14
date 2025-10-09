@@ -5,7 +5,6 @@ import ProductCard from '../../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
-import FilterBar from '../../form/FilterBar';
 import SortBar from "../../form/Sort";
 import PaginationBar from "../../form/Panigation";
 import { getProduct } from '@/lib/firestore/products/read_server';
@@ -54,7 +53,39 @@ export default function Page({ categoryFilter = null, params }) {
     }
     return null;
   };
-
+   const getCategoryInfo = () => {
+    if (!categories) return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+    
+    for (const parent of categories) {
+      if (parent.children) {
+        const asusSubCat = parent.children.find(child => {
+          const name = child.name?.toLowerCase() || '';
+          return name.includes('asus');
+        });
+        
+        if (asusSubCat) {
+          return {
+            parentId: parent.id,
+            parentName: parent.name,
+            subCategoryId: asusSubCat.id,
+            subCategoryName: asusSubCat.name
+          };
+        }
+      }
+    }
+    
+    return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+  };
   // Lọc sản phẩm laptop với logic cải thiện
   const products = allProducts?.filter(product => {
     const category = findCategoryById(product.categoryId);
@@ -120,7 +151,7 @@ export default function Page({ categoryFilter = null, params }) {
   };
   // Lấy sản phẩm hiển thị theo limit
   const visibleProducts = sortedProducts.slice(0, visibleCount);
-
+  const categoryInfo = getCategoryInfo();
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -143,9 +174,6 @@ export default function Page({ categoryFilter = null, params }) {
         </h1>
       </div>
 
-      {/* Gắn FilterBar */}
-      <FilterBar category="laptop" />
-      
       {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
       
@@ -169,9 +197,6 @@ export default function Page({ categoryFilter = null, params }) {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Không tìm thấy laptop phù hợp
             </h3>
-            <p className="text-gray-500 mb-4">
-              Không có laptop nào trong danh mục "{getCurrentCategoryName()}"
-            </p>
             
           </div>
         </div>
@@ -194,7 +219,14 @@ export default function Page({ categoryFilter = null, params }) {
       )}
       
       {/* Comments Section */}
-      <CommentsSection productId="general-iphones" productTitle={getCurrentCategoryName()} />
+     <CommentsSection 
+            productId="Asus"
+            productTitle={getCurrentCategoryName()}
+            categoryName={categoryInfo.parentName || "Laptop"}
+            categoryId={categoryInfo.parentId}
+            subCategoryName={categoryInfo.subCategoryName || "Asus"}
+            subCategoryId={categoryInfo.subCategoryId}
+          />
     </div>
   );
 }

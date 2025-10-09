@@ -5,7 +5,6 @@ import ProductCard from '../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
-import FilterBar from '../form/FilterBar';
 import SortBar from "../form/Sort";
 import PaginationBar from "../form/Panigation";
 import { getProduct } from '@/lib/firestore/products/read_server';
@@ -18,7 +17,6 @@ export default function Page({ categoryFilter = null, params }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(3);
-  const [filters, setFilters] = useState({});
   const [selectedBrand, setSelectedBrand] = useState(''); 
   const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
   const { data: brands } = useBrands();
@@ -38,15 +36,9 @@ export default function Page({ categoryFilter = null, params }) {
     }
   }, [productId]);
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
+  useEffect(() => {
     setVisibleCount(3);
-  };
-
-  const handleBrandChange = (brandId) => {
-    setSelectedBrand(brandId);
-    setVisibleCount(3);
-  };
+  }, [selectedBrand]);
 
   const findCategoryById = (categoryId) => {
     if (!categories) return null;
@@ -65,13 +57,12 @@ export default function Page({ categoryFilter = null, params }) {
     return null;
   };
 
-  // Lấy parent category ID và tên cho điện thoại
   const getPhoneCategoryInfo = () => {
     if (!categories) return { id: null, name: null };
     
     const phoneParent = categories.find(cat => {
       const name = cat.name?.toLowerCase() || '';
-      return name.includes('điện thoại') || name.includes('phone') || name.includes('mobile');
+      return name.includes('điện thoại') || name.includes('phone') ;
     });
     
     return {
@@ -122,19 +113,6 @@ export default function Page({ categoryFilter = null, params }) {
     return isInPhoneCategory || isPhoneByName;
   }) || [];
 
-  const extractStorageValue = (storageStr) => {
-    if (!storageStr) return 0;
-    const str = String(storageStr).toLowerCase();
-    
-    const match = str.match(/(\d+)\s*(gb|tb)/i);
-    if (!match) return 0;
-    
-    const value = parseInt(match[1]);
-    const unit = match[2].toLowerCase();
-    
-    return unit === 'tb' ? value * 1024 : value;
-  };
-
   const getProductsByCategory = () => {
     if (!products || !categories) return [];
     
@@ -146,37 +124,10 @@ export default function Page({ categoryFilter = null, params }) {
         return category?.name === categoryFilter;
       });
     }
-    
+
     if (selectedBrand) {
       filtered = filtered.filter(product => {
         return product.brandId === selectedBrand;
-      });
-    }
-    
-    if (Object.keys(filters).length > 0) {
-      filtered = filtered.filter(product => {
-        if (filters.maxPrice && filters.maxPrice < 97190000) {
-          if (product.price > filters.maxPrice) {
-            return false;
-          }
-        }
-        
-        if (filters.memory) {
-          const productStorage = product.storage || 
-                                product.specifications?.storage || 
-                                product.memory || 
-                                product.capacity ||
-                                '';
-          
-          const productStorageValue = extractStorageValue(productStorage);
-          const filterStorageValue = extractStorageValue(filters.memory);
-          
-          if (productStorageValue !== filterStorageValue) {
-            return false;
-          }
-        }
-        
-        return true;
       });
     }
     
@@ -232,11 +183,10 @@ export default function Page({ categoryFilter = null, params }) {
       <div className="mb-6 -mx-4 px-4 overflow-x-auto">
         <BrandProduct 
           selectedBrand={selectedBrand} 
-          onBrandChange={handleBrandChange}
+          onBrandChange={setSelectedBrand}
         />
       </div>
 
-      <FilterBar category="phone" onFilterChange={handleFilterChange} />
       <SortBar sort={sort} setSort={setSort} />
       
       {filteredProducts.length > 0 ? (
@@ -258,12 +208,6 @@ export default function Page({ categoryFilter = null, params }) {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Không tìm thấy điện thoại phù hợp
             </h3>
-            <p className="text-gray-500 mb-4">
-              {Object.keys(filters).length > 0 || selectedBrand
-                ? "Không có sản phẩm nào phù hợp với bộ lọc của bạn. Hãy thử điều chỉnh bộ lọc."
-                : `Không có điện thoại nào trong danh mục "${getCurrentCategoryName()}"`
-              }
-            </p>
           </div>
         </div>
       )}
@@ -271,7 +215,7 @@ export default function Page({ categoryFilter = null, params }) {
       <PaginationBar
         total={sortedProducts.length}
         currentCount={visibleProducts.length}
-        onLoadMore={() => setVisibleCount((prev) => prev + 12)}
+        onLoadMore={() => setVisibleCount((prev) => prev + 3)}
       />
 
       {selectedProducts.length > 0 && (
@@ -282,7 +226,6 @@ export default function Page({ categoryFilter = null, params }) {
         </div>
       )}
       
-     
       <CommentsSection 
         productId="dien-thoai"
         productTitle={getCurrentCategoryName()}

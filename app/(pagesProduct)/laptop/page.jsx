@@ -5,7 +5,7 @@ import ProductCard from '../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
-import FilterBar from '../form/FilterBar';
+
 import SortBar from "../form/Sort";
 import PaginationBar from "../form/Panigation";
 import CommentsSection from '../form/CommentsSection';
@@ -19,16 +19,10 @@ export default function Page({ categoryFilter = null, params }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(3);
-  const [filters, setFilters] = useState({});
   const [selectedBrand, setSelectedBrand] = useState(''); 
   const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    setVisibleCount(3);
-  };
 
   const handleBrandChange = (brandId) => {
     setSelectedBrand(brandId);
@@ -56,7 +50,19 @@ export default function Page({ categoryFilter = null, params }) {
     
     return laptopIds;
   };
-
+  const getLaptopCategoryInfo = () => {
+    if (!categories) return { id: null, name: null };
+    
+    const laptopParent = categories.find(cat => {
+      const name = cat.name?.toLowerCase() || '';
+      return name.includes('laptop') || name.includes('laptop') ;
+    });
+    
+    return {
+      id: laptopParent?.id || null,
+      name: laptopParent?.name || 'Laptop'
+    };
+  };
  const products = allProducts?.filter(product => {
     if (!product) return false;
     
@@ -76,37 +82,25 @@ export default function Page({ categoryFilter = null, params }) {
     return isInLaptopCategory || isLaptopByName;
   }) || [];
   const getProductsByCategory = () => {
-    if (!products || !categories) return [];
-    
-    let filtered = products;
-    
-    if (categoryFilter) {
-      filtered = filtered.filter(product => {
-        const category = categories.find(c => c.id === product.categoryId);
-        return category?.name === categoryFilter;
-      });
-    }
-    
-    if (selectedBrand) {
-      filtered = filtered.filter(product => {
-        return product.brandId === selectedBrand;
-      });
-    }
-    
-    if (Object.keys(filters).length > 0) {
-      filtered = filtered.filter(product => {
-        if (filters.maxPrice && filters.maxPrice < 97190000) {
-          if (product.price > filters.maxPrice) {
-            return false;
-          }
-        }
-        return true;
-      });
-    }
-    
-    return filtered;
-  };
-
+  if (!products || !categories) return [];
+  
+  let filtered = products;
+  
+  if (categoryFilter) {
+    filtered = filtered.filter(product => {
+      const category = categories.find(c => c.id === product.categoryId);
+      return category?.name === categoryFilter;
+    });
+  }
+  
+  if (selectedBrand) {
+    filtered = filtered.filter(product => {
+      return product.brandId === selectedBrand;
+    });
+  }
+  
+  return filtered;
+};
   const filteredProducts = getProductsByCategory();
   
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -140,7 +134,7 @@ export default function Page({ categoryFilter = null, params }) {
   };
 
   const visibleProducts = sortedProducts.slice(0, visibleCount);
-  
+   const laptopCategoryInfo = getLaptopCategoryInfo();
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -171,9 +165,6 @@ export default function Page({ categoryFilter = null, params }) {
           onBrandChange={handleBrandChange}
         />
       </div>
-
-      {/* FilterBar */}
-      <FilterBar category="laptop" onFilterChange={handleFilterChange} />
       
       {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
@@ -198,12 +189,7 @@ export default function Page({ categoryFilter = null, params }) {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Không tìm thấy laptop phù hợp
             </h3>
-            <p className="text-gray-500 mb-4">
-              {Object.keys(filters).length > 0 || selectedBrand
-                ? "Không có sản phẩm nào phù hợp với bộ lọc của bạn. Hãy thử điều chỉnh bộ lọc."
-                : `Không có laptop nào trong danh mục "${getCurrentCategoryName()}"`
-              }
-            </p>
+           
           </div>
         </div>
       )}
@@ -224,7 +210,13 @@ export default function Page({ categoryFilter = null, params }) {
         </div>
       )}
       
-      <CommentsSection productId={productId} productTitle={product?.title} />
+      <CommentsSection 
+              productId="laptop"
+              productTitle={getCurrentCategoryName()}
+              categoryName={laptopCategoryInfo.name}
+              categoryId={laptopCategoryInfo.id}
+              isParentCategory={true}
+            />
     </div>
   );
 }

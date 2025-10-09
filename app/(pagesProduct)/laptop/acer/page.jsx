@@ -5,7 +5,6 @@ import ProductCard from '../../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
-import FilterBar from '../../form/FilterBar';
 import SortBar from "../../form/Sort";
 import PaginationBar from "../../form/Panigation";
 import { getProduct } from '@/lib/firestore/products/read_server';
@@ -21,7 +20,6 @@ export default function Page({ categoryFilter = null, params }) {
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
 
-  // Lấy product data bất đồng bộ
   useEffect(() => {
     if (productId) {
       const fetchProduct = async () => {
@@ -36,7 +34,6 @@ export default function Page({ categoryFilter = null, params }) {
     }
   }, [productId]);
 
-  // Hàm helper để tìm category (bao gồm cả subcategories)
   const findCategoryById = (categoryId) => {
     if (!categories) return null;
     
@@ -44,7 +41,7 @@ export default function Page({ categoryFilter = null, params }) {
       if (category.id === categoryId) {
         return category;
       }
-      // Tìm trong subcategories
+    
       if (category.children) {
         const subCategory = category.children.find(child => child.id === categoryId);
         if (subCategory) {
@@ -54,7 +51,39 @@ export default function Page({ categoryFilter = null, params }) {
     }
     return null;
   };
-
+   const getCategoryInfo = () => {
+    if (!categories) return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+    
+    for (const parent of categories) {
+      if (parent.children) {
+        const acerSubCat = parent.children.find(child => {
+          const name = child.name?.toLowerCase() || '';
+          return name.includes('acer');
+        });
+        
+        if (acerSubCat) {
+          return {
+            parentId: parent.id,
+            parentName: parent.name,
+            subCategoryId: acerSubCat.id,
+            subCategoryName: acerSubCat.name
+          };
+        }
+      }
+    }
+    
+    return { 
+      parentId: null, 
+      parentName: null, 
+      subCategoryId: null, 
+      subCategoryName: null 
+    };
+  };
   // Lọc sản phẩm laptop với logic cải thiện
   const products = allProducts?.filter(product => {
     const category = findCategoryById(product.categoryId);
@@ -121,6 +150,7 @@ export default function Page({ categoryFilter = null, params }) {
   // Lấy sản phẩm hiển thị theo limit
   const visibleProducts = sortedProducts.slice(0, visibleCount);
 
+  const categoryInfo = getCategoryInfo();
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -141,11 +171,7 @@ export default function Page({ categoryFilter = null, params }) {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           {getCurrentCategoryName()}
         </h1>
-      </div>
-
-      {/* Gắn FilterBar */}
-      <FilterBar category="laptop" />
-      
+      </div>    
       {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
       
@@ -168,11 +194,7 @@ export default function Page({ categoryFilter = null, params }) {
           <div className="max-w-md mx-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Không tìm thấy laptop phù hợp
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Không có laptop nào trong danh mục "{getCurrentCategoryName()}"
-            </p>
-            
+            </h3>                    
           </div>
         </div>
       )}
@@ -194,7 +216,14 @@ export default function Page({ categoryFilter = null, params }) {
       )}
       
       {/* Comments Section */}
-      <CommentsSection productId="general-iphones" productTitle={getCurrentCategoryName()} />
+     <CommentsSection 
+        productId="Acer"
+        productTitle={getCurrentCategoryName()}
+        categoryName={categoryInfo.parentName || "Laptop"}
+        categoryId={categoryInfo.parentId}
+        subCategoryName={categoryInfo.subCategoryName || "Acer"}
+        subCategoryId={categoryInfo.subCategoryId}
+      />
     </div>
   );
 }

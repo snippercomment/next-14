@@ -5,7 +5,6 @@ import ProductCard from '../form/ProductCard';
 import { useProducts } from '@/lib/firestore/products/read';
 import { useBrands } from '@/lib/firestore/brands/read';
 import { useCategories } from '@/lib/firestore/categories/read';
-import FilterBar from '../form/FilterBar';
 import SortBar from "../form/Sort";
 import PaginationBar from "../form/Panigation";
 import { getProduct } from '@/lib/firestore/products/read_server';
@@ -18,28 +17,49 @@ export default function Page({ categoryFilter = null, params }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(3);
-  const [filters, setFilters] = useState({});
   const [selectedBrand, setSelectedBrand] = useState('');
   const { data: allProducts, isLoading } = useProducts({ pageLimit: 100 });
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    setVisibleCount(3);
-  };
 
   const handleBrandChange = (brandId) => {
     setSelectedBrand(brandId);
     setVisibleCount(3);
   };
 
+  const getHeadPhoneCategoryIds = () => {
+    if (!categories) return [];
+    
+    const headphoneIds = [];
+    
+    categories.forEach(parent => {
+      const parentName = parent.name?.toLowerCase() || '';
+      const isHeadPhoneParent = parentName.includes('headphone');
+      
+      if (isHeadPhoneParent) {
+        headphoneIds.push(parent.id);
+        if (parent.children && parent.children.length > 0) {
+          parent.children.forEach(child => {
+            headphoneIds.push(child.id);
+          });
+        }
+      }
+    });
+    
+    return headphoneIds;
+  };
+
   const products = allProducts?.filter(product => {
-    const category = categories?.find(c => c.id === product.categoryId);
-    return category?.name?.toLowerCase().includes('tai nghe') || 
-           category?.name?.toLowerCase().includes('headphone') ||
-           product.type === 'headphone' ||
-           product.productType === 'headphone';
+    if (!product) return false;
+    
+    const headphoneCategoryIds = getHeadPhoneCategoryIds();
+    const isInHeadPhoneCategory = headphoneCategoryIds.includes(product.categoryId);
+    
+    const productName = product.title?.toLowerCase() || product.name?.toLowerCase() || '';
+    const isHeadPhoneByName =
+      productName.includes('sony') || productName.includes('apple');
+      
+    return isInHeadPhoneCategory || isHeadPhoneByName;
   }) || [];
 
   const getProductsByCategory = () => {
@@ -55,59 +75,33 @@ export default function Page({ categoryFilter = null, params }) {
     }
     
     if (selectedBrand) {
-      filtered = filtered.filter(product => {
-        return product.brandId === selectedBrand;
-      });
-    }
-    
-    if (Object.keys(filters).length > 0) {
-      filtered = filtered.filter(product => {
-        if (filters.maxPrice && filters.maxPrice < 97190000) {
-          if (product.price > filters.maxPrice) {
-            return false;
-          }
-        }
-        return true;
-      });
+      filtered = filtered.filter(product => product.brandId === selectedBrand);
     }
     
     return filtered;
   };
 
   const filteredProducts = getProductsByCategory();
-  
+
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sort === "priceAsc") {
-      return (a.price || 0) - (b.price || 0);
-    }
-    if (sort === "priceDesc") {
-      return (b.price || 0) - (a.price || 0);
-    }
-    if (sort === "sale") {
-      return (b.discount || 0) - (a.discount || 0);
-    }
+    if (sort === "priceAsc") return (a.price || 0) - (b.price || 0);
+    if (sort === "priceDesc") return (b.price || 0) - (a.price || 0);
+    if (sort === "sale") return (b.discount || 0) - (a.discount || 0);
     return 0;
   });
 
-  const getCurrentCategoryName = () => {
-    if (categoryFilter) {
-      return categoryFilter;
-    }
-    return 'Tai nghe'; 
-  };
+  const getCurrentCategoryName = () => categoryFilter || 'Tai nghe';
 
   const handleProductSelect = (productId) => {
-    setSelectedProducts(prev => {
-      if (prev.includes(productId)) {
-        return prev.filter(id => id !== productId);
-      } else {
-        return [...prev, productId];
-      }
-    });
+    setSelectedProducts(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
   };
 
   const visibleProducts = sortedProducts.slice(0, visibleCount);
-  
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -130,7 +124,7 @@ export default function Page({ categoryFilter = null, params }) {
         </h1>
       </div>
 
-      {/* BrandProduct component với styling responsive */}
+      {/* BrandProduct component */}
       <div className="mb-6 -mx-4 px-4 overflow-x-auto">
         <BrandProduct 
           selectedBrand={selectedBrand} 
@@ -138,9 +132,6 @@ export default function Page({ categoryFilter = null, params }) {
         />
       </div>
 
-      {/* FilterBar */}
-      <FilterBar category="headphone" onFilterChange={handleFilterChange} />
-      
       {/* Sort */}
       <SortBar sort={sort} setSort={setSort} />
       
@@ -165,10 +156,9 @@ export default function Page({ categoryFilter = null, params }) {
               Không tìm thấy tai nghe phù hợp
             </h3>
             <p className="text-gray-500 mb-4">
-              {Object.keys(filters).length > 0 || selectedBrand
-                ? "Không có sản phẩm nào phù hợp với bộ lọc của bạn. Hãy thử điều chỉnh bộ lọc."
-                : `Không có tai nghe nào trong danh mục "${getCurrentCategoryName()}"`
-              }
+              {selectedBrand
+                ? "Không có sản phẩm nào phù hợp với thương hiệu bạn chọn."
+                : `Không có tai nghe nào trong danh mục "${getCurrentCategoryName()}"`}
             </p>
           </div>
         </div>
@@ -178,7 +168,7 @@ export default function Page({ categoryFilter = null, params }) {
       <PaginationBar
         total={sortedProducts.length}
         currentCount={visibleProducts.length}
-        onLoadMore={() => setVisibleCount((prev) => prev + 12)}
+        onLoadMore={() => setVisibleCount(prev => prev + 12)}
       />
 
       {/* Hiển thị số lượng đã chọn */}
