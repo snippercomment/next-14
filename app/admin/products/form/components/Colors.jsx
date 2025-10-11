@@ -461,7 +461,48 @@ export const phoneColors = [
         category: "sony"
     },
    
-
+    {
+        id: "apple-headphone-white",
+        name: "Trắng",
+        title: "Tai nghe Apple Trắng",
+        hexColor: "#FFFFFF",
+        category: "apple"
+    },
+    {
+        id: "apple-headphone-black",
+        name: "Đen",
+        title: "Tai nghe Apple Đen",
+        hexColor: "#1C1C1E",
+        category: "apple"
+    },
+    {
+        id: "apple-headphone-silver",
+        name: "Bạc",
+        title: "Tai nghe Apple Bạc",
+        hexColor: "#C0C0C0",
+        category: "apple"
+    },
+    {
+        id: "apple-headphone-spacegray",
+        name: "Xám không gian",
+        title: "Tai nghe Apple Xám không gian",
+        hexColor: "#505050",
+        category: "apple"
+    },
+    {
+        id: "apple-headphone-blue",
+        name: "Xanh dương",
+        title: "Tai nghe Apple Xanh dương",
+        hexColor: "#A2B9E0",
+        category: "apple"
+    },
+    {
+        id: "apple-headphone-pink",
+        name: "Hồng",
+        title: "Tai nghe Apple Hồng",
+        hexColor: "#FAD4D4",
+        category: "apple"
+    },
     // Logitech Mouse Colors
     {
         id: "logitech-black",
@@ -784,33 +825,39 @@ export const sonyHeadphoneSpecOptions = [
     // Sony Gaming
     "Gaming 2.4GHz - 20Hz-20kHz - 7.1 Surround",
     "Gaming Wireless - 20Hz-20kHz - 7.1 Virtual Surround",
-    "Gaming Wired - 20Hz-20kHz - 40mm Driver"
+    "Gaming Wired - 20Hz-20kHz - 40mm Driver",
+   
 ];
 
-// Bose Headphone specifications (nếu có)
-export const boseHeadphoneSpecOptions = [
-    "ANC Bluetooth 5.2 - 20Hz-20kHz - 24h pin",
-    "ANC Bluetooth 5.3 - 20Hz-40kHz - 30h pin", 
-    "Hybrid ANC - 15Hz-40kHz - 45h pin",
-    "Hi-Res Audio - 10Hz-40kHz - 50mm Driver"
-];
+export const appleHeadphoneSpecOptions = [
+    // Apple Entry Level (EarPods, basic AirPods)
+    "Bluetooth 5.0 - 20Hz-20kHz ",
+    "Bluetooth 5.1 - 20Hz-20kHz ",
+    "Wired Lightning - 20Hz-20kHz - Dynamic Driver",
 
-// JBL Headphone specifications (nếu có)
-export const jblHeadphoneSpecOptions = [
-    "Bluetooth 5.0 - 20Hz-20kHz - 20h pin",
-    "Bluetooth 5.2 - 20Hz-20kHz - 40h pin",
-    "Gaming RGB - 20Hz-20kHz - 50mm Driver",
-    "Pro Gaming - 15Hz-25kHz - 53mm Driver"
+    // Apple Mid-range (AirPods Pro, AirPods 3)
+    "ANC Bluetooth 5.2 - 20Hz-20kHz ",
+    "ANC Bluetooth 5.3 - 20Hz-20kHz ",
+    "Transparency Mode - 20Hz-20kHz ",
+
+    // Apple Premium (AirPods Max)
+    "Hi-Res Audio - 10Hz-40kHz - Dynamic 40mm Driver",
+    "ANC Bluetooth 5.3 - 10Hz-40kHz - Spatial Audio",
+    "Hi-Fi Spatial Audio - 10Hz-40kHz",
+
+    // Apple Gaming (Vision Pro/AR-compatible)
+    "Low Latency - 20Hz-20kHz - Spatial Surround",
+    "Lossless Wireless - 10Hz-40kHz - UWB Chip",
 ];
 
 // Logitech Mouse specifications
 export const logitechMouseSpecOptions = [
     // Office/Productivity
-    "Wireless 2.4GHz - 1000 DPI - 12 tháng pin",
-    "Wireless 2.4GHz - 1600 DPI - 18 tháng pin",
-    "Bluetooth 5.0 - 1200 DPI - 24 tháng pin",
-    "Bluetooth 5.1 - 1600 DPI - 12 tháng pin",
-    "Bluetooth 5.2 - 2400 DPI - 18 tháng pin",
+    "Wireless 2.4GHz - 1000 DPI ",
+    "Wireless 2.4GHz - 1600 DPI ",
+    "Bluetooth 5.0 - 1200 DPI ",
+    "Bluetooth 5.1 - 1600 DPI ",
+    "Bluetooth 5.2 - 2400 DPI ",
     
     // Gaming Entry (G series)
     "Gaming Wired - 6400 DPI - RGB",
@@ -915,7 +962,7 @@ export const getColorsByCategory = (category) => {
 export const getColorsByProductType = (productType) => {
     const phoneCategories = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
     const laptopCategories = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer",];
-    const headphoneCategories = ["sony"];
+    const headphoneCategories = ["sony,apple"];
     const mouseCategories = ["logitech", "hyper", "razer", "corsair","gaming"];
 
     switch (productType) {
@@ -952,7 +999,7 @@ export const getColorById = (id) => {
 export const detectProductType = (brandName, categoryName) => {
     const phoneKeywords = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
     const laptopKeywords = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer", "laptop", "máy tính"];
-    const headphoneKeywords = ["sony", "headphone", ];
+    const headphoneKeywords = ["sony", "headphone","apple" ];
     const mouseKeywords = ["logitech", "hyper", "razer", "corsair", "mouse", "chuột","gaming"];
 
     const searchText = `${brandName || ""} ${categoryName || ""}`.toLowerCase();
@@ -1001,7 +1048,7 @@ export const getBrandCategoryFromName = (brandName) => {
         
         // Headphone brands
         'sony': 'sony',
-        
+        'apple':'apple',
         // Mouse brands
         'logitech': 'logitech',
         'hyperx': 'hyper',
@@ -1036,7 +1083,7 @@ export const getStorageOptionsByBrand = (brandName) => {
         
         // Headphone brands
         'sony': sonyHeadphoneSpecOptions,
-        
+        'apple':appleHeadphoneSpecOptions,
         // Mouse brands
         'logitech': logitechMouseSpecOptions,
         'hyper': hyperMouseSpecOptions,
@@ -1051,7 +1098,7 @@ export const getStorageOptionsByBrand = (brandName) => {
 export const detectProductTypeByCategory = (category) => {
     const phoneCategories = ["iphone", "samsung", "vivo", "oppo", "xiaomi"];
     const laptopCategories = ["macbook", "asus", "lenovo", "dell", "hp", "msi", "acer"];
-    const headphoneCategories = ["sony"];
+    const headphoneCategories = ["sony,apple"];
     const mouseCategories = ["logitech", "hyper", "razer", "corsair"];
 
     if (phoneCategories.includes(category)) return "phone";
