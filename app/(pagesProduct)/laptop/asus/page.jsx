@@ -94,11 +94,11 @@ export default function Page({ categoryFilter = null, params }) {
     
     // Kiểm tra nhiều điều kiện
     const categoryName = category.name?.toLowerCase() || '';
-    const isLaptop = categoryName.includes('asur') || 
+    const isLaptop = categoryName.includes('asus') || 
                  
-                   product.type === 'asur' ||
-                   product.productType === 'asur' ||
-                   product.category === 'asur';
+                   product.type === 'asus' ||
+                   product.productType === 'asus' ||
+                   product.category === 'asus';
     
     return isLaptop;
   }) || [];
@@ -147,7 +147,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Asus'; 
+    return 'Laptop Asus'; 
   };
   // Lấy sản phẩm hiển thị theo limit
   const visibleProducts = sortedProducts.slice(0, visibleCount);

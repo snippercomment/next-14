@@ -139,7 +139,7 @@ const getCategoryInfo = () => {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Xiaomi'; 
+    return 'Điện thoại Xiaomi'; 
   };
 const categoryInfo = getCategoryInfo();
   const handleProductSelect = (productId) => {

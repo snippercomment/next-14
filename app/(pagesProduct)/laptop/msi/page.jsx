@@ -147,7 +147,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'MSI'; 
+    return 'Laptop MSI'; 
   };
   // Lấy sản phẩm hiển thị theo limit
   const visibleProducts = sortedProducts.slice(0, visibleCount);

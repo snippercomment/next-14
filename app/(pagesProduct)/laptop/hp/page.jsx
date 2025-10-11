@@ -147,7 +147,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'HP'; 
+    return 'Laptop HP'; 
   };
   // Lấy sản phẩm hiển thị theo limit
   const visibleProducts = sortedProducts.slice(0, visibleCount);

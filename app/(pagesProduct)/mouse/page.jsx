@@ -105,7 +105,7 @@ export default function Page({ categoryFilter = null, params }) {
     return 0;
   });
 
-  const getCurrentCategoryName = () => categoryFilter || 'Chuột';
+  const getCurrentCategoryName = () => categoryFilter || 'Tất cả Chuột';
 
   const handleProductSelect = (productId) => {
     setSelectedProducts(prev =>

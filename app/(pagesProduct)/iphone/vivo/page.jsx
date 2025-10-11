@@ -139,7 +139,7 @@ const getCategoryInfo = () => {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Vivo'; 
+    return 'Điện thoại Vivo'; 
   };
   const categoryInfo = getCategoryInfo();
   const handleProductSelect = (productId) => {

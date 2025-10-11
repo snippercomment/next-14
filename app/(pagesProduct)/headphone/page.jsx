@@ -48,6 +48,19 @@ export default function Page({ categoryFilter = null, params }) {
     
     return headphoneIds;
   };
+const getHeadPhoneCategoryInfo = () => {
+    if (!categories) return { id: null, name: null };
+
+    const headphoneParent = categories.find(cat => {
+      const name = cat.name?.toLowerCase() || '';
+      return name.includes('tainghe') || name.includes('headphone');
+    });
+
+    return {
+      id: headphoneParent?.id || null,
+      name: headphoneParent?.name || 'Chuột'
+    };
+  };
 
   const products = allProducts?.filter(product => {
     if (!product) return false;
@@ -90,7 +103,7 @@ export default function Page({ categoryFilter = null, params }) {
     return 0;
   });
 
-  const getCurrentCategoryName = () => categoryFilter || 'Tai nghe';
+  const getCurrentCategoryName = () => categoryFilter || 'Tất cả Tai nghe';
 
   const handleProductSelect = (productId) => {
     setSelectedProducts(prev =>
@@ -101,7 +114,7 @@ export default function Page({ categoryFilter = null, params }) {
   };
 
   const visibleProducts = sortedProducts.slice(0, visibleCount);
-
+  const headphoneCategoryInfo = getHeadPhoneCategoryInfo();
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -180,7 +193,13 @@ export default function Page({ categoryFilter = null, params }) {
         </div>
       )}
       
-      <CommentsSection productId={productId} productTitle={product?.title} />
+     <CommentsSection 
+        productId="tainghe"
+        productTitle={getCurrentCategoryName()}
+        categoryName={headphoneCategoryInfo.name}
+        categoryId={headphoneCategoryInfo.id}
+        isParentCategory={true}
+      />
     </div>
   );
 }

@@ -181,7 +181,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Oppo'; 
+    return 'Điện thoại Oppo'; 
   };
 
   const visibleProducts = sortedProducts.slice(0, visibleCount);

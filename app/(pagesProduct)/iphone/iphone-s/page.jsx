@@ -140,7 +140,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Iphone'; 
+    return 'Điện thoại Iphone'; 
   };
   // Lấy thông tin category
   const categoryInfo = getCategoryInfo();

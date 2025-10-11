@@ -120,7 +120,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Máy tính'; 
+    return 'Tất cả Lap top'; 
   };
 
   const handleProductSelect = (productId) => {

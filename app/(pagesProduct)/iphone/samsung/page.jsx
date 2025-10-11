@@ -140,7 +140,7 @@ export default function Page({ categoryFilter = null, params }) {
     if (categoryFilter) {
       return categoryFilter;
     }
-    return 'Samsung'; 
+    return 'Điện thoại Samsung'; 
   };
   const categoryInfo = getCategoryInfo();
   const handleProductSelect = (productId) => {
